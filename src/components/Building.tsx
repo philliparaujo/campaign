@@ -1,36 +1,42 @@
 import React from 'react';
+import { Floor } from './Board';
+import FloorUI from './Floor';
 
-interface BuildingProps {
-  height: number;
-  width: number;
+interface BuildingUIProps {
+  rowIndex: number;
+  colIndex: number;
+  floors: Floor[];
+  updateFloorInfluence: any;
 }
 
-const Building: React.FC<BuildingProps> = ({ height, width }) => {
+const BuildingUI: React.FC<BuildingUIProps> = ({
+  rowIndex,
+  colIndex,
+  floors,
+  updateFloorInfluence,
+}) => {
+  const height = floors.length;
+
   return (
     <div
       style={{
-        width: `${width}px`,
+        width: `60px`,
         height: `${height * 20}px`,
-        backgroundColor: '#a0e0a0',
         border: '1px solid #000',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-end',
       }}
     >
-      {Array.from({ length: height }).map((_, index) => (
-        <div
-          key={index}
-          style={{
-            width: '100%',
-            height: '20px',
-            backgroundColor: '#5a9c5a',
-            borderBottom: index < height - 1 ? '1px solid #000' : 'none',
-          }}
+      {floors.map((floor, floorIndex) => (
+        <FloorUI
+          key={floorIndex}
+          influence={floor.influence}
+          onClick={() => updateFloorInfluence(rowIndex, colIndex, floorIndex)}
         />
       ))}
     </div>
   );
 };
 
-export default Building;
+export default BuildingUI;

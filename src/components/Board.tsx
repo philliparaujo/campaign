@@ -1,50 +1,63 @@
-import React, { useState, useEffect } from 'react';
-import Building from './Building';
+import React from 'react';
+import BuildingUI from './Building';
+import RoadUI from './Road';
+import { Influence } from '../App';
 
-interface BoardProps {
+interface BoardUIProps {
   size: number;
+  board: Cell[][];
+  setBoard: React.Dispatch<React.SetStateAction<Cell[][]>>;
 }
 
 interface Road {
   type: 'road';
 }
 
-interface BuildingCell {
-  type: 'building';
-  height: number;
+export interface Floor {
+  influence: Influence;
 }
 
-type Cell = Road | BuildingCell;
+interface BuildingCell {
+  type: 'building';
+  floors: Floor[];
+}
 
-const Board: React.FC<BoardProps> = ({ size }) => {
-  const [board, setBoard] = useState<Cell[][]>([]);
+export type Cell = Road | BuildingCell;
 
-  useEffect(() => {
-    const initializeBoard = () => {
-      const newBoard: Cell[][] = Array(size)
-        .fill(null)
-        .map(() =>
-          Array(size)
-            .fill(null)
-            .map(() => {
-              const isBuilding = Math.random() > 0.5;
-              if (isBuilding) {
-                return {
-                  type: 'building',
-                  height: Math.floor(Math.random() * 3) + 1,
-                };
-              } else {
-                return { type: 'road' };
-              }
-            })
-        );
-      setBoard(newBoard);
-    };
-
-    initializeBoard();
-  }, [size]);
-
+const BoardUI: React.FC<BoardUIProps> = ({ size, board, setBoard }) => {
   const cellSize = 100;
+
+  const isRoad = (cell: Cell | undefined) => cell?.type === 'road';
+
+  const updateFloorInfluence = (
+    rowIndex: number,
+    colIndex: number,
+    floorIndex: number
+  ) => {
+    setBoard(prevBoard => {
+      const newBoard = [...prevBoard];
+      const cell = newBoard[rowIndex][colIndex];
+
+      // Check if the cell is a BuildingCell
+      if (cell.type === 'building') {
+        const currentInfluence = cell.floors[floorIndex].influence;
+        const newInfluence =
+          currentInfluence === ''
+            ? 'red'
+            : currentInfluence === 'red'
+              ? 'blue'
+              : '';
+        newBoard[rowIndex][colIndex] = {
+          ...cell,
+          floors: cell.floors.map((floor, index) =>
+            index === floorIndex ? { ...floor, influence: newInfluence } : floor
+          ),
+        };
+      }
+
+      return newBoard;
+    });
+  };
 
   return (
     <div
@@ -52,32 +65,49 @@ const Board: React.FC<BoardProps> = ({ size }) => {
         display: 'grid',
         width: size * cellSize,
         gridTemplateColumns: `repeat(${size}, 1fr)`,
-        gridGap: '5px',
+        gridGap: '0px',
       }}
     >
       {board.map((row, rowIndex) =>
-        row.map((cell, colIndex) => (
-          <div
-            key={`${rowIndex}-${colIndex}`}
-            style={{
-              width: cellSize,
-              height: cellSize,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              border: '1px solid #000',
-            }}
-          >
-            {cell.type === 'building' ? (
-              <Building height={cell.height} width={60} />
-            ) : (
-              'ROAD'
-            )}
-          </div>
-        ))
+        row.map((cell, colIndex) => {
+          const connectTop = isRoad(board[rowIndex - 1]?.[colIndex]);
+          const connectRight = isRoad(board[rowIndex]?.[colIndex + 1]);
+          const connectBottom = isRoad(board[rowIndex + 1]?.[colIndex]);
+          const connectLeft = isRoad(board[rowIndex]?.[colIndex - 1]);
+
+          return (
+            <div
+              key={`${rowIndex}-${colIndex}`}
+              style={{
+                width: cellSize,
+                height: cellSize,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                border: '1px solid #000',
+              }}
+            >
+              {cell.type === 'building' ? (
+                <BuildingUI
+                  floors={cell.floors}
+                  rowIndex={rowIndex}
+                  colIndex={colIndex}
+                  updateFloorInfluence={updateFloorInfluence}
+                />
+              ) : (
+                <RoadUI
+                  connectTop={connectTop}
+                  connectRight={connectRight}
+                  connectBottom={connectBottom}
+                  connectLeft={connectLeft}
+                />
+              )}
+            </div>
+          );
+        })
       )}
     </div>
   );
 };
 
-export default Board;
+export default BoardUI;
