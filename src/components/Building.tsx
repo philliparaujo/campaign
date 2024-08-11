@@ -35,14 +35,12 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
       }}
     >
       {floors.map((floor, floorIndex) => (
-        <div>
-          <FloorUI
-            key={floorIndex}
-            influence={floor.influence}
-            cost={baseCost + height - floorIndex - 1}
-            onClick={() => updateFloorInfluence(rowIndex, colIndex, floorIndex)}
-          />
-        </div>
+        <FloorUI
+          key={floorIndex}
+          influence={floor.influence}
+          cost={baseCost + height - floorIndex - 1}
+          onClick={() => updateFloorInfluence(rowIndex, colIndex, floorIndex)}
+        />
       ))}
     </div>
   );

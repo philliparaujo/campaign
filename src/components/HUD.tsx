@@ -1,30 +1,32 @@
 import React from 'react';
+import { useGameState } from '../GameState';
 
-interface HUDProps {
-  redCoins: number;
-  blueCoins: number;
-  turnNumber: number;
-  phaseNumber: number;
-  setRedCoins: React.Dispatch<React.SetStateAction<number>>;
-  setBlueCoins: React.Dispatch<React.SetStateAction<number>>;
-  setTurnNumber: React.Dispatch<React.SetStateAction<number>>;
-  setPhaseNumber: React.Dispatch<React.SetStateAction<number>>;
-}
+interface HUDProps {}
 
-const HUD: React.FC<HUDProps> = ({
-  redCoins,
-  blueCoins,
-  turnNumber,
-  phaseNumber,
-  setRedCoins,
-  setBlueCoins,
-  setTurnNumber,
-  setPhaseNumber,
-}) => {
-  const increasePhase = () =>
-    setPhaseNumber(prev => (prev === 4 ? 1 : prev + 1));
-  const decreasePhase = () =>
-    setPhaseNumber(prev => (prev === 1 ? 4 : prev - 1));
+const HUD: React.FC<HUDProps> = () => {
+  const { gameState, setGameState } = useGameState();
+
+  const changeRedCoins = (change: number) => {
+    setGameState(prev => ({ ...prev, redCoins: prev.redCoins + change }));
+  };
+
+  const changeBlueCoins = (change: number) => {
+    setGameState(prev => ({ ...prev, blueCoins: prev.blueCoins + change }));
+  };
+
+  const changeTurnNumber = (change: number) => {
+    setGameState(prev => ({
+      ...prev,
+      turnNumber: prev.turnNumber === 4 ? 1 : prev.turnNumber + change,
+    }));
+  };
+
+  const changePhaseNumber = (change: number) => {
+    setGameState(prev => ({
+      ...prev,
+      phaseNumber: prev.phaseNumber === 4 ? 1 : prev.phaseNumber + change,
+    }));
+  };
 
   const phaseDescriptions: { [key: number]: string } = {
     1: 'Advertising',
@@ -32,7 +34,6 @@ const HUD: React.FC<HUDProps> = ({
     3: 'Fact-Checking',
     4: 'Funding',
   };
-  const currentPhaseDescription = phaseDescriptions[phaseNumber];
 
   return (
     <div style={{ width: '100%', marginBottom: '20px' }}>
@@ -50,17 +51,11 @@ const HUD: React.FC<HUDProps> = ({
         <div style={{ textAlign: 'center', marginRight: '20px' }}>
           <h3 style={{ color: '#ff6666', margin: '5px' }}>Red Coins</h3>
           <div>
-            <button
-              style={buttonStyle}
-              onClick={() => setRedCoins(prev => prev + 1)}
-            >
+            <button style={buttonStyle} onClick={() => changeRedCoins(1)}>
               +
             </button>
-            <span style={{ margin: '0 10px' }}>{redCoins}</span>
-            <button
-              style={buttonStyle}
-              onClick={() => setRedCoins(prev => (prev > 0 ? prev - 1 : 0))}
-            >
+            <span style={{ margin: '0 10px' }}>{gameState.redCoins}</span>
+            <button style={buttonStyle} onClick={() => changeRedCoins(-1)}>
               -
             </button>
           </div>
@@ -69,17 +64,11 @@ const HUD: React.FC<HUDProps> = ({
         <div style={{ textAlign: 'center', marginRight: '20px' }}>
           <h3 style={{ color: '#6666ff', margin: '5px' }}>Blue Coins</h3>
           <div>
-            <button
-              style={buttonStyle}
-              onClick={() => setBlueCoins(prev => prev + 1)}
-            >
+            <button style={buttonStyle} onClick={() => changeBlueCoins(1)}>
               +
             </button>
-            <span style={{ margin: '0 10px' }}>{blueCoins}</span>
-            <button
-              style={buttonStyle}
-              onClick={() => setBlueCoins(prev => (prev > 0 ? prev - 1 : 0))}
-            >
+            <span style={{ margin: '0 10px' }}>{gameState.blueCoins}</span>
+            <button style={buttonStyle} onClick={() => changeBlueCoins(-1)}>
               -
             </button>
           </div>
@@ -88,17 +77,11 @@ const HUD: React.FC<HUDProps> = ({
         <div style={{ textAlign: 'center', marginRight: '20px' }}>
           <h3 style={{ margin: '5px' }}>Turn Number</h3>
           <div>
-            <button
-              style={buttonStyle}
-              onClick={() => setTurnNumber(prev => prev + 1)}
-            >
+            <button style={buttonStyle} onClick={() => changeTurnNumber(1)}>
               +
             </button>
-            <span style={{ margin: '0 10px' }}>{turnNumber}</span>
-            <button
-              style={buttonStyle}
-              onClick={() => setTurnNumber(prev => (prev > 1 ? prev - 1 : 1))}
-            >
+            <span style={{ margin: '0 10px' }}>{gameState.turnNumber}</span>
+            <button style={buttonStyle} onClick={() => changeTurnNumber(-1)}>
               -
             </button>
           </div>
@@ -107,11 +90,11 @@ const HUD: React.FC<HUDProps> = ({
         <div style={{ textAlign: 'center' }}>
           <h3 style={{ margin: '5px' }}>Phase Number</h3>
           <div>
-            <button style={buttonStyle} onClick={increasePhase}>
+            <button style={buttonStyle} onClick={() => changePhaseNumber(1)}>
               Next
             </button>
-            <span style={{ margin: '0 10px' }}>{phaseNumber}</span>
-            <button style={buttonStyle} onClick={decreasePhase}>
+            <span style={{ margin: '0 10px' }}>{gameState.phaseNumber}</span>
+            <button style={buttonStyle} onClick={() => changePhaseNumber(-1)}>
               Prev
             </button>
           </div>
@@ -129,7 +112,8 @@ const HUD: React.FC<HUDProps> = ({
           borderRadius: '8px',
         }}
       >
-        <b>Phase {phaseNumber}:</b> {currentPhaseDescription}
+        <b>Phase {gameState.phaseNumber}:</b>{' '}
+        {phaseDescriptions[gameState.phaseNumber]}
       </div>
     </div>
   );

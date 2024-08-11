@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
+import { useGameState } from '../GameState';
 import { Cell } from './Board';
 
-interface ScoreboardProps {
-  board: Cell[][];
-}
+interface ScoreboardProps {}
 
 // Helper function to calculate the influence for one cell in one direction
 const calculateDirectionalInfluence = (
@@ -180,7 +179,9 @@ const getRedSample = (
   return redPercent;
 };
 
-const Scoreboard: React.FC<ScoreboardProps> = ({ board }) => {
+const Scoreboard: React.FC<ScoreboardProps> = () => {
+  const { gameState } = useGameState();
+  const { board } = gameState;
   const [showStats, setShowStats] = useState<boolean>(true);
 
   let redInfluence = calculateTotalInfluence('red', board);
