@@ -1,6 +1,8 @@
 import { Cell, Floor } from './components/Board';
 
 const maxFloorHeight = 3;
+const maxRoadsAllowed = 15;
+
 const randomFloors = (): Floor[] => {
   const height = Math.floor(Math.random() * maxFloorHeight) + 1;
   return Array(height).fill({ influence: '' });
@@ -23,6 +25,12 @@ const isSquareRoad = (
   );
 };
 
+const calculateBaseCost = (size: number, row: number, col: number): number => {
+  const middle = (size - 1) / 2;
+  const distance = Math.abs(middle - row) + Math.abs(middle - col);
+  return size - distance;
+};
+
 export const initializeBoard = (size: number): Cell[][] => {
   // Step 1: Initialize the board with all roads
   const board: Cell[][] = Array(size)
@@ -35,7 +43,7 @@ export const initializeBoard = (size: number): Cell[][] => {
         }))
     );
 
-  let roadCount = 25;
+  let roadCount = size * size;
 
   // Step 2: Repeat until no square roads remain
   let squareRoadExists = true;
@@ -61,31 +69,42 @@ export const initializeBoard = (size: number): Cell[][] => {
         squareRoadCells[Math.floor(Math.random() * squareRoadCells.length)];
 
       // Turn one of the cells in the 2x2 group into a building
-      const building: Cell = {
-        type: 'building',
-        floors: randomFloors(),
-      };
-
       const cellToConvert = Math.floor(Math.random() * 4);
       switch (cellToConvert) {
         case 0:
-          board[row][col] = building;
+          board[row][col] = {
+            type: 'building',
+            floors: randomFloors(),
+            baseCost: calculateBaseCost(size, row, col),
+          };
           break;
         case 1:
-          board[row][col + 1] = building;
+          board[row][col + 1] = {
+            type: 'building',
+            floors: randomFloors(),
+            baseCost: calculateBaseCost(size, row, col + 1),
+          };
           break;
         case 2:
-          board[row + 1][col] = building;
+          board[row + 1][col] = {
+            type: 'building',
+            floors: randomFloors(),
+            baseCost: calculateBaseCost(size, row + 1, col),
+          };
           break;
         case 3:
-          board[row + 1][col + 1] = building;
+          board[row + 1][col + 1] = {
+            type: 'building',
+            floors: randomFloors(),
+            baseCost: calculateBaseCost(size, row + 1, col + 1),
+          };
           break;
       }
       roadCount--;
     }
   }
 
-  while (roadCount > 15) {
+  while (roadCount > maxRoadsAllowed) {
     let currentRoadCount = 0;
     let randomRoadIndex = Math.floor(Math.random() * roadCount);
 
@@ -97,6 +116,7 @@ export const initializeBoard = (size: number): Cell[][] => {
             board[row][col] = {
               type: 'building',
               floors: randomFloors(),
+              baseCost: calculateBaseCost(size, row, col),
             };
             roadCount--;
             break;

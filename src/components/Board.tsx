@@ -20,6 +20,7 @@ export interface Floor {
 interface BuildingCell {
   type: 'building';
   floors: Floor[];
+  baseCost: number;
 }
 
 export type Cell = Road | BuildingCell;
@@ -55,6 +56,7 @@ const BoardUI: React.FC<BoardUIProps> = ({ size, board, setBoard }) => {
         };
       }
 
+      console.log(newBoard);
       return newBoard;
     });
   };
@@ -90,6 +92,7 @@ const BoardUI: React.FC<BoardUIProps> = ({ size, board, setBoard }) => {
               {cell.type === 'building' ? (
                 <BuildingUI
                   floors={cell.floors}
+                  baseCost={cell.baseCost}
                   rowIndex={rowIndex}
                   colIndex={colIndex}
                   updateFloorInfluence={updateFloorInfluence}

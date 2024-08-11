@@ -3,10 +3,11 @@ import { Influence } from '../App';
 
 interface FloorUIProps {
   influence: Influence;
+  cost: number;
   onClick: () => void;
 }
 
-const FloorUI: React.FC<FloorUIProps> = ({ influence, onClick }) => {
+const FloorUI: React.FC<FloorUIProps> = ({ influence, cost, onClick }) => {
   return (
     <div
       style={{
@@ -19,7 +20,18 @@ const FloorUI: React.FC<FloorUIProps> = ({ influence, onClick }) => {
         justifyContent: 'flex-end',
       }}
       onClick={onClick}
-    ></div>
+    >
+      <p
+        style={{
+          margin: 0,
+          fontSize: '14px',
+          textAlign: 'right',
+          color: 'black',
+        }}
+      >
+        {cost}
+      </p>
+    </div>
   );
 };
 

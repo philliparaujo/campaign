@@ -6,13 +6,19 @@ interface BuildingUIProps {
   rowIndex: number;
   colIndex: number;
   floors: Floor[];
-  updateFloorInfluence: any;
+  baseCost: number;
+  updateFloorInfluence: (
+    rowIndex: number,
+    colIndex: number,
+    floorIndex: number
+  ) => void;
 }
 
 const BuildingUI: React.FC<BuildingUIProps> = ({
   rowIndex,
   colIndex,
   floors,
+  baseCost,
   updateFloorInfluence,
 }) => {
   const height = floors.length;
@@ -29,11 +35,14 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
       }}
     >
       {floors.map((floor, floorIndex) => (
-        <FloorUI
-          key={floorIndex}
-          influence={floor.influence}
-          onClick={() => updateFloorInfluence(rowIndex, colIndex, floorIndex)}
-        />
+        <div>
+          <FloorUI
+            key={floorIndex}
+            influence={floor.influence}
+            cost={baseCost + height - floorIndex - 1}
+            onClick={() => updateFloorInfluence(rowIndex, colIndex, floorIndex)}
+          />
+        </div>
       ))}
     </div>
   );
