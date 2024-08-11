@@ -1,12 +1,12 @@
 import React from 'react';
-import { Influence } from '../App';
-import { useGameState } from '../GameState';
+import { Influence, PollInput } from '../App';
+import { size, useGameState } from '../GameState';
 import BuildingUI from './Building';
 import RoadUI from './Road';
 import { initializeBoard } from '../utils';
 
 interface BoardUIProps {
-  size: number;
+  pollInputs: PollInput;
 }
 
 interface Road {
@@ -25,19 +25,43 @@ interface BuildingCell {
 
 export type Cell = Road | BuildingCell;
 
-const BoardUI: React.FC<BoardUIProps> = ({ size }) => {
+const BoardUI: React.FC<BoardUIProps> = ({ pollInputs }) => {
   const { gameState, setGameState } = useGameState();
-  const { board } = gameState;
+  const { board, phaseNumber } = gameState;
   const cellSize = 100;
 
   const isRoad = (cell: Cell | undefined) => cell?.type === 'road';
 
+  const getBoundaryStyle = (
+    startRow: number,
+    startCol: number,
+    endRow: number,
+    endCol: number,
+    color: string
+  ): React.CSSProperties => ({
+    position: 'absolute',
+    top: startRow * cellSize,
+    left: startCol * cellSize,
+    width: (endCol - startCol + 1) * cellSize,
+    height: (endRow - startRow + 1) * cellSize,
+    border: `2px solid ${color}`,
+    boxSizing: 'border-box',
+    pointerEvents: 'none',
+  });
+
   return (
-    <>
+    <div
+      style={{
+        position: 'relative',
+        width: size * cellSize,
+        height: size * cellSize,
+      }}
+    >
       <div
         style={{
           display: 'grid',
           width: size * cellSize,
+          height: size * cellSize,
           gridTemplateColumns: `repeat(${size}, 1fr)`,
           gridGap: '0px',
         }}
@@ -59,6 +83,7 @@ const BoardUI: React.FC<BoardUIProps> = ({ size }) => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   border: '1px solid #000',
+                  boxSizing: 'border-box',
                 }}
               >
                 {cell.type === 'building' ? (
@@ -81,6 +106,33 @@ const BoardUI: React.FC<BoardUIProps> = ({ size }) => {
           })
         )}
       </div>
+
+      {phaseNumber === 2 && (
+        <>
+          {/* Red Poll Boundary */}
+          <div
+            style={getBoundaryStyle(
+              pollInputs.redStartRow,
+              pollInputs.redStartCol,
+              pollInputs.redEndRow,
+              pollInputs.redEndCol,
+              'red'
+            )}
+          ></div>
+
+          {/* Blue Poll Boundary */}
+          <div
+            style={getBoundaryStyle(
+              pollInputs.blueStartRow,
+              pollInputs.blueStartCol,
+              pollInputs.blueEndRow,
+              pollInputs.blueEndCol,
+              'blue'
+            )}
+          ></div>
+        </>
+      )}
+
       <button
         onClick={() =>
           setGameState(prevState => ({
@@ -88,10 +140,11 @@ const BoardUI: React.FC<BoardUIProps> = ({ size }) => {
             board: initializeBoard(prevState.board.length),
           }))
         }
+        style={{ position: 'relative', marginTop: '10px' }}
       >
         Regenerate board
       </button>
-    </>
+    </div>
   );
 };
 

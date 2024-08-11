@@ -16,19 +16,20 @@ type GameState = {
   blueCoins: number;
   turnNumber: number;
   phaseNumber: number;
-  redInfluence: number[];
+  redPublicOpinion: number[];
   redPolls: Poll[];
   bluePolls: Poll[];
 };
 
 // Initial state
+export const size = 5;
 const initialGameState: GameState = {
-  board: initializeBoard(5),
+  board: initializeBoard(size),
   redCoins: 10,
   blueCoins: 10,
   turnNumber: 1,
   phaseNumber: 1,
-  redInfluence: [50],
+  redPublicOpinion: [50, 50],
   redPolls: [
     { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 50 },
   ],

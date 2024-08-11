@@ -17,6 +17,7 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   baseCost,
 }) => {
   const { gameState, setGameState } = useGameState();
+  const { board, redCoins, blueCoins } = gameState;
   const height = floors.length;
 
   const floorCost = (floorIndex: number) => {
@@ -28,7 +29,7 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
     colIndex: number,
     floorIndex: number
   ) => {
-    const cell = gameState.board[rowIndex][colIndex];
+    const cell = board[rowIndex][colIndex];
     if (cell.type !== 'building') return;
 
     const influenceCost = floorCost(floorIndex);
@@ -47,26 +48,25 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
       ),
     };
 
-    const redCoins =
-      gameState.redCoins +
+    const newRedCoins =
+      redCoins +
       (currentInfluence === 'red' ? influenceCost : 0) -
       (newInfluence === 'red' ? influenceCost : 0);
-    const blueCoins =
-      gameState.blueCoins +
+    const newBlueCoins =
+      blueCoins +
       (currentInfluence === 'blue' ? influenceCost : 0) -
       (newInfluence === 'blue' ? influenceCost : 0);
 
     setGameState(prevState => ({
       ...prevState,
-      redCoins,
-      blueCoins,
+      redCoins: newRedCoins,
+      blueCoins: newBlueCoins,
       board: prevState.board.map((row, i) =>
         row.map((cell, j) =>
           i === rowIndex && j === colIndex ? newCell : cell
         )
       ),
     }));
-    console.log(gameState.board);
   };
 
   return (
