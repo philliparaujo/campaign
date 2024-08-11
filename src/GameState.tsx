@@ -19,6 +19,7 @@ type GameState = {
   redPublicOpinion: number[];
   redPolls: Poll[];
   bluePolls: Poll[];
+  debugMode: boolean;
 };
 
 // Initial state
@@ -36,6 +37,7 @@ const initialGameState: GameState = {
   bluePolls: [
     { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 50 },
   ],
+  debugMode: false,
 };
 
 type GameStateContextType = {

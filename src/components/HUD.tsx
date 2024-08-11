@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { size, useGameState } from '../GameState';
-import { getRedSample } from './Scoreboard';
-import { removeInfluence } from '../utils';
+import React from 'react';
 import { PollInput } from '../App';
+import { size, useGameState } from '../GameState';
+import { removeInfluence } from '../utils';
+import { getRedSample } from './Scoreboard';
 
 interface HUDProps {
   pollInputs: PollInput;
@@ -20,6 +20,7 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
     turnNumber,
     board,
     phaseNumber,
+    debugMode,
   } = gameState;
 
   const changeRedCoins = (change: number) => {
@@ -231,39 +232,51 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
         <div style={{ textAlign: 'center', marginRight: '20px' }}>
           <h3 style={{ color: '#ff6666', margin: '5px' }}>Red Coins</h3>
           <div>
-            <button style={buttonStyle} onClick={() => changeRedCoins(1)}>
-              +
-            </button>
+            {debugMode && (
+              <button style={buttonStyle} onClick={() => changeRedCoins(1)}>
+                +
+              </button>
+            )}
             <span style={{ margin: '0 10px' }}>{redCoins}</span>
-            <button style={buttonStyle} onClick={() => changeRedCoins(-1)}>
-              -
-            </button>
+            {debugMode && (
+              <button style={buttonStyle} onClick={() => changeRedCoins(-1)}>
+                -
+              </button>
+            )}
           </div>
         </div>
 
         <div style={{ textAlign: 'center', marginRight: '20px' }}>
           <h3 style={{ color: '#6666ff', margin: '5px' }}>Blue Coins</h3>
           <div>
-            <button style={buttonStyle} onClick={() => changeBlueCoins(1)}>
-              +
-            </button>
+            {debugMode && (
+              <button style={buttonStyle} onClick={() => changeBlueCoins(1)}>
+                +
+              </button>
+            )}
             <span style={{ margin: '0 10px' }}>{blueCoins}</span>
-            <button style={buttonStyle} onClick={() => changeBlueCoins(-1)}>
-              -
-            </button>
+            {debugMode && (
+              <button style={buttonStyle} onClick={() => changeBlueCoins(-1)}>
+                -
+              </button>
+            )}
           </div>
         </div>
 
         <div style={{ textAlign: 'center', marginRight: '20px' }}>
           <h3 style={{ margin: '5px' }}>Turn Number</h3>
           <div>
-            <button style={buttonStyle} onClick={() => changeTurnNumber(1)}>
-              +
-            </button>
+            {debugMode && (
+              <button style={buttonStyle} onClick={() => changeTurnNumber(1)}>
+                +
+              </button>
+            )}
             <span style={{ margin: '0 10px' }}>{turnNumber}</span>
-            <button style={buttonStyle} onClick={() => changeTurnNumber(-1)}>
-              -
-            </button>
+            {debugMode && (
+              <button style={buttonStyle} onClick={() => changeTurnNumber(-1)}>
+                -
+              </button>
+            )}
           </div>
         </div>
 

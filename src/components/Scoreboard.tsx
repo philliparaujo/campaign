@@ -180,6 +180,18 @@ export const getRedSample = (
   return redPercent;
 };
 
+const formatPoll = (redPercent: number) => (
+  <p
+    style={{
+      color: redPercent >= 50 ? 'red' : 'blue',
+      marginBottom: '15px',
+    }}
+  >
+    {redPercent >= 50 ? 'Red +' : 'Blue +'}
+    {Math.abs(redPercent - 50).toFixed(1)}
+  </p>
+);
+
 const Scoreboard: React.FC<ScoreboardProps> = () => {
   const { gameState } = useGameState();
   const {
@@ -189,8 +201,9 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
     redPublicOpinion,
     turnNumber,
     phaseNumber,
+    debugMode,
   } = gameState;
-  const [showStats, setShowStats] = useState<boolean>(true);
+  const [showStats, setShowStats] = useState<boolean>(false);
 
   let redInfluence = calculateTotalInfluence('red', board);
   let blueInfluence = calculateTotalInfluence('blue', board);
@@ -213,6 +226,7 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
       {redPublicOpinion.length > turnNumber && (
         <div>
           <h3>Public Opinion:</h3>
+          {formatPoll(redPublicOpinion[turnNumber])}
           <div
             style={{
               backgroundColor: '#f0f0f0',
@@ -243,11 +257,14 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
         </div>
       )}
 
-      <button onClick={() => setShowStats(!showStats)}>
-        {showStats ? 'Hide True Polling' : 'Show True Polling'}
-      </button>
-      {showStats && (
+      {debugMode && (
+        <button onClick={() => setShowStats(!showStats)}>
+          {showStats ? 'Hide True Polling' : 'Show True Polling'}
+        </button>
+      )}
+      {(showStats || phaseNumber === 4) && (
         <>
+          <h3>Poll Results:</h3>
           <div
             style={{
               display: 'flex',
@@ -308,9 +325,7 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
           >
             <div style={{ color: 'red', marginBottom: '15px' }}>
               <h3>Red Poll Results:</h3>
-              <p>
-                {redPolls[turnNumber]['redPercent'].toFixed(2)}% voted for Red
-              </p>
+              {formatPoll(redPolls[turnNumber]['redPercent'])}
               <div
                 style={{
                   display: 'flex',
@@ -339,9 +354,7 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
             </div>
             <div style={{ color: 'blue' }}>
               <h3>Blue Poll Results:</h3>
-              <p>
-                {bluePolls[turnNumber]['redPercent'].toFixed(2)}% voted for Red
-              </p>
+              {formatPoll(bluePolls[turnNumber]['redPercent'])}
               <div
                 style={{
                   display: 'flex',
