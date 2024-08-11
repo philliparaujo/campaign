@@ -32,41 +32,6 @@ const BoardUI: React.FC<BoardUIProps> = ({ size }) => {
 
   const isRoad = (cell: Cell | undefined) => cell?.type === 'road';
 
-  const updateFloorInfluence = (
-    rowIndex: number,
-    colIndex: number,
-    floorIndex: number
-  ) => {
-    const cell = board[rowIndex][colIndex];
-
-    if (cell.type === 'building') {
-      const currentInfluence = cell.floors[floorIndex].influence;
-      const newInfluence =
-        currentInfluence === ''
-          ? 'red'
-          : currentInfluence === 'red'
-            ? 'blue'
-            : '';
-      const newCell: BuildingCell = {
-        ...cell,
-        floors: cell.floors.map((floor, index) =>
-          index === floorIndex ? { ...floor, influence: newInfluence } : floor
-        ),
-      };
-
-      // setCell(rowIndex, colIndex, newCell);
-      setGameState(prevState => ({
-        ...prevState,
-        board: prevState.board.map((row, i) =>
-          row.map((cell, j) =>
-            i === rowIndex && j === colIndex ? newCell : cell
-          )
-        ),
-      }));
-      console.log(board);
-    }
-  };
-
   return (
     <>
       <div
@@ -102,7 +67,6 @@ const BoardUI: React.FC<BoardUIProps> = ({ size }) => {
                     baseCost={cell.baseCost}
                     rowIndex={rowIndex}
                     colIndex={colIndex}
-                    updateFloorInfluence={updateFloorInfluence}
                   />
                 ) : (
                   <RoadUI

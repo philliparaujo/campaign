@@ -2,6 +2,14 @@ import { createContext, useContext, useState } from 'react';
 import { Cell } from './components/Board';
 import { initializeBoard } from './utils';
 
+type Poll = {
+  startRow: number;
+  endRow: number;
+  startCol: number;
+  endCol: number;
+  redPercent: number;
+};
+
 type GameState = {
   board: Cell[][];
   redCoins: number;
@@ -9,6 +17,8 @@ type GameState = {
   turnNumber: number;
   phaseNumber: number;
   redInfluence: number[];
+  redPolls: Poll[];
+  bluePolls: Poll[];
 };
 
 // Initial state
@@ -19,6 +29,12 @@ const initialGameState: GameState = {
   turnNumber: 1,
   phaseNumber: 1,
   redInfluence: [50],
+  redPolls: [
+    { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 50 },
+  ],
+  bluePolls: [
+    { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 50 },
+  ],
 };
 
 type GameStateContextType = {

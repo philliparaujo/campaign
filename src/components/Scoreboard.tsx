@@ -151,13 +151,13 @@ const sample = (p: number, n: number): number => {
   return headsCount / n;
 };
 
-const getRedSample = (
+export const getRedSample = (
   board: Cell[][],
   startRow: number,
   endRow: number,
   startCol: number,
   endCol: number
-) => {
+): number => {
   const percentArray = createPercentArray(board);
   let totalRedPercentage = 0;
   let roadCount = 0;
@@ -251,6 +251,89 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
           </div>
         </>
       )}
+
+      {gameState.phaseNumber === 3 &&
+        gameState.redPolls.length > gameState.turnNumber &&
+        gameState.bluePolls.length > gameState.turnNumber && (
+          <div
+            style={{
+              marginTop: '10px',
+              padding: '10px',
+              border: '1px solid #333',
+              borderRadius: '10px',
+              backgroundColor: '#e0e0e0',
+            }}
+          >
+            <div style={{ color: 'red', marginBottom: '15px' }}>
+              <h3>Red Poll Results:</h3>
+              <p>
+                {gameState.redPolls[gameState.turnNumber]['redPercent'].toFixed(
+                  2
+                )}
+                % voted for Red
+              </p>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: '20px',
+                  backgroundColor: '#f0f0f0',
+                  borderRadius: '5px',
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${gameState.redPolls[gameState.turnNumber]['redPercent']}%`,
+                    backgroundColor: 'red',
+                  }}
+                ></div>
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${100 - gameState.redPolls[gameState.turnNumber]['redPercent']}%`,
+                    backgroundColor: 'blue',
+                  }}
+                ></div>
+              </div>
+            </div>
+            <div style={{ color: 'blue' }}>
+              <h3>Blue Poll Results:</h3>
+              <p>
+                {gameState.bluePolls[gameState.turnNumber][
+                  'redPercent'
+                ].toFixed(2)}
+                % voted for Red
+              </p>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  height: '20px',
+                  backgroundColor: '#f0f0f0',
+                  borderRadius: '5px',
+                  overflow: 'hidden',
+                }}
+              >
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${gameState.bluePolls[gameState.turnNumber]['redPercent']}%`,
+                    backgroundColor: 'red',
+                  }}
+                ></div>
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${100 - gameState.bluePolls[gameState.turnNumber]['redPercent']}%`,
+                    backgroundColor: 'blue',
+                  }}
+                ></div>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 };
