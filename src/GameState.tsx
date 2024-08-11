@@ -10,13 +10,18 @@ type Poll = {
   redPercent: number;
 };
 
+type Opinion = {
+  redPublicOpinion: number[]; // to keep track of four phases
+  trueRedPercent: number | null; // whether poll has come out or not
+};
+
 type GameState = {
   board: Cell[][];
   redCoins: number;
   blueCoins: number;
   turnNumber: number;
   phaseNumber: number;
-  redPublicOpinion: number[];
+  redPublicOpinion: Opinion[];
   redPolls: Poll[];
   bluePolls: Poll[];
   debugMode: boolean;
@@ -30,14 +35,17 @@ const initialGameState: GameState = {
   blueCoins: 10,
   turnNumber: 1,
   phaseNumber: 1,
-  redPublicOpinion: [50, 50],
+  redPublicOpinion: [
+    { redPublicOpinion: [50, 50, 50, 50], trueRedPercent: 50 },
+    { redPublicOpinion: [50, 50, 50, 50], trueRedPercent: null },
+  ],
   redPolls: [
     { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 50 },
   ],
   bluePolls: [
     { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 50 },
   ],
-  debugMode: false,
+  debugMode: true,
 };
 
 type GameStateContextType = {

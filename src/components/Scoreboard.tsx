@@ -226,7 +226,9 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
       {redPublicOpinion.length > turnNumber && (
         <div>
           <h3>Public Opinion:</h3>
-          {formatPoll(redPublicOpinion[turnNumber])}
+          {formatPoll(
+            redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1]
+          )}
           <div
             style={{
               backgroundColor: '#f0f0f0',
@@ -241,7 +243,7 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
                 backgroundColor: 'red',
                 borderRadius: '0px',
                 transition: 'width 0.5s',
-                width: `${redPublicOpinion[turnNumber]}%`,
+                width: `${redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1]}%`,
               }}
             ></div>
             <div
@@ -250,7 +252,7 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
                 backgroundColor: 'blue',
                 borderRadius: '0px',
                 transition: 'width 0.5s',
-                width: `${100 - redPublicOpinion[turnNumber]}%`,
+                width: `${100 - redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1]}%`,
               }}
             ></div>
           </div>
