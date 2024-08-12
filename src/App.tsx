@@ -1,20 +1,10 @@
 import { useState } from 'react';
 import BoardUI from './components/Board';
 import HUD from './components/HUD';
+import PublicOpinion from './components/PublicOpinion';
 import Scoreboard from './components/Scoreboard';
 import { GameStateProvider, size } from './GameState';
-import PublicOpinion from './components/PublicOpinion';
-
-export type PollInput = {
-  redStartRow: number;
-  redStartCol: number;
-  redEndRow: number;
-  redEndCol: number;
-  blueStartRow: number;
-  blueStartCol: number;
-  blueEndRow: number;
-  blueEndCol: number;
-};
+import { PollInput } from './types';
 
 function App() {
   const [pollInputs, setPollInputs] = useState<PollInput>({

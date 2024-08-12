@@ -1,7 +1,6 @@
 import React from 'react';
-import { PollInput } from '../App';
 import { size, useGameState } from '../GameState';
-import { Cell } from '../types';
+import { Cell, PollInput } from '../types';
 import { initializeBoard } from '../utils';
 import BuildingUI from './Building';
 import Button from './Button';
@@ -16,14 +15,13 @@ const BoardUI: React.FC<BoardUIProps> = ({ pollInputs }) => {
   const { board, phaseNumber } = gameState;
   const cellSize = 100;
 
-  const isRoad = (cell: Cell | undefined) => cell?.type === 'road';
-
+  // return a CSS style used for formatting poll boundaries
   const getBoundaryStyle = (
     startRow: number,
     startCol: number,
     endRow: number,
     endCol: number,
-    color: string
+    color: 'red' | 'blue'
   ): React.CSSProperties => ({
     position: 'absolute',
     top: startRow * cellSize,
@@ -52,13 +50,8 @@ const BoardUI: React.FC<BoardUIProps> = ({ pollInputs }) => {
           gridGap: '0px',
         }}
       >
-        {board.map((row, rowIndex) =>
+        {board.map((row: Cell[], rowIndex) =>
           row.map((cell, colIndex) => {
-            const connectTop = isRoad(board[rowIndex - 1]?.[colIndex]);
-            const connectRight = isRoad(board[rowIndex]?.[colIndex + 1]);
-            const connectBottom = isRoad(board[rowIndex + 1]?.[colIndex]);
-            const connectLeft = isRoad(board[rowIndex]?.[colIndex - 1]);
-
             return (
               <div
                 key={`${rowIndex}-${colIndex}`}
@@ -80,12 +73,7 @@ const BoardUI: React.FC<BoardUIProps> = ({ pollInputs }) => {
                     colIndex={colIndex}
                   />
                 ) : (
-                  <RoadUI
-                    connectTop={connectTop}
-                    connectRight={connectRight}
-                    connectBottom={connectBottom}
-                    connectLeft={connectLeft}
-                  />
+                  <RoadUI rowIndex={rowIndex} colIndex={colIndex} />
                 )}
               </div>
             );

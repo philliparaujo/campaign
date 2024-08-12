@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useGameState } from '../GameState';
+import { Board } from '../types';
 import { formatPoll } from '../utils';
 import Button from './Button';
-import { Cell } from '../types';
 
 interface ScoreboardProps {}
 
 // Helper function to calculate the influence for one cell in one direction
 const calculateDirectionalInfluence = (
-  board: Cell[][],
+  board: Board,
   startRow: number,
   startCol: number,
   rowDelta: number,
@@ -56,7 +56,7 @@ const calculateDirectionalInfluence = (
 // Helper function to calculate the influence for one cell in all directions
 const calculateRoadInfluence = (
   influenceType: 'red' | 'blue',
-  board: Cell[][],
+  board: Board,
   row: number,
   col: number
 ): number => {
@@ -105,7 +105,7 @@ const calculateRoadInfluence = (
 // Helper function to calculate the total influence for all cells
 const calculateTotalInfluence = (
   influenceType: 'red' | 'blue',
-  board: Cell[][]
+  board: Board
 ): number => {
   let totalInfluence = 0;
   const size = board.length;
@@ -119,7 +119,8 @@ const calculateTotalInfluence = (
   return totalInfluence;
 };
 
-const createPercentArray = (board: Cell[][]): (number | null)[][] => {
+// Calculate cell influences on our board and turn into voting percentages
+const createPercentArray = (board: Board): (number | null)[][] => {
   const size = board.length;
   const percentArray: (number | null)[][] = Array(size)
     .fill(null)
@@ -142,7 +143,8 @@ const createPercentArray = (board: Cell[][]): (number | null)[][] => {
   return percentArray;
 };
 
-// p = percent chance to vote for red, n = number of voters
+/* Sample from a binomial distribution
+   p = percent chance to vote for red, n = number of voters */
 const sample = (p: number, n: number): number => {
   let headsCount = 0;
   for (let i = 0; i < n; i++) {
@@ -153,8 +155,10 @@ const sample = (p: number, n: number): number => {
   return headsCount / n;
 };
 
+// Conduct a poll within poll boundary and return percentage of red votes
+const sampleSize = 40;
 export const getRedSample = (
-  board: Cell[][],
+  board: Board,
   startRow: number,
   endRow: number,
   startCol: number,
@@ -169,7 +173,9 @@ export const getRedSample = (
     for (let col = startCol; col <= endCol; col++) {
       const percent = percentArray[row][col];
       if (percent !== null) {
-        totalRedPercentage += trueSample ? percent : sample(percent, 40);
+        totalRedPercentage += trueSample
+          ? percent
+          : sample(percent, sampleSize);
         roadCount++;
       }
     }

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGameState } from '../GameState';
-import FloorUI from './Floor';
 import { Cell, Floor } from '../types';
+import FloorUI from './Floor';
 
 interface BuildingUIProps {
   rowIndex: number;
@@ -20,10 +20,12 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   const { board, redCoins, blueCoins } = gameState;
   const height = floors.length;
 
+  // calculates the cost of a floor given its index in a building's Floor[]
   const floorCost = (floorIndex: number) => {
     return baseCost + height - floorIndex - 1;
   };
 
+  // update game state when toggling ownership of a floor
   const updateFloorInfluence = (
     rowIndex: number,
     colIndex: number,
@@ -43,7 +45,7 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
           : '';
     const newCell: Cell = {
       ...cell,
-      floors: cell.floors.map((floor, index) =>
+      floors: cell.floors.map((floor: Floor, index: number) =>
         index === floorIndex ? { ...floor, influence: newInfluence } : floor
       ),
     };
@@ -61,7 +63,7 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
       ...prevState,
       redCoins: newRedCoins,
       blueCoins: newBlueCoins,
-      board: prevState.board.map((row, i) =>
+      board: prevState.board.map((row: Cell[], i) =>
         row.map((cell, j) =>
           i === rowIndex && j === colIndex ? newCell : cell
         )

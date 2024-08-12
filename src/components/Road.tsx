@@ -1,18 +1,24 @@
 import React from 'react';
+import { useGameState } from '../GameState';
+import { Cell } from '../types';
 
 interface RoadUIProps {
-  connectTop: boolean;
-  connectRight: boolean;
-  connectBottom: boolean;
-  connectLeft: boolean;
+  rowIndex: number;
+  colIndex: number;
 }
 
-const RoadUI: React.FC<RoadUIProps> = ({
-  connectTop,
-  connectRight,
-  connectBottom,
-  connectLeft,
-}) => {
+const RoadUI: React.FC<RoadUIProps> = ({ rowIndex, colIndex }) => {
+  const { gameState } = useGameState();
+  const { board } = gameState;
+
+  // return whether a cell is a road, if that cell is in bounds
+  const isRoad = (cell: Cell | undefined): boolean => cell?.type === 'road';
+
+  const connectTop = isRoad(board[rowIndex - 1]?.[colIndex]);
+  const connectRight = isRoad(board[rowIndex]?.[colIndex + 1]);
+  const connectBottom = isRoad(board[rowIndex + 1]?.[colIndex]);
+  const connectLeft = isRoad(board[rowIndex]?.[colIndex - 1]);
+
   const isIsolated =
     !connectTop && !connectRight && !connectBottom && !connectLeft;
 

@@ -1,4 +1,4 @@
-import { Cell, Floor, Poll } from './types';
+import { Board, Floor, Poll } from './types';
 
 const maxFloorHeight = 3;
 const maxRoadsAllowed = 15;
@@ -10,7 +10,7 @@ const randomFloors = (): Floor[] => {
 
 // Helper function to check if a 2x2 group forms a square road
 const isSquareRoad = (
-  board: Cell[][],
+  board: Board,
   size: number,
   row: number,
   col: number
@@ -31,9 +31,9 @@ const calculateBaseCost = (size: number, row: number, col: number): number => {
   return size - distance;
 };
 
-export const initializeBoard = (size: number): Cell[][] => {
+export const initializeBoard = (size: number): Board => {
   // Step 1: Initialize the board with all roads
-  const board: Cell[][] = Array(size)
+  const board: Board = Array(size)
     .fill(null)
     .map(() =>
       Array(size)
@@ -131,7 +131,7 @@ export const initializeBoard = (size: number): Cell[][] => {
   return board;
 };
 
-export const removeInfluence = (board: Cell[][]): Cell[][] => {
+export const removeInfluence = (board: Board): Board => {
   for (let row = 0; row < board.length; row++) {
     for (let col = 0; col < board[row].length; col++) {
       const cell = board[row][col];

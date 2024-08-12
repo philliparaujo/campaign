@@ -28,7 +28,7 @@ const Button: React.FC<ButtonProps> = ({ onClick, children, color, size }) => {
     setIsActive(false);
   };
 
-  // Define color mappings for normal, hover, and active states
+  // Define color mappings for normal and hover states
   const colorMap: Record<string, { base: string; hover: string }> = {
     blue: { base: '#0059b3', hover: '#0066cc' },
     red: { base: '#990000', hover: '#b30000' },

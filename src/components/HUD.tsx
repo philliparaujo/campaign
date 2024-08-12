@@ -1,10 +1,9 @@
 import React from 'react';
-import { PollInput } from '../App';
 import { size, useGameState } from '../GameState';
+import { Opinion, PollInput } from '../types';
 import { calculatePublicOpinion, removeInfluence } from '../utils';
-import { getRedSample } from './Scoreboard';
 import Button from './Button';
-import { Opinion } from '../types';
+import { getRedSample } from './Scoreboard';
 
 interface HUDProps {
   pollInputs: PollInput;
@@ -42,7 +41,7 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
 
   const incrementPhaseNumber = () => {
     setGameState(prev => {
-      // define new variables
+      // Define new variables
       let newBoard = prev.board;
       let newRedCoins = prev.redCoins;
       let newBlueCoins = prev.blueCoins;
@@ -62,11 +61,10 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
           prev.phaseNumber - 1
         ];
 
-      /* End phase 2: calculate new public opinion from published polls */
+      // End phase 2: calculate new public opinion from published polls
       if (prev.phaseNumber === 2) {
-        // Check if both redPolls and bluePolls have enough entries
-
-        // Add a dummy poll if either poll length is not sufficient
+        /* Check if both redPolls and bluePolls have enough entries.
+           Add a dummy poll if either poll length is not sufficient */
         if (prev.redPolls.length <= prev.turnNumber) {
           const dummyPoll = {
             startRow: 0,
@@ -99,13 +97,13 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
           newPhaseNumber - 1
         ] = averageOpinion;
       } else {
-        // If not phase 2, simply carry forward the last opinion
+        // If not phase 2, reuse last opinion
         newRedPublicOpinion[newTurnNumber]['redPublicOpinion'][
           newPhaseNumber - 1
         ] = lastOpinion;
       }
 
-      /* End phase 3: store true poll result, reset coins/ads */
+      // End phase 3: store true poll result, reset coins/ads
       if (prev.phaseNumber === 3) {
         const redPercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
         newRedPublicOpinion[prev.turnNumber]['trueRedPercent'] = redPercent;
@@ -115,7 +113,7 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
         newBlueCoins = 10 + Math.floor((100 - lastOpinion) / 10);
       }
 
-      /* End phase 4: update phases/turns, opinion storage for next turn */
+      // End phase 4: update phases/turns, opinion storage for next turn
       if (prev.phaseNumber === 4) {
         newPhaseNumber = 1;
         newTurnNumber++;
@@ -145,14 +143,16 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
     });
   };
 
+  // Update poll boundary variables when any input's value changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setPollInputs(prevInputs => ({
       ...prevInputs,
-      [name]: Math.min(Math.max(Number(value), 0), size - 1), // Ensure the value is stored as a number
+      [name]: Math.min(Math.max(Number(value), 0), size - 1),
     }));
   };
 
+  // Sample a population within your boundary and save your poll result
   const handleConductPoll = (color: 'red' | 'blue') => {
     const startRow = pollInputs[`${color}StartRow`];
     const endRow = pollInputs[`${color}EndRow`];
@@ -213,6 +213,8 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
     }));
   };
 
+  /* If poll within 10% of true value, lose 10% public opinion;
+     otherwise, their poll gets thrown out (or gain 10% public opinion). */
   const handleAccusePoll = (pollColor: 'red' | 'blue') => {
     let truePercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
     let poll =

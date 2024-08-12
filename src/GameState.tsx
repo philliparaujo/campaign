@@ -1,18 +1,6 @@
 import { createContext, useContext, useState } from 'react';
+import { GameState } from './types';
 import { initializeBoard } from './utils';
-import { Cell, Opinion, Poll } from './types';
-
-type GameState = {
-  board: Cell[][];
-  redCoins: number;
-  blueCoins: number;
-  turnNumber: number;
-  phaseNumber: number;
-  redPublicOpinion: Opinion[];
-  redPolls: Poll[];
-  bluePolls: Poll[];
-  debugMode: boolean;
-};
 
 // Initial state
 export const size = 5;
