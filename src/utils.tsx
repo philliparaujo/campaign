@@ -131,21 +131,6 @@ export const initializeBoard = (size: number): Board => {
   return board;
 };
 
-export const removeInfluence = (board: Board): Board => {
-  for (let row = 0; row < board.length; row++) {
-    for (let col = 0; col < board[row].length; col++) {
-      const cell = board[row][col];
-
-      if (cell.type === 'building') {
-        cell.floors.forEach(floor => {
-          floor.influence = '';
-        });
-      }
-    }
-  }
-  return board;
-};
-
 export const calculatePublicOpinion = (
   redPolls: Poll[],
   bluePolls: Poll[],

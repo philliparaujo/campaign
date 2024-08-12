@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGameState } from '../GameState';
-import { Cell, Floor } from '../types';
+import { Floor, Influence } from '../types';
 import FloorUI from './Floor';
 
 interface BuildingUIProps {
@@ -16,7 +16,8 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   floors,
   baseCost,
 }) => {
-  const { gameState, setGameState } = useGameState();
+  const { gameState, setFloorInfluence, setRedCoins, setBlueCoins } =
+    useGameState();
   const { board, redCoins, blueCoins } = gameState;
   const height = floors.length;
 
@@ -35,21 +36,15 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
     if (cell.type !== 'building') return;
 
     const influenceCost = floorCost(floorIndex);
-
     const currentInfluence = cell.floors[floorIndex].influence;
-    const newInfluence =
-      currentInfluence === ''
-        ? 'red'
-        : currentInfluence === 'red'
-          ? 'blue'
-          : '';
-    const newCell: Cell = {
-      ...cell,
-      floors: cell.floors.map((floor: Floor, index: number) =>
-        index === floorIndex ? { ...floor, influence: newInfluence } : floor
-      ),
-    };
 
+    // Determine the new influence
+    const influenceOrder: Influence[] = ['', 'red', 'blue'];
+    const currentIndex = influenceOrder.indexOf(currentInfluence);
+    const newInfluence =
+      influenceOrder[(currentIndex + 1) % influenceOrder.length];
+
+    // Calculate new coin counts
     const newRedCoins =
       redCoins +
       (currentInfluence === 'red' ? influenceCost : 0) -
@@ -59,16 +54,10 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
       (currentInfluence === 'blue' ? influenceCost : 0) -
       (newInfluence === 'blue' ? influenceCost : 0);
 
-    setGameState(prevState => ({
-      ...prevState,
-      redCoins: newRedCoins,
-      blueCoins: newBlueCoins,
-      board: prevState.board.map((row: Cell[], i) =>
-        row.map((cell, j) =>
-          i === rowIndex && j === colIndex ? newCell : cell
-        )
-      ),
-    }));
+    // Update game state
+    setFloorInfluence(rowIndex, colIndex, floorIndex, newInfluence);
+    setRedCoins(newRedCoins);
+    setBlueCoins(newBlueCoins);
   };
 
   return (

@@ -11,7 +11,7 @@ interface BoardUIProps {
 }
 
 const BoardUI: React.FC<BoardUIProps> = ({ pollInputs }) => {
-  const { gameState, setGameState } = useGameState();
+  const { gameState, regenerateBoard } = useGameState();
   const { board, phaseNumber } = gameState;
   const cellSize = 100;
 
@@ -107,16 +107,7 @@ const BoardUI: React.FC<BoardUIProps> = ({ pollInputs }) => {
         </>
       )}
 
-      <Button
-        onClick={() =>
-          setGameState(prevState => ({
-            ...prevState,
-            board: initializeBoard(prevState.board.length),
-          }))
-        }
-      >
-        Regenerate board
-      </Button>
+      <Button onClick={regenerateBoard}>Regenerate board</Button>
     </div>
   );
 };

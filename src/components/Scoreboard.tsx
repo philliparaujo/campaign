@@ -54,6 +54,8 @@ const calculateDirectionalInfluence = (
 };
 
 // Helper function to calculate the influence for one cell in all directions
+const startingInfluence = 1;
+const diagonalMultiplier = 0.5;
 const calculateRoadInfluence = (
   influenceType: 'red' | 'blue',
   board: Board,
@@ -99,7 +101,11 @@ const calculateRoadInfluence = (
     );
   }
 
-  return straightInfluences + diagonalInfluences / 2;
+  return (
+    startingInfluence +
+    straightInfluences +
+    diagonalInfluences * diagonalMultiplier
+  );
 };
 
 // Helper function to calculate the total influence for all cells
@@ -212,6 +218,10 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
     redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1];
   const bluePercentResult = 100 - redPercentResult;
 
+  const redPercent = phaseNumber === 4 ? redPercentResult : currentRedPercent;
+  const bluePercent =
+    phaseNumber === 4 ? bluePercentResult : currentBluePercent;
+
   return (
     <div
       style={{
@@ -306,7 +316,7 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
       {/* True poll results */}
       {(showStats || phaseNumber === 4) && (
         <>
-          <h3>Poll Results:</h3>
+          <h3>Poll Results: {formatPoll(redPercent)}</h3>
           <div
             style={{
               display: 'flex',
@@ -316,25 +326,11 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
           >
             <div style={{ color: 'red' }}>
               <h3>Red Influence: {redInfluence}</h3>
-              <p>
-                Vote Percent:{' '}
-                {(phaseNumber === 4
-                  ? redPercentResult
-                  : currentRedPercent
-                ).toFixed(2)}
-                %
-              </p>
+              <p>Vote Percent: {redPercent.toFixed(2)}%</p>
             </div>
             <div style={{ color: 'blue' }}>
               <h3>Blue Influence: {blueInfluence}</h3>
-              <p>
-                Vote Percent:{' '}
-                {(phaseNumber === 4
-                  ? bluePercentResult
-                  : currentBluePercent
-                ).toFixed(2)}
-                %
-              </p>
+              <p>Vote Percent: {bluePercent.toFixed(2)}%</p>
             </div>
           </div>
           <div
@@ -351,7 +347,7 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
                 backgroundColor: 'red',
                 borderRadius: '0px',
                 transition: 'width 0.5s',
-                width: `${currentRedPercent}%`,
+                width: `${redPercent}%`,
               }}
             ></div>
             <div
@@ -360,7 +356,7 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
                 backgroundColor: 'blue',
                 borderRadius: '0px',
                 transition: 'width 0.5s',
-                width: `${currentBluePercent}%`,
+                width: `${bluePercent}%`,
               }}
             ></div>
           </div>
