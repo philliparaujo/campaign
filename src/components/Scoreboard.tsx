@@ -167,7 +167,7 @@ export const getRedSample = (
     for (let col = startCol; col <= endCol; col++) {
       const percent = percentArray[row][col];
       if (percent !== null) {
-        totalRedPercentage += trueSample ? percent : sample(percent, 20);
+        totalRedPercentage += trueSample ? percent : sample(percent, 40);
         roadCount++;
       }
     }
@@ -180,17 +180,19 @@ export const getRedSample = (
   return redPercent;
 };
 
-const formatPoll = (redPercent: number) => (
-  <p
-    style={{
-      color: redPercent >= 50 ? 'red' : 'blue',
-      marginBottom: '15px',
-    }}
-  >
-    {redPercent >= 50 ? 'Red +' : 'Blue +'}
-    {Math.abs(redPercent - 50).toFixed(1)}
-  </p>
-);
+const formatPoll = (redPercent: number) => {
+  return (
+    <p
+      style={{
+        color: redPercent >= 50 ? 'red' : 'blue',
+        marginBottom: '15px',
+      }}
+    >
+      {redPercent >= 50 ? 'Red +' : 'Blue +'}
+      {Math.abs(redPercent - (100 - redPercent)).toFixed(1)}
+    </p>
+  );
+};
 
 const Scoreboard: React.FC<ScoreboardProps> = () => {
   const { gameState } = useGameState();
@@ -209,8 +211,12 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
   let blueInfluence = calculateTotalInfluence('blue', board);
 
   const size = board.length;
-  const redPercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
-  const bluePercent = 100 - redPercent;
+  const currentRedPercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
+  const currentBluePercent = 100 - currentRedPercent;
+
+  const redPercentResult =
+    redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1];
+  const bluePercentResult = 100 - redPercentResult;
 
   return (
     <div
@@ -259,7 +265,7 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
         </div>
       )}
 
-      {debugMode && (
+      {debugMode && phaseNumber !== 4 && (
         <button onClick={() => setShowStats(!showStats)}>
           {showStats ? 'Hide True Polling' : 'Show True Polling'}
         </button>
@@ -276,11 +282,25 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
           >
             <div style={{ color: 'red' }}>
               <h3>Red Influence: {redInfluence}</h3>
-              <p>Vote Percent: {redPercent.toFixed(2)}%</p>
+              <p>
+                Vote Percent:{' '}
+                {(phaseNumber === 4
+                  ? redPercentResult
+                  : currentRedPercent
+                ).toFixed(2)}
+                %
+              </p>
             </div>
             <div style={{ color: 'blue' }}>
               <h3>Blue Influence: {blueInfluence}</h3>
-              <p>Vote Percent: {bluePercent.toFixed(2)}%</p>
+              <p>
+                Vote Percent:{' '}
+                {(phaseNumber === 4
+                  ? bluePercentResult
+                  : currentBluePercent
+                ).toFixed(2)}
+                %
+              </p>
             </div>
           </div>
           <div
@@ -297,7 +317,7 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
                 backgroundColor: 'red',
                 borderRadius: '0px',
                 transition: 'width 0.5s',
-                width: `${redPercent}%`,
+                width: `${currentRedPercent}%`,
               }}
             ></div>
             <div
@@ -306,7 +326,7 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
                 backgroundColor: 'blue',
                 borderRadius: '0px',
                 transition: 'width 0.5s',
-                width: `${bluePercent}%`,
+                width: `${currentBluePercent}%`,
               }}
             ></div>
           </div>

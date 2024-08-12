@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from 'react';
 import { Cell } from './components/Board';
 import { initializeBoard } from './utils';
 
-type Poll = {
+export type Poll = {
   startRow: number;
   endRow: number;
   startCol: number;
@@ -10,7 +10,7 @@ type Poll = {
   redPercent: number;
 };
 
-type Opinion = {
+export type Opinion = {
   redPublicOpinion: number[]; // to keep track of four phases
   trueRedPercent: number | null; // whether poll has come out or not
 };
@@ -45,7 +45,7 @@ const initialGameState: GameState = {
   bluePolls: [
     { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 50 },
   ],
-  debugMode: true,
+  debugMode: false,
 };
 
 type GameStateContextType = {

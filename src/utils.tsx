@@ -1,4 +1,5 @@
 import { Cell, Floor } from './components/Board';
+import { Poll } from './GameState';
 
 const maxFloorHeight = 3;
 const maxRoadsAllowed = 15;
@@ -144,4 +145,27 @@ export const removeInfluence = (board: Cell[][]): Cell[][] => {
     }
   }
   return board;
+};
+
+export const calculatePublicOpinion = (
+  redPolls: Poll[],
+  bluePolls: Poll[],
+  currentTurn: number,
+  redAccused: boolean = false,
+  blueAccused: boolean = false
+): number => {
+  const previousTurn = Math.max(currentTurn - 1, 0);
+
+  const prevRedPoll = redPolls[previousTurn]['redPercent'];
+  const prevBluePoll = bluePolls[previousTurn]['redPercent'];
+  const currentRedPoll = redAccused ? 0 : redPolls[currentTurn]['redPercent'];
+  const currentBluePoll = blueAccused
+    ? 0
+    : bluePolls[currentTurn]['redPercent'];
+
+  const numberPolls = 4 - (redAccused ? 1 : 0) - (blueAccused ? 1 : 0);
+  return (
+    (prevRedPoll + prevBluePoll + currentRedPoll + currentBluePoll) /
+    numberPolls
+  );
 };

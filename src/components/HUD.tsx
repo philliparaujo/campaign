@@ -1,7 +1,7 @@
 import React from 'react';
 import { PollInput } from '../App';
-import { size, useGameState } from '../GameState';
-import { removeInfluence } from '../utils';
+import { Opinion, size, useGameState } from '../GameState';
+import { calculatePublicOpinion, removeInfluence } from '../utils';
 import { getRedSample } from './Scoreboard';
 
 interface HUDProps {
@@ -38,97 +38,80 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
     }));
   };
 
-  const changePhaseNumber = (change: number) => {
+  const incrementPhaseNumber = () => {
     setGameState(prev => {
-      let newPhaseNumber = prev.phaseNumber + change;
-
-      if (newPhaseNumber > 4) {
-        newPhaseNumber = 1;
-      } else if (newPhaseNumber < 1) {
-        newPhaseNumber = 4;
-      }
-
-      const isEndOfTurn = prev.phaseNumber === 4 && change === 1;
-      const isStartOfTurn = prev.phaseNumber === 1 && change === -1;
-
+      // define new variables
       let newBoard = prev.board;
       let newRedCoins = prev.redCoins;
       let newBlueCoins = prev.blueCoins;
-      let newPublicOpinion = { ...prev.redPublicOpinion[prev.turnNumber] };
-      let newTurnNumber = isEndOfTurn
-        ? prev.turnNumber + 1
-        : isStartOfTurn
-          ? Math.max(prev.turnNumber - 1, 0)
-          : prev.turnNumber;
+      let newPhaseNumber = prev.phaseNumber + 1;
+      let newTurnNumber = prev.turnNumber;
+      let newRedPublicOpinion: Opinion[] = prev.redPublicOpinion.map(
+        opinion => ({
+          trueRedPercent: opinion.trueRedPercent,
+          redPublicOpinion: [...opinion.redPublicOpinion],
+        })
+      );
 
-      // Calculate redPublicOpinion if moving to phase 3
+      const lastOpinion =
+        newRedPublicOpinion[prev.turnNumber]['redPublicOpinion'][
+          prev.phaseNumber - 1
+        ];
+
+      /* End phase 2: calculate new public opinion from published polls */
       if (
-        newPhaseNumber === 3 &&
+        prev.phaseNumber === 2 &&
         prev.redPolls.length > prev.turnNumber &&
         prev.bluePolls.length > prev.turnNumber
       ) {
-        const currentTurn = prev.turnNumber;
-        const previousTurn = Math.max(currentTurn - 1, 0);
-
-        const averageOpinion =
-          (prev.redPolls[currentTurn].redPercent +
-            prev.bluePolls[currentTurn].redPercent +
-            prev.redPolls[previousTurn].redPercent +
-            prev.bluePolls[previousTurn].redPercent) /
-          4;
-
-        // Update the opinion for phase 3
-        newPublicOpinion.redPublicOpinion[newPhaseNumber - 1] = averageOpinion;
-      }
-
-      // Carry forward the opinion from phase 3 to phase 4
-      if (newPhaseNumber === 4) {
-        newBoard = removeInfluence(prev.board);
-        const currentOpinion = newPublicOpinion.redPublicOpinion[2] || 50; // Use phase 3 value or 50 if undefined
-
-        newRedCoins = 10 + Math.floor(currentOpinion / 10);
-        newBlueCoins = 10 + Math.floor((100 - currentOpinion) / 10);
-
-        // Set the trueRedPercent to the value carried over from phase 3
-        newPublicOpinion.trueRedPercent = currentOpinion;
-        newPublicOpinion.redPublicOpinion[newPhaseNumber - 1] = currentOpinion; // Update phase 4 value
+        const averageOpinion = calculatePublicOpinion(
+          prev.redPolls,
+          prev.bluePolls,
+          prev.turnNumber
+        );
+        newRedPublicOpinion[newTurnNumber]['redPublicOpinion'][
+          newPhaseNumber - 1
+        ] = averageOpinion;
       } else {
-        newPublicOpinion.trueRedPercent = null;
+        newRedPublicOpinion[newTurnNumber]['redPublicOpinion'][
+          newPhaseNumber - 1
+        ] = lastOpinion;
       }
 
-      // Ensure redPublicOpinion array has the correct length
-      const updatedPublicOpinion = prev.redPublicOpinion.map(
-        (opinion, index) =>
-          index === newTurnNumber ? newPublicOpinion : opinion
-      );
+      /* End phase 3: store true poll result, reset coins/ads */
+      if (prev.phaseNumber === 3) {
+        const redPercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
+        newRedPublicOpinion[prev.turnNumber]['trueRedPercent'] = redPercent;
 
-      // If end of turn, add a new entry for the next turn
-      if (isEndOfTurn) {
-        const lastOpinion =
-          updatedPublicOpinion[prev.turnNumber]['redPublicOpinion'][
-            prev.phaseNumber - 1
-          ];
-        updatedPublicOpinion.push({
+        newBoard = removeInfluence(prev.board);
+        newRedCoins = 10 + Math.floor(lastOpinion / 10);
+        newBlueCoins = 10 + Math.floor((100 - lastOpinion) / 10);
+      }
+
+      /* End phase 4: update phases/turns, opinion storage for next turn */
+      if (prev.phaseNumber === 4) {
+        newPhaseNumber = 1;
+        newTurnNumber++;
+
+        newRedPublicOpinion.push({
+          trueRedPercent: null,
           redPublicOpinion: [
             lastOpinion,
             lastOpinion,
             lastOpinion,
             lastOpinion,
-          ], // Initialize for next turn
-          trueRedPercent: null,
+          ],
         });
       }
 
-      console.log(redPublicOpinion);
-
       return {
         ...prev,
+        board: newBoard,
         redCoins: newRedCoins,
         blueCoins: newBlueCoins,
-        board: newBoard,
         phaseNumber: newPhaseNumber,
         turnNumber: newTurnNumber,
-        redPublicOpinion: updatedPublicOpinion,
+        redPublicOpinion: newRedPublicOpinion,
       };
     });
   };
@@ -179,8 +162,6 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
       pollColor === 'red' ? redPolls[turnNumber] : bluePolls[turnNumber];
     let pollPercent = poll['redPercent'];
 
-    console.log(truePercent, pollPercent);
-
     let publicOpinion = redPublicOpinion;
     let currentPublicOpinion =
       publicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1];
@@ -215,14 +196,14 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
     if (Math.abs(pollPercent - truePercent) > 10) {
       newPublicOpinion =
         pollColor === 'red'
-          ? (bluePolls[turnNumber]['redPercent'] +
-              redPolls[turnNumber - 1]['redPercent'] +
-              bluePolls[turnNumber - 1]['redPercent']) /
-            3
-          : (redPolls[turnNumber]['redPercent'] +
-              redPolls[turnNumber - 1]['redPercent'] +
-              bluePolls[turnNumber - 1]['redPercent']) /
-            3;
+          ? calculatePublicOpinion(redPolls, bluePolls, turnNumber, true, false)
+          : calculatePublicOpinion(
+              redPolls,
+              bluePolls,
+              turnNumber,
+              false,
+              true
+            );
       newPublicOpinion =
         pollColor === 'red'
           ? Math.min(
@@ -330,12 +311,9 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
         <div style={{ textAlign: 'center' }}>
           <h3 style={{ margin: '5px' }}>Phase Number</h3>
           <div>
-            <button style={buttonStyle} onClick={() => changePhaseNumber(1)}>
-              Next
-            </button>
             <span style={{ margin: '0 10px' }}>{phaseNumber}</span>
-            <button style={buttonStyle} onClick={() => changePhaseNumber(-1)}>
-              Prev
+            <button style={buttonStyle} onClick={() => incrementPhaseNumber()}>
+              Next
             </button>
           </div>
         </div>
