@@ -1,19 +1,6 @@
 import { createContext, useContext, useState } from 'react';
-import { Cell } from './components/Board';
 import { initializeBoard } from './utils';
-
-export type Poll = {
-  startRow: number;
-  endRow: number;
-  startCol: number;
-  endCol: number;
-  redPercent: number;
-};
-
-export type Opinion = {
-  redPublicOpinion: number[]; // to keep track of four phases
-  trueRedPercent: number | null; // whether poll has come out or not
-};
+import { Cell, Opinion, Poll } from './types';
 
 type GameState = {
   board: Cell[][];

@@ -1,5 +1,4 @@
-import { Cell, Floor } from './components/Board';
-import { Poll } from './GameState';
+import { Cell, Floor, Poll } from './types';
 
 const maxFloorHeight = 3;
 const maxRoadsAllowed = 15;

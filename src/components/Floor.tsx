@@ -1,5 +1,5 @@
 import React from 'react';
-import { Influence } from '../App';
+import { Influence } from '../types';
 
 interface FloorUIProps {
   influence: Influence;

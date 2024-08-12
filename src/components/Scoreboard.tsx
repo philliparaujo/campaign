@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useGameState } from '../GameState';
-import { Cell } from './Board';
 import { formatPoll } from '../utils';
 import Button from './Button';
+import { Cell } from '../types';
 
 interface ScoreboardProps {}
 
@@ -209,10 +209,10 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
   return (
     <div
       style={{
-        padding: debugMode || phaseNumber >= 3 ? '5%' : '0%',
+        padding: debugMode || phaseNumber >= 3 ? '2.5%' : '0px',
         border: debugMode || phaseNumber >= 3 ? '1px solid #ccc' : 'none',
         borderRadius: '10px',
-        width: '90%',
+        width: '95%',
       }}
     >
       {/* Debug button */}

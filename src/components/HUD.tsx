@@ -1,9 +1,10 @@
 import React from 'react';
 import { PollInput } from '../App';
-import { Opinion, size, useGameState } from '../GameState';
+import { size, useGameState } from '../GameState';
 import { calculatePublicOpinion, removeInfluence } from '../utils';
 import { getRedSample } from './Scoreboard';
 import Button from './Button';
+import { Opinion } from '../types';
 
 interface HUDProps {
   pollInputs: PollInput;
@@ -540,9 +541,10 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
             <div
               style={{
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
+                flexDirection: 'row',
+                justifyContent: 'center',
                 gap: '10px',
+                width: '100%',
               }}
             >
               <Button onClick={() => handleTrustPoll('blue')} color={'green'}>
@@ -573,9 +575,10 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
             <div
               style={{
                 display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
+                flexDirection: 'row',
+                justifyContent: 'center',
                 gap: '10px',
+                width: '100%',
               }}
             >
               <Button onClick={() => handleTrustPoll('red')} color={'green'}>

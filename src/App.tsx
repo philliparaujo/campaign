@@ -5,8 +5,6 @@ import Scoreboard from './components/Scoreboard';
 import { GameStateProvider, size } from './GameState';
 import PublicOpinion from './components/PublicOpinion';
 
-export type Influence = '' | 'red' | 'blue';
-
 export type PollInput = {
   redStartRow: number;
   redStartCol: number;

@@ -1,30 +1,15 @@
 import React from 'react';
-import { Influence, PollInput } from '../App';
+import { PollInput } from '../App';
 import { size, useGameState } from '../GameState';
-import BuildingUI from './Building';
-import RoadUI from './Road';
+import { Cell } from '../types';
 import { initializeBoard } from '../utils';
+import BuildingUI from './Building';
 import Button from './Button';
+import RoadUI from './Road';
 
 interface BoardUIProps {
   pollInputs: PollInput;
 }
-
-interface Road {
-  type: 'road';
-}
-
-export interface Floor {
-  influence: Influence;
-}
-
-interface BuildingCell {
-  type: 'building';
-  floors: Floor[];
-  baseCost: number;
-}
-
-export type Cell = Road | BuildingCell;
 
 const BoardUI: React.FC<BoardUIProps> = ({ pollInputs }) => {
   const { gameState, setGameState } = useGameState();

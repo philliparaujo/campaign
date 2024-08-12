@@ -1,7 +1,7 @@
 import React from 'react';
-import { Cell, Floor } from './Board';
-import FloorUI from './Floor';
 import { useGameState } from '../GameState';
+import FloorUI from './Floor';
+import { Cell, Floor } from '../types';
 
 interface BuildingUIProps {
   rowIndex: number;
