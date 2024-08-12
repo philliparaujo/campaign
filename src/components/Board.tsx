@@ -4,6 +4,7 @@ import { size, useGameState } from '../GameState';
 import BuildingUI from './Building';
 import RoadUI from './Road';
 import { initializeBoard } from '../utils';
+import Button from './Button';
 
 interface BoardUIProps {
   pollInputs: PollInput;
@@ -133,17 +134,16 @@ const BoardUI: React.FC<BoardUIProps> = ({ pollInputs }) => {
         </>
       )}
 
-      <button
+      <Button
         onClick={() =>
           setGameState(prevState => ({
             ...prevState,
             board: initializeBoard(prevState.board.length),
           }))
         }
-        style={{ position: 'relative', marginTop: '10px' }}
       >
         Regenerate board
-      </button>
+      </Button>
     </div>
   );
 };

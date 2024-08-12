@@ -3,6 +3,7 @@ import { PollInput } from '../App';
 import { Opinion, size, useGameState } from '../GameState';
 import { calculatePublicOpinion, removeInfluence } from '../utils';
 import { getRedSample } from './Scoreboard';
+import Button from './Button';
 
 interface HUDProps {
   pollInputs: PollInput;
@@ -52,6 +53,8 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
           redPublicOpinion: [...opinion.redPublicOpinion],
         })
       );
+      let newRedPolls = [...prev.redPolls];
+      let newBluePolls = [...prev.bluePolls];
 
       const lastOpinion =
         newRedPublicOpinion[prev.turnNumber]['redPublicOpinion'][
@@ -61,8 +64,6 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
       /* End phase 2: calculate new public opinion from published polls */
       if (prev.phaseNumber === 2) {
         // Check if both redPolls and bluePolls have enough entries
-        let newRedPolls = [...prev.redPolls];
-        let newBluePolls = [...prev.bluePolls];
 
         // Add a dummy poll if either poll length is not sufficient
         if (prev.redPolls.length <= prev.turnNumber) {
@@ -96,13 +97,6 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
         newRedPublicOpinion[newTurnNumber]['redPublicOpinion'][
           newPhaseNumber - 1
         ] = averageOpinion;
-
-        // Update the game state with the new polls
-        setGameState(prev => ({
-          ...prev,
-          redPolls: newRedPolls,
-          bluePolls: newBluePolls,
-        }));
       } else {
         // If not phase 2, simply carry forward the last opinion
         newRedPublicOpinion[newTurnNumber]['redPublicOpinion'][
@@ -144,6 +138,8 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
         phaseNumber: newPhaseNumber,
         turnNumber: newTurnNumber,
         redPublicOpinion: newRedPublicOpinion,
+        redPolls: newRedPolls,
+        bluePolls: newBluePolls,
       };
     });
   };
@@ -293,15 +289,15 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
           <h3 style={{ color: '#ff6666', margin: '5px' }}>Red Coins</h3>
           <div>
             {debugMode && (
-              <button style={buttonStyle} onClick={() => changeRedCoins(1)}>
+              <Button onClick={() => changeRedCoins(1)} size={'small'}>
                 +
-              </button>
+              </Button>
             )}
             <span style={{ margin: '0 10px' }}>{redCoins}</span>
             {debugMode && (
-              <button style={buttonStyle} onClick={() => changeRedCoins(-1)}>
+              <Button onClick={() => changeRedCoins(-1)} size={'small'}>
                 -
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -310,15 +306,15 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
           <h3 style={{ color: '#6666ff', margin: '5px' }}>Blue Coins</h3>
           <div>
             {debugMode && (
-              <button style={buttonStyle} onClick={() => changeBlueCoins(1)}>
+              <Button onClick={() => changeBlueCoins(1)} size={'small'}>
                 +
-              </button>
+              </Button>
             )}
             <span style={{ margin: '0 10px' }}>{blueCoins}</span>
             {debugMode && (
-              <button style={buttonStyle} onClick={() => changeBlueCoins(-1)}>
+              <Button onClick={() => changeBlueCoins(-1)} size={'small'}>
                 -
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -327,15 +323,15 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
           <h3 style={{ margin: '5px' }}>Turn Number</h3>
           <div>
             {debugMode && (
-              <button style={buttonStyle} onClick={() => changeTurnNumber(1)}>
+              <Button onClick={() => changeTurnNumber(1)} size={'small'}>
                 +
-              </button>
+              </Button>
             )}
             <span style={{ margin: '0 10px' }}>{turnNumber}</span>
             {debugMode && (
-              <button style={buttonStyle} onClick={() => changeTurnNumber(-1)}>
+              <Button onClick={() => changeTurnNumber(-1)} size={'small'}>
                 -
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -344,9 +340,9 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
           <h3 style={{ margin: '5px' }}>Phase Number</h3>
           <div>
             <span style={{ margin: '0 10px' }}>{phaseNumber}</span>
-            <button style={buttonStyle} onClick={() => incrementPhaseNumber()}>
+            <Button onClick={() => incrementPhaseNumber()} size={'small'}>
               Next
-            </button>
+            </Button>
           </div>
         </div>
       </div>
@@ -442,12 +438,9 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 />
               </div>
             </div>
-            <button
-              style={{ ...buttonStyle, backgroundColor: 'red' }}
-              onClick={() => handleConductPoll('red')}
-            >
+            <Button onClick={() => handleConductPoll('red')} color={'red'}>
               Conduct Poll
-            </button>
+            </Button>
           </div>
 
           {/* Blue Polling Column */}
@@ -517,12 +510,9 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 />
               </div>
             </div>
-            <button
-              style={{ ...buttonStyle, backgroundColor: 'blue' }}
-              onClick={() => handleConductPoll('blue')}
-            >
+            <Button onClick={() => handleConductPoll('blue')} color={'blue'}>
               Conduct Poll
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -555,24 +545,15 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 gap: '10px',
               }}
             >
-              <button
-                style={{ ...buttonStyle, backgroundColor: 'green' }}
-                onClick={() => handleTrustPoll('blue')}
-              >
+              <Button onClick={() => handleTrustPoll('blue')} color={'green'}>
                 Trust
-              </button>
-              <button
-                style={{ ...buttonStyle, backgroundColor: '#ff8500' }}
-                onClick={() => handleDoubtPoll('blue')}
-              >
+              </Button>
+              <Button onClick={() => handleDoubtPoll('blue')} color={'orange'}>
                 Doubt
-              </button>
-              <button
-                style={{ ...buttonStyle, backgroundColor: 'red' }}
-                onClick={() => handleAccusePoll('blue')}
-              >
+              </Button>
+              <Button onClick={() => handleAccusePoll('blue')} color={'red'}>
                 Accuse
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -597,39 +578,21 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 gap: '10px',
               }}
             >
-              <button
-                style={{ ...buttonStyle, backgroundColor: 'green' }}
-                onClick={() => handleTrustPoll('red')}
-              >
+              <Button onClick={() => handleTrustPoll('red')} color={'green'}>
                 Trust
-              </button>
-              <button
-                style={{ ...buttonStyle, backgroundColor: '#ff8500' }}
-                onClick={() => handleDoubtPoll('red')}
-              >
+              </Button>
+              <Button onClick={() => handleDoubtPoll('red')} color={'orange'}>
                 Doubt
-              </button>
-              <button
-                style={{ ...buttonStyle, backgroundColor: 'red' }}
-                onClick={() => handleAccusePoll('red')}
-              >
+              </Button>
+              <Button onClick={() => handleAccusePoll('red')} color={'red'}>
                 Accuse
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
     </div>
   );
-};
-
-const buttonStyle: React.CSSProperties = {
-  padding: '5px 10px',
-  backgroundColor: '#444',
-  color: '#fff',
-  border: 'none',
-  borderRadius: '4px',
-  cursor: 'pointer',
 };
 
 export default HUD;

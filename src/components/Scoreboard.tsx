@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGameState } from '../GameState';
 import { Cell } from './Board';
 import { formatPoll } from '../utils';
+import Button from './Button';
 
 interface ScoreboardProps {}
 
@@ -216,9 +217,9 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
     >
       {/* Debug button */}
       {debugMode && phaseNumber !== 4 && (
-        <button onClick={() => setShowStats(!showStats)}>
+        <Button onClick={() => setShowStats(!showStats)} size={'small'}>
           {showStats ? 'Hide True Polling' : 'Show True Polling'}
-        </button>
+        </Button>
       )}
 
       {/* Reported poll results */}
