@@ -59,20 +59,52 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
         ];
 
       /* End phase 2: calculate new public opinion from published polls */
-      if (
-        prev.phaseNumber === 2 &&
-        prev.redPolls.length > prev.turnNumber &&
-        prev.bluePolls.length > prev.turnNumber
-      ) {
+      if (prev.phaseNumber === 2) {
+        // Check if both redPolls and bluePolls have enough entries
+        let newRedPolls = [...prev.redPolls];
+        let newBluePolls = [...prev.bluePolls];
+
+        // Add a dummy poll if either poll length is not sufficient
+        if (prev.redPolls.length <= prev.turnNumber) {
+          const dummyPoll = {
+            startRow: 0,
+            endRow: size - 1,
+            startCol: 0,
+            endCol: size - 1,
+            redPercent: 50,
+          };
+          newRedPolls.push(dummyPoll);
+        }
+
+        if (prev.bluePolls.length <= prev.turnNumber) {
+          const dummyPoll = {
+            startRow: 0,
+            endRow: size - 1,
+            startCol: 0,
+            endCol: size - 1,
+            redPercent: 50,
+          };
+          newBluePolls.push(dummyPoll);
+        }
+
+        // Calculate and store the average opinion
         const averageOpinion = calculatePublicOpinion(
-          prev.redPolls,
-          prev.bluePolls,
+          newRedPolls,
+          newBluePolls,
           prev.turnNumber
         );
         newRedPublicOpinion[newTurnNumber]['redPublicOpinion'][
           newPhaseNumber - 1
         ] = averageOpinion;
+
+        // Update the game state with the new polls
+        setGameState(prev => ({
+          ...prev,
+          redPolls: newRedPolls,
+          bluePolls: newBluePolls,
+        }));
       } else {
+        // If not phase 2, simply carry forward the last opinion
         newRedPublicOpinion[newTurnNumber]['redPublicOpinion'][
           newPhaseNumber - 1
         ] = lastOpinion;

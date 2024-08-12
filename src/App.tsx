@@ -3,6 +3,7 @@ import BoardUI from './components/Board';
 import HUD from './components/HUD';
 import Scoreboard from './components/Scoreboard';
 import { GameStateProvider, size } from './GameState';
+import PublicOpinion from './components/PublicOpinion';
 
 export type Influence = '' | 'red' | 'blue';
 
@@ -36,7 +37,6 @@ function App() {
           padding: '40px',
         }}
       >
-        <h1>Campaign</h1>
         <div
           style={{
             display: 'flex',
@@ -46,11 +46,13 @@ function App() {
         >
           {/* Left Side */}
           <div>
+            <h1>Campaign</h1>
             <BoardUI pollInputs={pollInputs} />
           </div>
 
           {/* Right Side */}
           <div style={{ width: '650px' }}>
+            <PublicOpinion />
             <HUD pollInputs={pollInputs} setPollInputs={setPollInputs} />
             <Scoreboard />
           </div>

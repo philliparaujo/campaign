@@ -45,7 +45,7 @@ const initialGameState: GameState = {
   bluePolls: [
     { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 50 },
   ],
-  debugMode: false,
+  debugMode: true,
 };
 
 type GameStateContextType = {

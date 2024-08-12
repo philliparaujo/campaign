@@ -169,3 +169,17 @@ export const calculatePublicOpinion = (
     numberPolls
   );
 };
+
+export const formatPoll = (redPercent: number) => {
+  return (
+    <p
+      style={{
+        color: redPercent >= 50 ? 'red' : 'blue',
+        marginBottom: '10px',
+      }}
+    >
+      {redPercent >= 50 ? 'Red +' : 'Blue +'}
+      {Math.abs(redPercent - (100 - redPercent)).toFixed(1)}%
+    </p>
+  );
+};

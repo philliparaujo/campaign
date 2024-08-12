@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useGameState } from '../GameState';
 import { Cell } from './Board';
+import { formatPoll } from '../utils';
 
 interface ScoreboardProps {}
 
@@ -180,20 +181,6 @@ export const getRedSample = (
   return redPercent;
 };
 
-const formatPoll = (redPercent: number) => {
-  return (
-    <p
-      style={{
-        color: redPercent >= 50 ? 'red' : 'blue',
-        marginBottom: '15px',
-      }}
-    >
-      {redPercent >= 50 ? 'Red +' : 'Blue +'}
-      {Math.abs(redPercent - (100 - redPercent)).toFixed(1)}
-    </p>
-  );
-};
-
 const Scoreboard: React.FC<ScoreboardProps> = () => {
   const { gameState } = useGameState();
   const {
@@ -221,121 +208,22 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
   return (
     <div
       style={{
-        padding: '5%',
-        border: '1px solid #ccc',
+        padding: debugMode || phaseNumber >= 3 ? '5%' : '0%',
+        border: debugMode || phaseNumber >= 3 ? '1px solid #ccc' : 'none',
         borderRadius: '10px',
         width: '90%',
       }}
     >
-      <h2>Scoreboard</h2>
-
-      {redPublicOpinion.length > turnNumber && (
-        <div>
-          <h3>Public Opinion:</h3>
-          {formatPoll(
-            redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1]
-          )}
-          <div
-            style={{
-              backgroundColor: '#f0f0f0',
-              borderRadius: '5px',
-              padding: '10px',
-              display: 'flex',
-            }}
-          >
-            <div
-              style={{
-                height: '20px',
-                backgroundColor: 'red',
-                borderRadius: '0px',
-                transition: 'width 0.5s',
-                width: `${redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1]}%`,
-              }}
-            ></div>
-            <div
-              style={{
-                height: '20px',
-                backgroundColor: 'blue',
-                borderRadius: '0px',
-                transition: 'width 0.5s',
-                width: `${100 - redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1]}%`,
-              }}
-            ></div>
-          </div>
-        </div>
-      )}
-
+      {/* Debug button */}
       {debugMode && phaseNumber !== 4 && (
         <button onClick={() => setShowStats(!showStats)}>
           {showStats ? 'Hide True Polling' : 'Show True Polling'}
         </button>
       )}
-      {(showStats || phaseNumber === 4) && (
-        <>
-          <h3>Poll Results:</h3>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '10px',
-            }}
-          >
-            <div style={{ color: 'red' }}>
-              <h3>Red Influence: {redInfluence}</h3>
-              <p>
-                Vote Percent:{' '}
-                {(phaseNumber === 4
-                  ? redPercentResult
-                  : currentRedPercent
-                ).toFixed(2)}
-                %
-              </p>
-            </div>
-            <div style={{ color: 'blue' }}>
-              <h3>Blue Influence: {blueInfluence}</h3>
-              <p>
-                Vote Percent:{' '}
-                {(phaseNumber === 4
-                  ? bluePercentResult
-                  : currentBluePercent
-                ).toFixed(2)}
-                %
-              </p>
-            </div>
-          </div>
-          <div
-            style={{
-              backgroundColor: '#f0f0f0',
-              borderRadius: '5px',
-              padding: '10px',
-              display: 'flex',
-            }}
-          >
-            <div
-              style={{
-                height: '20px',
-                backgroundColor: 'red',
-                borderRadius: '0px',
-                transition: 'width 0.5s',
-                width: `${currentRedPercent}%`,
-              }}
-            ></div>
-            <div
-              style={{
-                height: '20px',
-                backgroundColor: 'blue',
-                borderRadius: '0px',
-                transition: 'width 0.5s',
-                width: `${currentBluePercent}%`,
-              }}
-            ></div>
-          </div>
-        </>
-      )}
 
+      {/* Reported poll results */}
       {phaseNumber === 3 &&
-        redPolls.length > turnNumber &&
-        bluePolls.length > turnNumber && (
+        (redPolls.length > turnNumber && bluePolls.length > turnNumber ? (
           <div
             style={{
               marginTop: '10px',
@@ -404,7 +292,73 @@ const Scoreboard: React.FC<ScoreboardProps> = () => {
               </div>
             </div>
           </div>
-        )}
+        ) : (
+          'Polls not reported properly'
+        ))}
+
+      {/* True poll results */}
+      {(showStats || phaseNumber === 4) && (
+        <>
+          <h3>Poll Results:</h3>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              marginBottom: '10px',
+            }}
+          >
+            <div style={{ color: 'red' }}>
+              <h3>Red Influence: {redInfluence}</h3>
+              <p>
+                Vote Percent:{' '}
+                {(phaseNumber === 4
+                  ? redPercentResult
+                  : currentRedPercent
+                ).toFixed(2)}
+                %
+              </p>
+            </div>
+            <div style={{ color: 'blue' }}>
+              <h3>Blue Influence: {blueInfluence}</h3>
+              <p>
+                Vote Percent:{' '}
+                {(phaseNumber === 4
+                  ? bluePercentResult
+                  : currentBluePercent
+                ).toFixed(2)}
+                %
+              </p>
+            </div>
+          </div>
+          <div
+            style={{
+              backgroundColor: '#f0f0f0',
+              borderRadius: '5px',
+              padding: '10px',
+              display: 'flex',
+            }}
+          >
+            <div
+              style={{
+                height: '20px',
+                backgroundColor: 'red',
+                borderRadius: '0px',
+                transition: 'width 0.5s',
+                width: `${currentRedPercent}%`,
+              }}
+            ></div>
+            <div
+              style={{
+                height: '20px',
+                backgroundColor: 'blue',
+                borderRadius: '0px',
+                transition: 'width 0.5s',
+                width: `${currentBluePercent}%`,
+              }}
+            ></div>
+          </div>
+        </>
+      )}
     </div>
   );
 };
