@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useGameState } from '../GameState';
 import { calculateTotalInfluence, formatPoll, getRedSample } from '../utils';
 import Button from './Button';
+import { PlayerColor } from '../types';
 
 interface ScoreboardProps {
   showRoadInfluence: boolean;
@@ -21,6 +22,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
     turnNumber,
     phaseNumber,
     debugMode,
+    phaseActions,
   } = gameState;
   const [showStats, setShowStats] = useState<boolean>(false);
 
@@ -37,6 +39,14 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
   const redPercent = phaseNumber === 4 ? redPercentResult : currentRedPercent;
   const bluePercent =
     phaseNumber === 4 ? bluePercentResult : currentBluePercent;
+
+  const bufferPercent = (playerColor: PlayerColor) => {
+    return phaseActions[playerColor] === 'doubt'
+      ? 0.025
+      : phaseActions[playerColor] === 'accuse'
+        ? 0.05
+        : 0;
+  };
 
   console.log(redPublicOpinion);
 
@@ -100,17 +110,31 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
                 <div
                   style={{
                     height: '100%',
-                    width: `${redPolls[turnNumber]['redPercent'] * 100}%`,
+                    width: `${(redPolls[turnNumber]['redPercent'] - bufferPercent('blue')) * 100}%`,
                     backgroundColor: 'red',
                   }}
-                ></div>
+                />
                 <div
                   style={{
                     height: '100%',
-                    width: `${(1 - redPolls[turnNumber]['redPercent']) * 100}%`,
+                    width: `${bufferPercent('blue') * 100}%`,
+                    backgroundColor: '#ff8888',
+                  }}
+                />
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${bufferPercent('blue') * 100}%`,
+                    backgroundColor: '#8888ff',
+                  }}
+                />
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${(1 - redPolls[turnNumber]['redPercent'] - bufferPercent('blue')) * 100}%`,
                     backgroundColor: 'blue',
                   }}
-                ></div>
+                />
               </div>
             </div>
             <div style={{ color: 'blue' }}>
@@ -129,17 +153,31 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
                 <div
                   style={{
                     height: '100%',
-                    width: `${bluePolls[turnNumber]['redPercent'] * 100}%`,
+                    width: `${(bluePolls[turnNumber]['redPercent'] - -bufferPercent('red')) * 100}%`,
                     backgroundColor: 'red',
                   }}
-                ></div>
+                />
                 <div
                   style={{
                     height: '100%',
-                    width: `${(1 - bluePolls[turnNumber]['redPercent']) * 100}%`,
+                    width: `${bufferPercent('red') * 100}%`,
+                    backgroundColor: '#ff8888',
+                  }}
+                />
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${bufferPercent('red') * 100}%`,
+                    backgroundColor: '#8888ff',
+                  }}
+                />
+                <div
+                  style={{
+                    height: '100%',
+                    width: `${(1 - bluePolls[turnNumber]['redPercent'] - -bufferPercent('red')) * 100}%`,
                     backgroundColor: 'blue',
                   }}
-                ></div>
+                />
               </div>
             </div>
           </div>

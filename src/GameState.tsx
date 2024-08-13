@@ -20,12 +20,15 @@ import {
 
 // Initial state
 export const size = 5;
-const debugMode = true;
+export const maxRoadsAllowed = 15; // ~ 3*size is best
+
+const startingCoins = 10;
+const debugMode = false;
 
 const initialGameState: GameState = {
   board: initializeBoard(size),
-  redCoins: 10,
-  blueCoins: 10,
+  redCoins: startingCoins,
+  blueCoins: startingCoins,
   turnNumber: 1,
   phaseNumber: 1,
   phaseActions: { red: '', blue: '' },
@@ -161,6 +164,8 @@ export const GameStateProvider = ({
 
   const regenerateBoard = () => {
     setGameState(prev => ({ ...prev, board: initializeBoard(size) }));
+    setRedCoins(startingCoins);
+    setBlueCoins(startingCoins);
   };
 
   const setRedPublicOpinion = (redPublicOpinion: Opinion[]) => {

@@ -1,4 +1,4 @@
-import { size } from './GameState';
+import { maxRoadsAllowed, size } from './GameState';
 import {
   Board,
   Floor,
@@ -41,7 +41,6 @@ const calculateBaseCost = (row: number, col: number): number => {
 };
 
 // Generate a city board
-const maxRoadsAllowed = 15;
 export const initializeBoard = (size: number): Board => {
   // Step 1: Initialize the board with all roads
   const board: Board = Array(size)

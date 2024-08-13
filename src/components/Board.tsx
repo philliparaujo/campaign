@@ -112,6 +112,7 @@ const BoardUI: React.FC<BoardUIProps> = ({
         position: 'relative',
         width: size * cellSize,
         height: size * cellSize,
+        paddingBottom: '10px',
       }}
       onMouseUp={handleMouseUp}
     >

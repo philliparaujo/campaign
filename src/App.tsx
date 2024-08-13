@@ -35,12 +35,12 @@ function App() {
           style={{
             display: 'flex',
             width: '100%',
-            gap: '50px',
+            gap: '80px',
           }}
         >
           {/* Left Side */}
           <div>
-            <h1>Campaign</h1>
+            <h1 style={{ paddingBottom: '35px' }}>Campaign</h1>
             <BoardUI
               pollInputs={pollInputs}
               setPollInputs={setPollInputs}
