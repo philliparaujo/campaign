@@ -10,7 +10,7 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
 
   const redPercentResult =
     redPublicOpinion[turnNumber]?.redPublicOpinion[phaseNumber - 1];
-  const bluePercentResult = 100 - redPercentResult;
+  const bluePercentResult = 1 - redPercentResult;
 
   return (
     <div
@@ -40,7 +40,7 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
                 backgroundColor: 'red',
                 borderRadius: '0px',
                 transition: 'width 0.5s',
-                width: `${redPercentResult}%`,
+                width: `${redPercentResult * 100}%`,
               }}
             ></div>
             <div
@@ -49,7 +49,7 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
                 backgroundColor: 'blue',
                 borderRadius: '0px',
                 transition: 'width 0.5s',
-                width: `${bluePercentResult}%`,
+                width: `${bluePercentResult * 100}%`,
               }}
             ></div>
           </div>

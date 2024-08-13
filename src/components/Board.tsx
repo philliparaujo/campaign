@@ -7,9 +7,10 @@ import RoadUI from './Road';
 
 interface BoardUIProps {
   pollInputs: PollInput;
+  showRoadInfluence: boolean;
 }
 
-const BoardUI: React.FC<BoardUIProps> = ({ pollInputs }) => {
+const BoardUI: React.FC<BoardUIProps> = ({ pollInputs, showRoadInfluence }) => {
   const { gameState, regenerateBoard } = useGameState();
   const { board, phaseNumber } = gameState;
   const cellSize = 100;
@@ -72,7 +73,11 @@ const BoardUI: React.FC<BoardUIProps> = ({ pollInputs }) => {
                     colIndex={colIndex}
                   />
                 ) : (
-                  <RoadUI rowIndex={rowIndex} colIndex={colIndex} />
+                  <RoadUI
+                    rowIndex={rowIndex}
+                    colIndex={colIndex}
+                    showRoadInfluence={showRoadInfluence}
+                  />
                 )}
               </div>
             );

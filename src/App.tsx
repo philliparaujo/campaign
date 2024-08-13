@@ -17,6 +17,7 @@ function App() {
     blueEndRow: size - 1,
     blueEndCol: size - 1,
   });
+  const [showRoadInfluence, setShowRoadInfluence] = useState<boolean>(false);
 
   return (
     <GameStateProvider>
@@ -35,14 +36,24 @@ function App() {
           {/* Left Side */}
           <div>
             <h1>Campaign</h1>
-            <BoardUI pollInputs={pollInputs} />
+            <BoardUI
+              pollInputs={pollInputs}
+              showRoadInfluence={showRoadInfluence}
+            />
           </div>
 
           {/* Right Side */}
           <div style={{ width: '650px' }}>
             <PublicOpinion />
-            <HUD pollInputs={pollInputs} setPollInputs={setPollInputs} />
-            <Scoreboard />
+            <HUD
+              pollInputs={pollInputs}
+              setPollInputs={setPollInputs}
+              setShowRoadInfluence={setShowRoadInfluence}
+            />
+            <Scoreboard
+              showRoadInfluence={showRoadInfluence}
+              setShowRoadInfluence={setShowRoadInfluence}
+            />
           </div>
         </div>
       </div>

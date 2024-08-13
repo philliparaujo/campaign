@@ -1,18 +1,65 @@
 import React from 'react';
 import { useGameState } from '../GameState';
 import { Cell } from '../types';
+import { calculatePercentInfluence, calculateRoadInfluence } from '../utils';
 
 interface RoadUIProps {
   rowIndex: number;
   colIndex: number;
+  showRoadInfluence: boolean;
 }
 
-const RoadUI: React.FC<RoadUIProps> = ({ rowIndex, colIndex }) => {
+type Color = { r: number; g: number; b: number };
+
+const interpolateColor = (
+  startColor: Color,
+  endColor: Color,
+  percent: number
+) => {
+  const r = Math.round(startColor.r + percent * (endColor.r - startColor.r));
+  const g = Math.round(startColor.g + percent * (endColor.g - startColor.g));
+  const b = Math.round(startColor.b + percent * (endColor.b - startColor.b));
+  return `rgb(${r},${g},${b})`;
+};
+
+const RoadUI: React.FC<RoadUIProps> = ({
+  rowIndex,
+  colIndex,
+  showRoadInfluence,
+}) => {
   const { gameState } = useGameState();
   const { board } = gameState;
 
   // return whether a cell is a road, if that cell is in bounds
   const isRoad = (cell: Cell | undefined): boolean => cell?.type === 'road';
+
+  /* On debugMode, show road influence via road background color */
+  const roadPercentInfluence = calculatePercentInfluence(
+    calculateRoadInfluence('red', board, rowIndex, colIndex),
+    calculateRoadInfluence('blue', board, rowIndex, colIndex)
+  );
+
+  const color1: Color = { r: 135, g: 135, b: 255 }; // red = 0% votes
+  const color2: Color = { r: 208, g: 208, b: 208 }; // red = 50% votes
+  const color3: Color = { r: 255, g: 135, b: 135 }; // red = 100% votes
+
+  let backgroundColor = `rgb(208, 208, 208)`;
+
+  if (showRoadInfluence) {
+    if (roadPercentInfluence <= 0.5) {
+      backgroundColor = interpolateColor(
+        color1,
+        color2,
+        roadPercentInfluence / 0.5
+      );
+    } else {
+      backgroundColor = interpolateColor(
+        color2,
+        color3,
+        (roadPercentInfluence - 0.5) / 0.5
+      );
+    }
+  }
 
   const connectTop = isRoad(board[rowIndex - 1]?.[colIndex]);
   const connectRight = isRoad(board[rowIndex]?.[colIndex + 1]);
@@ -27,7 +74,7 @@ const RoadUI: React.FC<RoadUIProps> = ({ rowIndex, colIndex }) => {
       style={{
         width: '100%',
         height: '100%',
-        backgroundColor: '#d0d0d0',
+        backgroundColor: backgroundColor,
         position: 'relative',
       }}
     >

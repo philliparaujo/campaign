@@ -6,6 +6,7 @@ import {
   GameState,
   Influence,
   Opinion,
+  PlayerAction,
   PlayerColor,
   Poll,
 } from './types';
@@ -13,24 +14,26 @@ import { calculatePublicOpinion, getRedSample, initializeBoard } from './utils';
 
 // Initial state
 export const size = 5;
+const debugMode = true;
+
 const initialGameState: GameState = {
   board: initializeBoard(size),
   redCoins: 10,
   blueCoins: 10,
   turnNumber: 1,
   phaseNumber: 1,
-  phaseActions: { red: null, blue: null },
+  phaseActions: { red: '', blue: '' },
   redPublicOpinion: [
-    { redPublicOpinion: [50, 50, 50, 50], trueRedPercent: 50 },
-    { redPublicOpinion: [50, 50, 50, 50], trueRedPercent: null },
+    { redPublicOpinion: [0.5, 0.5, 0.5, 0.5], trueRedPercent: 0.5 },
+    { redPublicOpinion: [0.5, 0.5, 0.5, 0.5], trueRedPercent: null },
   ],
   redPolls: [
-    { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 50 },
+    { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 0.5 },
   ],
   bluePolls: [
-    { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 50 },
+    { startRow: 0, endRow: 4, startCol: 0, endCol: 4, redPercent: 0.5 },
   ],
-  debugMode: true,
+  debugMode: debugMode,
 };
 
 type GameStateContextType = {
@@ -48,9 +51,10 @@ type GameStateContextType = {
   setBlueCoins: (blueCoins: number) => void;
   setTurnNumber: (turnNumber: number) => void;
   setPhaseNumber: (phaseNumber: number) => void;
+  setPhaseAction: (color: PlayerColor, action: PlayerAction) => void;
   regenerateBoard: () => void;
   setRedPublicOpinion: (opinion: Opinion[]) => void;
-  savePoll: (color: PlayerColor, newPoll: Poll) => void;
+  savePoll: (color: PlayerColor, newPoll: Poll) => Poll[];
   incrementPhaseNumber: () => void;
 };
 
@@ -135,6 +139,20 @@ export const GameStateProvider = ({
     }));
   };
 
+  const setPhaseAction = (color: PlayerColor, action: PlayerAction) => {
+    setGameState(prev => ({
+      ...prev,
+      phaseActions: { ...prev.phaseActions, [color]: action },
+    }));
+  };
+
+  const resetPhaseActions = () => {
+    setGameState(prev => ({
+      ...prev,
+      phaseActions: { red: '', blue: '' },
+    }));
+  };
+
   const regenerateBoard = () => {
     setGameState(prev => ({ ...prev, board: initializeBoard(size) }));
   };
@@ -143,13 +161,14 @@ export const GameStateProvider = ({
     setGameState(prev => ({ ...prev, redPublicOpinion }));
   };
 
-  const savePoll = (pollColor: PlayerColor, newPoll: Poll) => {
+  const savePoll = (pollColor: PlayerColor, newPoll: Poll): Poll[] => {
     const polls =
       pollColor === 'red' ? gameState.redPolls : gameState.bluePolls;
     setGameState(prev => ({
       ...prev,
       [pollColor + 'Polls']: [...polls, newPoll],
     }));
+    return [...polls, newPoll];
   };
 
   const incrementPhaseNumber = () => {
@@ -164,8 +183,6 @@ export const GameStateProvider = ({
         redPublicOpinion: [...opinion.redPublicOpinion],
       })
     );
-    let newRedPolls = [...gameState.redPolls];
-    let newBluePolls = [...gameState.bluePolls];
 
     const lastOpinion =
       newRedPublicOpinion[gameState.turnNumber]['redPublicOpinion'][
@@ -186,15 +203,20 @@ export const GameStateProvider = ({
           endRow: size - 1,
           startCol: 0,
           endCol: size - 1,
-          redPercent: 50,
+          redPercent: 0.5,
         };
 
+        console.log(gameState.redPolls, gameState.bluePolls);
+
+        let newRedPolls = gameState.redPolls;
+        let newBluePolls = gameState.bluePolls;
+
         if (gameState.redPolls.length <= gameState.turnNumber) {
-          savePoll('red', dummyPoll);
+          newRedPolls = savePoll('red', dummyPoll);
         }
 
         if (gameState.bluePolls.length <= gameState.turnNumber) {
-          savePoll('blue', dummyPoll);
+          newBluePolls = savePoll('blue', dummyPoll);
         }
 
         // Calculate and store the average opinion
@@ -222,7 +244,7 @@ export const GameStateProvider = ({
 
         removeAllFloorInfluence();
         newRedCoins = 10 + Math.floor(lastOpinion / 10);
-        newBlueCoins = 10 + Math.floor((100 - lastOpinion) / 10);
+        newBlueCoins = 10 + Math.floor((1 - lastOpinion) * 10);
         break;
       case 4:
         /* End phase 4: update phases/turns, opinion storage for next turn */
@@ -242,8 +264,9 @@ export const GameStateProvider = ({
 
     setRedCoins(newRedCoins);
     setBlueCoins(newBlueCoins);
-    setPhaseNumber(newPhaseNumber);
     setTurnNumber(newTurnNumber);
+    setPhaseNumber(newPhaseNumber);
+    resetPhaseActions();
     setRedPublicOpinion(newRedPublicOpinion);
   };
 
@@ -258,6 +281,7 @@ export const GameStateProvider = ({
         setBlueCoins,
         setTurnNumber,
         setPhaseNumber,
+        setPhaseAction,
         regenerateBoard,
         setRedPublicOpinion,
         savePoll,

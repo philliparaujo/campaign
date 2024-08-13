@@ -1,12 +1,13 @@
 import React from 'react';
 import { size, useGameState } from '../GameState';
 import { PlayerColor, PollInput } from '../types';
-import { calculatePublicOpinion, getRedSample } from '../utils';
+import { calculatePublicOpinion, canEndPhase, getRedSample } from '../utils';
 import Button from './Button';
 
 interface HUDProps {
   pollInputs: PollInput;
   setPollInputs: React.Dispatch<React.SetStateAction<PollInput>>;
+  setShowRoadInfluence: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
@@ -15,6 +16,7 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
     setRedCoins,
     setBlueCoins,
     setTurnNumber,
+    setPhaseAction,
     setRedPublicOpinion,
     savePoll,
     incrementPhaseNumber,
@@ -55,15 +57,18 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
       endCol,
       redPercent,
     });
+    setPhaseAction(pollColor, 'conduct poll');
   };
 
   /* Do nothing */
-  const handleTrustPoll = (pollColor: PlayerColor) => {};
+  const handleTrustPoll = (pollColor: PlayerColor) => {
+    setPhaseAction(pollColor, 'trust');
+  };
 
   /* If poll within 5% of true value, lose 5% public opinion;
      otherwise, gain 5% public opinion. */
-  const doubtPercent = 2.5;
-  const doubtPenalty = 2.5;
+  const doubtPercent = 0.025;
+  const doubtPenalty = 0.025;
   const handleDoubtPoll = (pollColor: PlayerColor) => {
     let truePercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
     let poll =
@@ -87,10 +92,13 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
     publicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1] =
       currentPublicOpinion;
     setRedPublicOpinion(publicOpinion);
+    setPhaseAction(pollColor, 'doubt');
   };
 
   /* If poll within 10% of true value, lose 10% public opinion;
      otherwise, their poll gets thrown out (or gain 10% public opinion). */
+  const accusePercent = 0.05;
+  const accusePenalty = 0.05;
   const handleAccusePoll = (pollColor: PlayerColor) => {
     let truePercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
     let poll =
@@ -100,7 +108,7 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
     let publicOpinion = redPublicOpinion;
     let newPublicOpinion;
 
-    if (Math.abs(pollPercent - truePercent) > 10) {
+    if (Math.abs(pollPercent - truePercent) > accusePercent) {
       newPublicOpinion =
         pollColor === 'red'
           ? calculatePublicOpinion(redPolls, bluePolls, turnNumber, true, false)
@@ -117,27 +125,29 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
               newPublicOpinion,
               redPublicOpinion[turnNumber]['redPublicOpinion'][
                 phaseNumber - 1
-              ] - 10
+              ] - accusePenalty
             )
           : Math.max(
               newPublicOpinion,
               redPublicOpinion[turnNumber]['redPublicOpinion'][
                 phaseNumber - 1
-              ] + 10
+              ] + accusePenalty
             );
     } else {
       newPublicOpinion =
         pollColor === 'red'
           ? redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1] +
-            10
+            accusePenalty
           : redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1] -
-            10;
+            accusePenalty;
     }
 
     publicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1] =
       newPublicOpinion;
 
     setRedPublicOpinion(publicOpinion);
+
+    setPhaseAction(pollColor, 'accuse');
   };
 
   const phaseDescriptions: { [key: number]: string } = {
@@ -228,7 +238,11 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
           <h3 style={{ margin: '5px' }}>Phase Number</h3>
           <div>
             <span style={{ margin: '0 10px' }}>{phaseNumber}</span>
-            <Button onClick={() => incrementPhaseNumber()} size={'small'}>
+            <Button
+              onClick={() => incrementPhaseNumber()}
+              size={'small'}
+              disabled={!canEndPhase(gameState)}
+            >
               Next
             </Button>
           </div>

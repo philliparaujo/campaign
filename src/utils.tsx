@@ -1,8 +1,15 @@
-import { Board, Floor, PlayerColor, Poll } from './types';
+import { size } from './GameState';
+import {
+  Board,
+  Floor,
+  GameState,
+  PlayerAction,
+  PlayerColor,
+  Poll,
+} from './types';
 
+// Generate a random number of building floors
 const maxFloorHeight = 3;
-const maxRoadsAllowed = 15;
-
 const randomFloors = (): Floor[] => {
   const height = Math.floor(Math.random() * maxFloorHeight) + 1;
   return Array(height).fill({ influence: '' });
@@ -25,12 +32,15 @@ const isSquareRoad = (
   );
 };
 
-const calculateBaseCost = (size: number, row: number, col: number): number => {
+// Calculate the cost of the lowest floor of a building
+const calculateBaseCost = (row: number, col: number): number => {
   const middle = (size - 1) / 2;
   const distance = Math.abs(middle - row) + Math.abs(middle - col);
   return size - distance;
 };
 
+// Generate a city board
+const maxRoadsAllowed = 15;
 export const initializeBoard = (size: number): Board => {
   // Step 1: Initialize the board with all roads
   const board: Board = Array(size)
@@ -75,28 +85,28 @@ export const initializeBoard = (size: number): Board => {
           board[row][col] = {
             type: 'building',
             floors: randomFloors(),
-            baseCost: calculateBaseCost(size, row, col),
+            baseCost: calculateBaseCost(row, col),
           };
           break;
         case 1:
           board[row][col + 1] = {
             type: 'building',
             floors: randomFloors(),
-            baseCost: calculateBaseCost(size, row, col + 1),
+            baseCost: calculateBaseCost(row, col + 1),
           };
           break;
         case 2:
           board[row + 1][col] = {
             type: 'building',
             floors: randomFloors(),
-            baseCost: calculateBaseCost(size, row + 1, col),
+            baseCost: calculateBaseCost(row + 1, col),
           };
           break;
         case 3:
           board[row + 1][col + 1] = {
             type: 'building',
             floors: randomFloors(),
-            baseCost: calculateBaseCost(size, row + 1, col + 1),
+            baseCost: calculateBaseCost(row + 1, col + 1),
           };
           break;
       }
@@ -116,7 +126,7 @@ export const initializeBoard = (size: number): Board => {
             board[row][col] = {
               type: 'building',
               floors: randomFloors(),
-              baseCost: calculateBaseCost(size, row, col),
+              baseCost: calculateBaseCost(row, col),
             };
             roadCount--;
             break;
@@ -131,6 +141,7 @@ export const initializeBoard = (size: number): Board => {
   return board;
 };
 
+// Turn recent polling results and accusations into public opinion score
 export const calculatePublicOpinion = (
   redPolls: Poll[],
   bluePolls: Poll[],
@@ -154,16 +165,17 @@ export const calculatePublicOpinion = (
   );
 };
 
+// Turns polling percentage into color-coded final result
 export const formatPoll = (redPercent: number) => {
   return (
     <p
       style={{
-        color: redPercent >= 50 ? 'red' : 'blue',
+        color: redPercent >= 0.5 ? 'red' : 'blue',
         marginBottom: '10px',
       }}
     >
-      {redPercent >= 50 ? 'Red +' : 'Blue +'}
-      {Math.abs(redPercent - (100 - redPercent)).toFixed(1)}%
+      {redPercent >= 0.5 ? 'Red +' : 'Blue +'}
+      {(Math.abs(redPercent - (1 - redPercent)) * 100).toFixed(1)}%
     </p>
   );
 };
@@ -218,7 +230,7 @@ const calculateDirectionalInfluence = (
 // Helper function to calculate the influence for one cell in all directions
 const startingInfluence = 1;
 const diagonalMultiplier = 0.5;
-const calculateRoadInfluence = (
+export const calculateRoadInfluence = (
   influenceType: PlayerColor,
   board: Board,
   row: number,
@@ -287,6 +299,17 @@ export const calculateTotalInfluence = (
   return totalInfluence;
 };
 
+export const calculatePercentInfluence = (
+  redInfluence: number,
+  blueInfluence: number
+): number => {
+  const totalInfluence = redInfluence + blueInfluence;
+  if (totalInfluence <= 0) {
+    return 0.5;
+  }
+  return redInfluence / totalInfluence;
+};
+
 // Calculate cell influences on our board and turn into voting percentages
 const createPercentArray = (board: Board): (number | null)[][] => {
   const size = board.length;
@@ -299,10 +322,13 @@ const createPercentArray = (board: Board): (number | null)[][] => {
       if (board[row][col].type === 'road') {
         const redInfluence = calculateRoadInfluence('red', board, row, col);
         const blueInfluence = calculateRoadInfluence('blue', board, row, col);
-        const totalInfluence = redInfluence + blueInfluence;
+        const percentInfluence = calculatePercentInfluence(
+          redInfluence,
+          blueInfluence
+        );
 
-        if (totalInfluence > 0) {
-          percentArray[row][col] = redInfluence / totalInfluence;
+        if (percentInfluence > 0) {
+          percentArray[row][col] = percentInfluence;
         }
       }
     }
@@ -349,9 +375,33 @@ export const getRedSample = (
     }
   }
 
-  const averageRedPercentage =
-    roadCount > 0 ? totalRedPercentage / roadCount : 0.5;
-  const redPercent = averageRedPercentage * 100;
+  return roadCount > 0 ? totalRedPercentage / roadCount : 0.5;
+};
 
-  return redPercent;
+export const canEndPhase = (gameState: GameState): boolean => {
+  const { phaseNumber, phaseActions, redCoins, blueCoins } = gameState;
+
+  const coinCheck = redCoins >= 0 && blueCoins >= 0;
+
+  switch (phaseNumber) {
+    case 1:
+      return coinCheck;
+    case 2:
+      return (
+        phaseActions['red'] === 'conduct poll' &&
+        phaseActions['blue'] === 'conduct poll' &&
+        coinCheck
+      );
+    case 3:
+      const factCheckOptions: PlayerAction[] = ['trust', 'doubt', 'accuse'];
+      return (
+        factCheckOptions.includes(phaseActions['red']) &&
+        factCheckOptions.includes(phaseActions['blue']) &&
+        coinCheck
+      );
+    case 4:
+      return coinCheck;
+    default:
+      return false;
+  }
 };

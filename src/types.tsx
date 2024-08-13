@@ -17,6 +17,8 @@ export interface Floor {
 export type Influence = '' | PlayerColor;
 export type PlayerColor = 'red' | 'blue';
 
+export type PlayerAction = '' | 'conduct poll' | 'trust' | 'doubt' | 'accuse';
+
 /* Game state types */
 export type GameState = {
   board: Board;
@@ -25,7 +27,7 @@ export type GameState = {
   turnNumber: number;
   phaseNumber: number;
   // maps every player to what actions they've taken, if any
-  phaseActions: Record<PlayerColor, string | null>;
+  phaseActions: Record<PlayerColor, PlayerAction>;
   redPublicOpinion: Opinion[];
   redPolls: Poll[];
   bluePolls: Poll[];
