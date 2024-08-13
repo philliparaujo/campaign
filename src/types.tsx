@@ -24,6 +24,8 @@ export type GameState = {
   blueCoins: number;
   turnNumber: number;
   phaseNumber: number;
+  // maps every player to what actions they've taken, if any
+  phaseActions: Record<PlayerColor, string | null>;
   redPublicOpinion: Opinion[];
   redPolls: Poll[];
   bluePolls: Poll[];

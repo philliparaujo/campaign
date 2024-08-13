@@ -1,9 +1,8 @@
 import React from 'react';
 import { size, useGameState } from '../GameState';
-import { Opinion, PlayerColor, PollInput } from '../types';
-import { calculatePublicOpinion } from '../utils';
+import { PlayerColor, PollInput } from '../types';
+import { calculatePublicOpinion, getRedSample } from '../utils';
 import Button from './Button';
-import { getRedSample } from './Scoreboard';
 
 interface HUDProps {
   pollInputs: PollInput;
@@ -13,13 +12,12 @@ interface HUDProps {
 const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
   const {
     gameState,
-    removeAllFloorInfluence,
     setRedCoins,
     setBlueCoins,
     setTurnNumber,
-    setPhaseNumber,
     setRedPublicOpinion,
     savePoll,
+    incrementPhaseNumber,
   } = useGameState();
   const {
     redPolls,
@@ -32,88 +30,6 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
     phaseNumber,
     debugMode,
   } = gameState;
-  const incrementPhaseNumber = () => {
-    // Define new variables
-    let newRedCoins = redCoins;
-    let newBlueCoins = blueCoins;
-    let newPhaseNumber = phaseNumber + 1;
-    let newTurnNumber = turnNumber;
-    let newRedPublicOpinion: Opinion[] = redPublicOpinion.map(opinion => ({
-      trueRedPercent: opinion.trueRedPercent,
-      redPublicOpinion: [...opinion.redPublicOpinion],
-    }));
-    let newRedPolls = [...redPolls];
-    let newBluePolls = [...bluePolls];
-
-    const lastOpinion =
-      newRedPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1];
-
-    if (phaseNumber !== 2) {
-      newRedPublicOpinion[newTurnNumber]['redPublicOpinion'][
-        newPhaseNumber - 1
-      ] = lastOpinion;
-    }
-
-    switch (phaseNumber) {
-      case 2:
-        /* End phase 2: calculate new public opinion from published polls */
-        const dummyPoll = {
-          startRow: 0,
-          endRow: size - 1,
-          startCol: 0,
-          endCol: size - 1,
-          redPercent: 50,
-        };
-
-        if (redPolls.length <= turnNumber) {
-          savePoll('red', dummyPoll);
-        }
-
-        if (bluePolls.length <= turnNumber) {
-          savePoll('blue', dummyPoll);
-        }
-
-        // Calculate and store the average opinion
-        const averageOpinion = calculatePublicOpinion(
-          newRedPolls,
-          newBluePolls,
-          turnNumber
-        );
-        newRedPublicOpinion[newTurnNumber]['redPublicOpinion'][
-          newPhaseNumber - 1
-        ] = averageOpinion;
-        break;
-      case 3:
-        /* End phase 3: store true poll result, reset coins/ads */
-        const redPercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
-        newRedPublicOpinion[turnNumber]['trueRedPercent'] = redPercent;
-
-        removeAllFloorInfluence();
-        newRedCoins = 10 + Math.floor(lastOpinion / 10);
-        newBlueCoins = 10 + Math.floor((100 - lastOpinion) / 10);
-        break;
-      case 4:
-        /* End phase 4: update phases/turns, opinion storage for next turn */
-        newPhaseNumber = 1;
-        newTurnNumber++;
-
-        newRedPublicOpinion.push({
-          trueRedPercent: null,
-          redPublicOpinion: [
-            lastOpinion,
-            lastOpinion,
-            lastOpinion,
-            lastOpinion,
-          ],
-        });
-    }
-
-    setRedCoins(newRedCoins);
-    setBlueCoins(newBlueCoins);
-    setPhaseNumber(newPhaseNumber);
-    setTurnNumber(newTurnNumber);
-    setRedPublicOpinion(newRedPublicOpinion);
-  };
 
   // Update poll boundary variables when any input's value changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -9,7 +9,7 @@ import {
   PlayerColor,
   Poll,
 } from './types';
-import { initializeBoard } from './utils';
+import { calculatePublicOpinion, getRedSample, initializeBoard } from './utils';
 
 // Initial state
 export const size = 5;
@@ -19,6 +19,7 @@ const initialGameState: GameState = {
   blueCoins: 10,
   turnNumber: 1,
   phaseNumber: 1,
+  phaseActions: { red: null, blue: null },
   redPublicOpinion: [
     { redPublicOpinion: [50, 50, 50, 50], trueRedPercent: 50 },
     { redPublicOpinion: [50, 50, 50, 50], trueRedPercent: null },
@@ -50,6 +51,7 @@ type GameStateContextType = {
   regenerateBoard: () => void;
   setRedPublicOpinion: (opinion: Opinion[]) => void;
   savePoll: (color: PlayerColor, newPoll: Poll) => void;
+  incrementPhaseNumber: () => void;
 };
 
 const GameStateContext = createContext<GameStateContextType | undefined>(
@@ -150,6 +152,101 @@ export const GameStateProvider = ({
     }));
   };
 
+  const incrementPhaseNumber = () => {
+    // Define new variables
+    let newRedCoins = gameState.redCoins;
+    let newBlueCoins = gameState.blueCoins;
+    let newPhaseNumber = gameState.phaseNumber + 1;
+    let newTurnNumber = gameState.turnNumber;
+    let newRedPublicOpinion: Opinion[] = gameState.redPublicOpinion.map(
+      opinion => ({
+        trueRedPercent: opinion.trueRedPercent,
+        redPublicOpinion: [...opinion.redPublicOpinion],
+      })
+    );
+    let newRedPolls = [...gameState.redPolls];
+    let newBluePolls = [...gameState.bluePolls];
+
+    const lastOpinion =
+      newRedPublicOpinion[gameState.turnNumber]['redPublicOpinion'][
+        gameState.phaseNumber - 1
+      ];
+
+    if (gameState.phaseNumber !== 2) {
+      newRedPublicOpinion[newTurnNumber]['redPublicOpinion'][
+        newPhaseNumber - 1
+      ] = lastOpinion;
+    }
+
+    switch (gameState.phaseNumber) {
+      case 2:
+        /* End phase 2: calculate new public opinion from published polls */
+        const dummyPoll = {
+          startRow: 0,
+          endRow: size - 1,
+          startCol: 0,
+          endCol: size - 1,
+          redPercent: 50,
+        };
+
+        if (gameState.redPolls.length <= gameState.turnNumber) {
+          savePoll('red', dummyPoll);
+        }
+
+        if (gameState.bluePolls.length <= gameState.turnNumber) {
+          savePoll('blue', dummyPoll);
+        }
+
+        // Calculate and store the average opinion
+        const averageOpinion = calculatePublicOpinion(
+          newRedPolls,
+          newBluePolls,
+          gameState.turnNumber
+        );
+        newRedPublicOpinion[newTurnNumber]['redPublicOpinion'][
+          newPhaseNumber - 1
+        ] = averageOpinion;
+        break;
+      case 3:
+        /* End phase 3: store true poll result, reset coins/ads */
+        const redPercent = getRedSample(
+          gameState.board,
+          0,
+          size - 1,
+          0,
+          size - 1,
+          true
+        );
+        newRedPublicOpinion[gameState.turnNumber]['trueRedPercent'] =
+          redPercent;
+
+        removeAllFloorInfluence();
+        newRedCoins = 10 + Math.floor(lastOpinion / 10);
+        newBlueCoins = 10 + Math.floor((100 - lastOpinion) / 10);
+        break;
+      case 4:
+        /* End phase 4: update phases/turns, opinion storage for next turn */
+        newPhaseNumber = 1;
+        newTurnNumber++;
+
+        newRedPublicOpinion.push({
+          trueRedPercent: null,
+          redPublicOpinion: [
+            lastOpinion,
+            lastOpinion,
+            lastOpinion,
+            lastOpinion,
+          ],
+        });
+    }
+
+    setRedCoins(newRedCoins);
+    setBlueCoins(newBlueCoins);
+    setPhaseNumber(newPhaseNumber);
+    setTurnNumber(newTurnNumber);
+    setRedPublicOpinion(newRedPublicOpinion);
+  };
+
   return (
     <GameStateContext.Provider
       value={{
@@ -164,6 +261,7 @@ export const GameStateProvider = ({
         regenerateBoard,
         setRedPublicOpinion,
         savePoll,
+        incrementPhaseNumber,
       }}
     >
       {children}

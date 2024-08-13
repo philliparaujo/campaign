@@ -1,7 +1,6 @@
 import React from 'react';
 import { size, useGameState } from '../GameState';
 import { Cell, PlayerColor, PollInput } from '../types';
-import { initializeBoard } from '../utils';
 import BuildingUI from './Building';
 import Button from './Button';
 import RoadUI from './Road';
