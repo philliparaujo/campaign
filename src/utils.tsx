@@ -145,24 +145,16 @@ export const initializeBoard = (size: number): Board => {
 export const calculatePublicOpinion = (
   redPolls: Poll[],
   bluePolls: Poll[],
-  currentTurn: number,
-  redAccused: boolean = false,
-  blueAccused: boolean = false
+  currentTurn: number
 ): number => {
   const previousTurn = Math.max(currentTurn - 1, 0);
 
   const prevRedPoll = redPolls[previousTurn]['redPercent'];
   const prevBluePoll = bluePolls[previousTurn]['redPercent'];
-  const currentRedPoll = redAccused ? 0 : redPolls[currentTurn]['redPercent'];
-  const currentBluePoll = blueAccused
-    ? 0
-    : bluePolls[currentTurn]['redPercent'];
+  const currentRedPoll = redPolls[currentTurn]['redPercent'];
+  const currentBluePoll = bluePolls[currentTurn]['redPercent'];
 
-  const numberPolls = 4 - (redAccused ? 1 : 0) - (blueAccused ? 1 : 0);
-  return (
-    (prevRedPoll + prevBluePoll + currentRedPoll + currentBluePoll) /
-    numberPolls
-  );
+  return (prevRedPoll + prevBluePoll + currentRedPoll + currentBluePoll) / 4;
 };
 
 // Turns polling percentage into color-coded final result
@@ -378,6 +370,7 @@ export const getRedSample = (
   return roadCount > 0 ? totalRedPercentage / roadCount : 0.5;
 };
 
+// Logic for toggling ability of next phase button
 export const canEndPhase = (gameState: GameState): boolean => {
   const { phaseNumber, phaseActions, redCoins, blueCoins } = gameState;
 
@@ -388,8 +381,8 @@ export const canEndPhase = (gameState: GameState): boolean => {
       return coinCheck;
     case 2:
       return (
-        phaseActions['red'] === 'conduct poll' &&
-        phaseActions['blue'] === 'conduct poll' &&
+        phaseActions['red'] === 'conductPoll' &&
+        phaseActions['blue'] === 'conductPoll' &&
         coinCheck
       );
     case 3:
@@ -403,5 +396,49 @@ export const canEndPhase = (gameState: GameState): boolean => {
       return coinCheck;
     default:
       return false;
+  }
+};
+
+/* If poll within 5% of true value, lose 5% public opinion;
+   otherwise, gain 5% public opinion. */
+const doubtPercent = 0.025;
+const doubtPenalty = 0.025;
+export const handleDoubtPoll = (
+  playerColor: PlayerColor,
+  gameState: GameState
+): number => {
+  const { board, turnNumber, redPolls, bluePolls } = gameState;
+
+  let truePercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
+  let poll =
+    playerColor === 'red' ? bluePolls[turnNumber] : redPolls[turnNumber];
+  let pollPercent = poll['redPercent'];
+
+  if (Math.abs(pollPercent - truePercent) < doubtPercent) {
+    return playerColor === 'red' ? -doubtPenalty : doubtPenalty;
+  } else {
+    return playerColor === 'red' ? doubtPenalty : -doubtPenalty;
+  }
+};
+
+/* If poll within 10% of true value, lose 10% public opinion;
+   otherwise, their poll gets thrown out (or gain 10% public opinion). */
+const accusePercent = 0.05;
+const accusePenalty = 0.05;
+export const handleAccusePoll = (
+  playerColor: PlayerColor,
+  gameState: GameState
+): number => {
+  const { board, turnNumber, redPolls, bluePolls } = gameState;
+
+  let truePercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
+  let poll =
+    playerColor === 'red' ? bluePolls[turnNumber] : redPolls[turnNumber];
+  let pollPercent = poll['redPercent'];
+
+  if (Math.abs(pollPercent - truePercent) < accusePercent) {
+    return playerColor === 'red' ? -accusePenalty : accusePenalty;
+  } else {
+    return playerColor === 'red' ? accusePenalty : -accusePenalty;
   }
 };

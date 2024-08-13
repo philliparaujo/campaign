@@ -1,7 +1,7 @@
 import React from 'react';
 import { size, useGameState } from '../GameState';
 import { PlayerColor, PollInput } from '../types';
-import { calculatePublicOpinion, canEndPhase, getRedSample } from '../utils';
+import { canEndPhase, getRedSample } from '../utils';
 import Button from './Button';
 
 interface HUDProps {
@@ -17,19 +17,16 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
     setBlueCoins,
     setTurnNumber,
     setPhaseAction,
-    setRedPublicOpinion,
     savePoll,
     incrementPhaseNumber,
   } = useGameState();
   const {
-    redPolls,
-    bluePolls,
     redCoins,
     blueCoins,
-    redPublicOpinion,
     turnNumber,
     board,
     phaseNumber,
+    phaseActions,
     debugMode,
   } = gameState;
 
@@ -50,6 +47,7 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
     const endCol = pollInputs[`${pollColor}EndCol`];
 
     const redPercent = getRedSample(board, startRow, endRow, startCol, endCol);
+
     savePoll(pollColor, {
       startRow,
       endRow,
@@ -57,97 +55,7 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
       endCol,
       redPercent,
     });
-    setPhaseAction(pollColor, 'conduct poll');
-  };
-
-  /* Do nothing */
-  const handleTrustPoll = (pollColor: PlayerColor) => {
-    setPhaseAction(pollColor, 'trust');
-  };
-
-  /* If poll within 5% of true value, lose 5% public opinion;
-     otherwise, gain 5% public opinion. */
-  const doubtPercent = 0.025;
-  const doubtPenalty = 0.025;
-  const handleDoubtPoll = (pollColor: PlayerColor) => {
-    let truePercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
-    let poll =
-      pollColor === 'red' ? redPolls[turnNumber] : bluePolls[turnNumber];
-    let pollPercent = poll['redPercent'];
-
-    let publicOpinion = redPublicOpinion;
-    let currentPublicOpinion =
-      publicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1];
-
-    if (Math.abs(pollPercent - truePercent) < doubtPercent) {
-      pollColor === 'red'
-        ? (currentPublicOpinion += doubtPenalty)
-        : (currentPublicOpinion -= doubtPenalty);
-    } else {
-      pollColor === 'red'
-        ? (currentPublicOpinion -= doubtPenalty)
-        : (currentPublicOpinion += doubtPenalty);
-    }
-
-    publicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1] =
-      currentPublicOpinion;
-    setRedPublicOpinion(publicOpinion);
-    setPhaseAction(pollColor, 'doubt');
-  };
-
-  /* If poll within 10% of true value, lose 10% public opinion;
-     otherwise, their poll gets thrown out (or gain 10% public opinion). */
-  const accusePercent = 0.05;
-  const accusePenalty = 0.05;
-  const handleAccusePoll = (pollColor: PlayerColor) => {
-    let truePercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
-    let poll =
-      pollColor === 'red' ? redPolls[turnNumber] : bluePolls[turnNumber];
-    let pollPercent = poll['redPercent'];
-
-    let publicOpinion = redPublicOpinion;
-    let newPublicOpinion;
-
-    if (Math.abs(pollPercent - truePercent) > accusePercent) {
-      newPublicOpinion =
-        pollColor === 'red'
-          ? calculatePublicOpinion(redPolls, bluePolls, turnNumber, true, false)
-          : calculatePublicOpinion(
-              redPolls,
-              bluePolls,
-              turnNumber,
-              false,
-              true
-            );
-      newPublicOpinion =
-        pollColor === 'red'
-          ? Math.min(
-              newPublicOpinion,
-              redPublicOpinion[turnNumber]['redPublicOpinion'][
-                phaseNumber - 1
-              ] - accusePenalty
-            )
-          : Math.max(
-              newPublicOpinion,
-              redPublicOpinion[turnNumber]['redPublicOpinion'][
-                phaseNumber - 1
-              ] + accusePenalty
-            );
-    } else {
-      newPublicOpinion =
-        pollColor === 'red'
-          ? redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1] +
-            accusePenalty
-          : redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1] -
-            accusePenalty;
-    }
-
-    publicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1] =
-      newPublicOpinion;
-
-    setRedPublicOpinion(publicOpinion);
-
-    setPhaseAction(pollColor, 'accuse');
+    setPhaseAction(pollColor, 'conductPoll');
   };
 
   const phaseDescriptions: { [key: number]: string } = {
@@ -340,7 +248,11 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 />
               </div>
             </div>
-            <Button onClick={() => handleConductPoll('red')} color={'red'}>
+            <Button
+              onClick={() => handleConductPoll('red')}
+              color={'red'}
+              clicked={phaseActions['red'] === 'conductPoll'}
+            >
               Conduct Poll
             </Button>
           </div>
@@ -412,7 +324,11 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 />
               </div>
             </div>
-            <Button onClick={() => handleConductPoll('blue')} color={'blue'}>
+            <Button
+              onClick={() => handleConductPoll('blue')}
+              color={'blue'}
+              clicked={phaseActions['blue'] === 'conductPoll'}
+            >
               Conduct Poll
             </Button>
           </div>
@@ -448,13 +364,25 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 width: '100%',
               }}
             >
-              <Button onClick={() => handleTrustPoll('blue')} color={'green'}>
+              <Button
+                onClick={() => setPhaseAction('red', 'trust')}
+                color={'green'}
+                clicked={phaseActions['red'] === 'trust'}
+              >
                 Trust
               </Button>
-              <Button onClick={() => handleDoubtPoll('blue')} color={'orange'}>
+              <Button
+                onClick={() => setPhaseAction('red', 'doubt')}
+                color={'orange'}
+                clicked={phaseActions['red'] === 'doubt'}
+              >
                 Doubt
               </Button>
-              <Button onClick={() => handleAccusePoll('blue')} color={'red'}>
+              <Button
+                onClick={() => setPhaseAction('red', 'accuse')}
+                color={'red'}
+                clicked={phaseActions['red'] === 'accuse'}
+              >
                 Accuse
               </Button>
             </div>
@@ -482,13 +410,25 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 width: '100%',
               }}
             >
-              <Button onClick={() => handleTrustPoll('red')} color={'green'}>
+              <Button
+                onClick={() => setPhaseAction('blue', 'trust')}
+                color={'green'}
+                clicked={phaseActions['blue'] === 'trust'}
+              >
                 Trust
               </Button>
-              <Button onClick={() => handleDoubtPoll('red')} color={'orange'}>
+              <Button
+                onClick={() => setPhaseAction('blue', 'doubt')}
+                color={'orange'}
+                clicked={phaseActions['blue'] === 'doubt'}
+              >
                 Doubt
               </Button>
-              <Button onClick={() => handleAccusePoll('red')} color={'red'}>
+              <Button
+                onClick={() => setPhaseAction('blue', 'accuse')}
+                color={'red'}
+                clicked={phaseActions['blue'] === 'accuse'}
+              >
                 Accuse
               </Button>
             </div>

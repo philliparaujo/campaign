@@ -10,7 +10,13 @@ import {
   PlayerColor,
   Poll,
 } from './types';
-import { calculatePublicOpinion, getRedSample, initializeBoard } from './utils';
+import {
+  calculatePublicOpinion,
+  getRedSample,
+  handleAccusePoll,
+  handleDoubtPoll,
+  initializeBoard,
+} from './utils';
 
 // Initial state
 export const size = 5;
@@ -230,7 +236,8 @@ export const GameStateProvider = ({
         ] = averageOpinion;
         break;
       case 3:
-        /* End phase 3: store true poll result, reset coins/ads */
+        /* End phase 3: store true poll, update public opinion based on 
+           fact-checking, reset coins/ads */
         const redPercent = getRedSample(
           gameState.board,
           0,
@@ -242,9 +249,37 @@ export const GameStateProvider = ({
         newRedPublicOpinion[gameState.turnNumber]['trueRedPercent'] =
           redPercent;
 
+        let newOpinion =
+          newRedPublicOpinion[gameState.turnNumber]['redPublicOpinion'][
+            gameState.phaseNumber - 1
+          ];
+
+        switch (gameState.phaseActions['red']) {
+          case 'doubt':
+            newOpinion += handleDoubtPoll('red', gameState);
+            break;
+          case 'accuse':
+            newOpinion += handleAccusePoll('red', gameState);
+            break;
+          default:
+        }
+
+        switch (gameState.phaseActions['blue']) {
+          case 'doubt':
+            newOpinion += handleDoubtPoll('blue', gameState);
+            break;
+          case 'accuse':
+            newOpinion += handleAccusePoll('blue', gameState);
+            break;
+          default:
+        }
+
         removeAllFloorInfluence();
-        newRedCoins = 10 + Math.floor(lastOpinion / 10);
-        newBlueCoins = 10 + Math.floor((1 - lastOpinion) * 10);
+        newRedPublicOpinion[gameState.turnNumber]['redPublicOpinion'][
+          newPhaseNumber - 1
+        ] = newOpinion;
+        newRedCoins = 10 + Math.floor(newOpinion * 10);
+        newBlueCoins = 10 + Math.floor((1 - newOpinion) * 10);
         break;
       case 4:
         /* End phase 4: update phases/turns, opinion storage for next turn */

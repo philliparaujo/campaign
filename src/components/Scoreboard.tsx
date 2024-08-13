@@ -32,17 +32,14 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
   const currentBluePercent = 1 - currentRedPercent;
 
   const redPercentResult =
-    redPublicOpinion[turnNumber]['redPublicOpinion'][phaseNumber - 1];
+    redPublicOpinion[turnNumber]['trueRedPercent'] || 0.5;
   const bluePercentResult = 1 - redPercentResult;
 
   const redPercent = phaseNumber === 4 ? redPercentResult : currentRedPercent;
   const bluePercent =
     phaseNumber === 4 ? bluePercentResult : currentBluePercent;
 
-  if (phaseNumber === 3) {
-    console.log(redPolls[turnNumber]['redPercent']);
-    console.log(bluePolls[turnNumber]['redPercent']);
-  }
+  console.log(redPublicOpinion);
 
   return (
     <div
