@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useGameState } from '../GameState';
-import { Board } from '../types';
+import { Board, PlayerColor } from '../types';
 import { formatPoll } from '../utils';
 import Button from './Button';
 
@@ -13,7 +13,7 @@ const calculateDirectionalInfluence = (
   startCol: number,
   rowDelta: number,
   colDelta: number,
-  influenceType: 'red' | 'blue'
+  influenceType: PlayerColor
 ): number => {
   let influence = 0;
   let distance = 1;
@@ -57,7 +57,7 @@ const calculateDirectionalInfluence = (
 const startingInfluence = 1;
 const diagonalMultiplier = 0.5;
 const calculateRoadInfluence = (
-  influenceType: 'red' | 'blue',
+  influenceType: PlayerColor,
   board: Board,
   row: number,
   col: number
@@ -110,7 +110,7 @@ const calculateRoadInfluence = (
 
 // Helper function to calculate the total influence for all cells
 const calculateTotalInfluence = (
-  influenceType: 'red' | 'blue',
+  influenceType: PlayerColor,
   board: Board
 ): number => {
   let totalInfluence = 0;

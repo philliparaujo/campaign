@@ -1,6 +1,6 @@
 import React from 'react';
 import { size, useGameState } from '../GameState';
-import { Cell, PollInput } from '../types';
+import { Cell, PlayerColor, PollInput } from '../types';
 import { initializeBoard } from '../utils';
 import BuildingUI from './Building';
 import Button from './Button';
@@ -21,7 +21,7 @@ const BoardUI: React.FC<BoardUIProps> = ({ pollInputs }) => {
     startCol: number,
     endRow: number,
     endCol: number,
-    color: 'red' | 'blue'
+    color: PlayerColor
   ): React.CSSProperties => ({
     position: 'absolute',
     top: startRow * cellSize,

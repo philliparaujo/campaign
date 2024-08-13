@@ -14,7 +14,8 @@ interface BuildingCell {
 export interface Floor {
   influence: Influence;
 }
-export type Influence = '' | 'red' | 'blue';
+export type Influence = '' | PlayerColor;
+export type PlayerColor = 'red' | 'blue';
 
 /* Game state types */
 export type GameState = {

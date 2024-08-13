@@ -6,6 +6,7 @@ import {
   GameState,
   Influence,
   Opinion,
+  PlayerColor,
   Poll,
 } from './types';
 import { initializeBoard } from './utils';
@@ -48,7 +49,7 @@ type GameStateContextType = {
   setPhaseNumber: (phaseNumber: number) => void;
   regenerateBoard: () => void;
   setRedPublicOpinion: (opinion: Opinion[]) => void;
-  savePoll: (color: 'red' | 'blue', newPoll: Poll) => void;
+  savePoll: (color: PlayerColor, newPoll: Poll) => void;
 };
 
 const GameStateContext = createContext<GameStateContextType | undefined>(
@@ -140,7 +141,7 @@ export const GameStateProvider = ({
     setGameState(prev => ({ ...prev, redPublicOpinion }));
   };
 
-  const savePoll = (pollColor: 'red' | 'blue', newPoll: Poll) => {
+  const savePoll = (pollColor: PlayerColor, newPoll: Poll) => {
     const polls =
       pollColor === 'red' ? gameState.redPolls : gameState.bluePolls;
     setGameState(prev => ({

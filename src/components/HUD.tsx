@@ -1,6 +1,6 @@
 import React from 'react';
 import { size, useGameState } from '../GameState';
-import { Opinion, PollInput } from '../types';
+import { Opinion, PlayerColor, PollInput } from '../types';
 import { calculatePublicOpinion } from '../utils';
 import Button from './Button';
 import { getRedSample } from './Scoreboard';
@@ -125,7 +125,7 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
   };
 
   // Sample a population within your boundary and save your poll result
-  const handleConductPoll = (pollColor: 'red' | 'blue') => {
+  const handleConductPoll = (pollColor: PlayerColor) => {
     const startRow = pollInputs[`${pollColor}StartRow`];
     const endRow = pollInputs[`${pollColor}EndRow`];
     const startCol = pollInputs[`${pollColor}StartCol`];
@@ -142,13 +142,13 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
   };
 
   /* Do nothing */
-  const handleTrustPoll = (pollColor: 'red' | 'blue') => {};
+  const handleTrustPoll = (pollColor: PlayerColor) => {};
 
   /* If poll within 5% of true value, lose 5% public opinion;
      otherwise, gain 5% public opinion. */
   const doubtPercent = 2.5;
   const doubtPenalty = 2.5;
-  const handleDoubtPoll = (pollColor: 'red' | 'blue') => {
+  const handleDoubtPoll = (pollColor: PlayerColor) => {
     let truePercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
     let poll =
       pollColor === 'red' ? redPolls[turnNumber] : bluePolls[turnNumber];
@@ -175,7 +175,7 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
 
   /* If poll within 10% of true value, lose 10% public opinion;
      otherwise, their poll gets thrown out (or gain 10% public opinion). */
-  const handleAccusePoll = (pollColor: 'red' | 'blue') => {
+  const handleAccusePoll = (pollColor: PlayerColor) => {
     let truePercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
     let poll =
       pollColor === 'red' ? redPolls[turnNumber] : bluePolls[turnNumber];
