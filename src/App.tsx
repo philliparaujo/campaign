@@ -4,20 +4,25 @@ import HUD from './components/HUD';
 import PublicOpinion from './components/PublicOpinion';
 import Scoreboard from './components/Scoreboard';
 import { GameStateProvider, size } from './GameState';
-import { PollInput } from './types';
+import { PlayerColor, PollRegion } from './types';
 
 function App() {
-  const [pollInputs, setPollInputs] = useState<PollInput>({
-    redStartRow: 0,
-    redStartCol: 0,
-    redEndRow: size - 1,
-    redEndCol: size - 1,
-    blueStartRow: 0,
-    blueStartCol: 0,
-    blueEndRow: size - 1,
-    blueEndCol: size - 1,
-  });
+  const defaultPollRegion: PollRegion = {
+    startRow: 0,
+    endRow: size - 1,
+    startCol: 0,
+    endCol: size - 1,
+  };
+
+  const [pollInputs, setPollInputs] = useState<Record<PlayerColor, PollRegion>>(
+    {
+      red: defaultPollRegion,
+      blue: defaultPollRegion,
+    }
+  );
   const [showRoadInfluence, setShowRoadInfluence] = useState<boolean>(false);
+  const [settingPollRegion, setSettingPollRegion] =
+    useState<PlayerColor | null>(null);
 
   return (
     <GameStateProvider>
@@ -38,7 +43,10 @@ function App() {
             <h1>Campaign</h1>
             <BoardUI
               pollInputs={pollInputs}
+              setPollInputs={setPollInputs}
               showRoadInfluence={showRoadInfluence}
+              settingPollRegion={settingPollRegion}
+              setSettingPollRegion={setSettingPollRegion}
             />
           </div>
 
@@ -48,7 +56,8 @@ function App() {
             <HUD
               pollInputs={pollInputs}
               setPollInputs={setPollInputs}
-              setShowRoadInfluence={setShowRoadInfluence}
+              settingPollRegion={settingPollRegion}
+              setSettingPollRegion={setSettingPollRegion}
             />
             <Scoreboard
               showRoadInfluence={showRoadInfluence}

@@ -1,16 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { size, useGameState } from '../GameState';
-import { PlayerColor, PollInput } from '../types';
+import { PlayerColor, Poll, PollRegion } from '../types';
 import { canEndPhase, getRedSample } from '../utils';
 import Button from './Button';
 
 interface HUDProps {
-  pollInputs: PollInput;
-  setPollInputs: React.Dispatch<React.SetStateAction<PollInput>>;
-  setShowRoadInfluence: React.Dispatch<React.SetStateAction<boolean>>;
+  pollInputs: Record<PlayerColor, PollRegion>;
+  setPollInputs: React.Dispatch<
+    React.SetStateAction<Record<PlayerColor, PollRegion>>
+  >;
+  settingPollRegion: PlayerColor | null;
+  setSettingPollRegion: React.Dispatch<
+    React.SetStateAction<PlayerColor | null>
+  >;
 }
 
-const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
+const HUD: React.FC<HUDProps> = ({
+  pollInputs,
+  setPollInputs,
+  settingPollRegion,
+  setSettingPollRegion,
+}) => {
   const {
     gameState,
     setRedCoins,
@@ -33,28 +43,28 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
   // Update poll boundary variables when any input's value changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
+    const [color, key] = name.split('.');
     setPollInputs(prevInputs => ({
       ...prevInputs,
-      [name]: Math.min(Math.max(Number(value), 0), size - 1),
+      [color]: {
+        ...prevInputs[color as keyof typeof prevInputs],
+        [key]: Math.min(Math.max(Number(value), 0), size - 1),
+      },
     }));
   };
 
+  useEffect(() => {
+    console.log(settingPollRegion);
+  }, [settingPollRegion]);
+
   // Sample a population within your boundary and save your poll result
   const handleConductPoll = (pollColor: PlayerColor) => {
-    const startRow = pollInputs[`${pollColor}StartRow`];
-    const endRow = pollInputs[`${pollColor}EndRow`];
-    const startCol = pollInputs[`${pollColor}StartCol`];
-    const endCol = pollInputs[`${pollColor}EndCol`];
+    const pollRegion = pollInputs[pollColor];
+    const redPercent = getRedSample(board, pollRegion);
 
-    const redPercent = getRedSample(board, startRow, endRow, startCol, endCol);
+    const poll: Poll = { ...pollRegion, redPercent };
 
-    savePoll(pollColor, {
-      startRow,
-      endRow,
-      startCol,
-      endCol,
-      redPercent,
-    });
+    savePoll(pollColor, poll);
     setPhaseAction(pollColor, 'conductPoll');
   };
 
@@ -203,8 +213,8 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 <label>Start Row: </label>
                 <input
                   type="number"
-                  name="redStartRow"
-                  value={pollInputs.redStartRow}
+                  name="red.startRow"
+                  value={pollInputs['red']['startRow']}
                   onChange={handleInputChange}
                   style={{ width: '50px', marginRight: '10px' }}
                 />
@@ -213,8 +223,8 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 <label>Start Col: </label>
                 <input
                   type="number"
-                  name="redStartCol"
-                  value={pollInputs.redStartCol}
+                  name="red.startCol"
+                  value={pollInputs['red']['startCol']}
                   onChange={handleInputChange}
                   style={{ width: '50px', marginRight: '10px' }}
                 />
@@ -231,8 +241,8 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 <label>End Row: </label>
                 <input
                   type="number"
-                  name="redEndRow"
-                  value={pollInputs.redEndRow}
+                  name="red.endRow"
+                  value={pollInputs['red']['endRow']}
                   onChange={handleInputChange}
                   style={{ width: '50px', marginRight: '10px' }}
                 />
@@ -241,20 +251,38 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 <label>End Col: </label>
                 <input
                   type="number"
-                  name="redEndCol"
-                  value={pollInputs.redEndCol}
+                  name="red.endCol"
+                  value={pollInputs['red']['endCol']}
                   onChange={handleInputChange}
                   style={{ width: '50px', marginRight: '10px' }}
                 />
               </div>
             </div>
-            <Button
-              onClick={() => handleConductPoll('red')}
-              color={'red'}
-              clicked={phaseActions['red'] === 'conductPoll'}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                width: '100%',
+                alignItems: 'center',
+              }}
             >
-              Conduct Poll
-            </Button>
+              <Button
+                onClick={() => {
+                  setSettingPollRegion('red');
+                }}
+                color={'red'}
+                disabled={settingPollRegion === 'red'}
+              >
+                Set poll region
+              </Button>
+              <Button
+                onClick={() => handleConductPoll('red')}
+                color={'red'}
+                clicked={phaseActions['red'] === 'conductPoll'}
+              >
+                Conduct Poll
+              </Button>
+            </div>
           </div>
 
           {/* Blue Polling Column */}
@@ -279,8 +307,8 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 <label>Start Row: </label>
                 <input
                   type="number"
-                  name="blueStartRow"
-                  value={pollInputs.blueStartRow}
+                  name="blue.startRow"
+                  value={pollInputs['blue']['startRow']}
                   onChange={handleInputChange}
                   style={{ width: '50px', marginRight: '10px' }}
                 />
@@ -289,8 +317,8 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 <label>Start Col: </label>
                 <input
                   type="number"
-                  name="blueStartCol"
-                  value={pollInputs.blueStartCol}
+                  name="blue.startCol"
+                  value={pollInputs['blue']['startCol']}
                   onChange={handleInputChange}
                   style={{ width: '50px', marginRight: '10px' }}
                 />
@@ -307,8 +335,8 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 <label>End Row: </label>
                 <input
                   type="number"
-                  name="blueEndRow"
-                  value={pollInputs.blueEndRow}
+                  name="blue.endRow"
+                  value={pollInputs['blue']['endRow']}
                   onChange={handleInputChange}
                   style={{ width: '50px', marginRight: '10px' }}
                 />
@@ -317,20 +345,38 @@ const HUD: React.FC<HUDProps> = ({ pollInputs, setPollInputs }) => {
                 <label>End Col: </label>
                 <input
                   type="number"
-                  name="blueEndCol"
-                  value={pollInputs.blueEndCol}
+                  name="blue.endCol"
+                  value={pollInputs['blue']['endCol']}
                   onChange={handleInputChange}
                   style={{ width: '50px', marginRight: '10px' }}
                 />
               </div>
             </div>
-            <Button
-              onClick={() => handleConductPoll('blue')}
-              color={'blue'}
-              clicked={phaseActions['blue'] === 'conductPoll'}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                width: '100%',
+                alignItems: 'center',
+              }}
             >
-              Conduct Poll
-            </Button>
+              <Button
+                onClick={() => {
+                  setSettingPollRegion('blue');
+                }}
+                color={'blue'}
+                disabled={settingPollRegion === 'blue'}
+              >
+                Set poll region
+              </Button>
+              <Button
+                onClick={() => handleConductPoll('blue')}
+                color={'blue'}
+                clicked={phaseActions['blue'] === 'conductPoll'}
+              >
+                Conduct Poll
+              </Button>
+            </div>
           </div>
         </div>
       )}

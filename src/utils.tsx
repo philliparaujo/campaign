@@ -6,6 +6,7 @@ import {
   PlayerAction,
   PlayerColor,
   Poll,
+  PollRegion,
 } from './types';
 
 // Generate a random number of building floors
@@ -345,12 +346,16 @@ const sample = (p: number, n: number): number => {
 const sampleSize = 40;
 export const getRedSample = (
   board: Board,
-  startRow: number,
-  endRow: number,
-  startCol: number,
-  endCol: number,
+  pollRegion: PollRegion = {
+    startRow: 0,
+    endRow: size - 1,
+    startCol: 0,
+    endCol: size - 1,
+  },
   trueSample: boolean = false
 ): number => {
+  const { startRow, endRow, startCol, endCol } = pollRegion;
+
   const percentArray = createPercentArray(board);
   let totalRedPercentage = 0;
   let roadCount = 0;
@@ -409,7 +414,7 @@ export const handleDoubtPoll = (
 ): number => {
   const { board, turnNumber, redPolls, bluePolls } = gameState;
 
-  let truePercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
+  let truePercent = getRedSample(board, undefined, true);
   let poll =
     playerColor === 'red' ? bluePolls[turnNumber] : redPolls[turnNumber];
   let pollPercent = poll['redPercent'];
@@ -431,7 +436,7 @@ export const handleAccusePoll = (
 ): number => {
   const { board, turnNumber, redPolls, bluePolls } = gameState;
 
-  let truePercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
+  let truePercent = getRedSample(board, undefined, true);
   let poll =
     playerColor === 'red' ? bluePolls[turnNumber] : redPolls[turnNumber];
   let pollPercent = poll['redPercent'];

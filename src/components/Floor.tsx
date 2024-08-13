@@ -1,5 +1,6 @@
 import React from 'react';
 import { Influence } from '../types';
+import { useGameState } from '../GameState';
 
 interface FloorUIProps {
   influence: Influence;
@@ -8,6 +9,9 @@ interface FloorUIProps {
 }
 
 const FloorUI: React.FC<FloorUIProps> = ({ influence, cost, onClick }) => {
+  const { gameState } = useGameState();
+  const { phaseNumber } = gameState;
+
   return (
     <div
       style={{
@@ -18,8 +22,10 @@ const FloorUI: React.FC<FloorUIProps> = ({ influence, cost, onClick }) => {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-end',
+        userSelect: 'none',
+        cursor: phaseNumber === 1 ? 'default' : 'not-allowed',
       }}
-      onClick={onClick}
+      onClick={() => (phaseNumber === 1 ? onClick() : undefined)}
     >
       <p
         style={{

@@ -76,6 +76,7 @@ const RoadUI: React.FC<RoadUIProps> = ({
         height: '100%',
         backgroundColor: backgroundColor,
         position: 'relative',
+        userSelect: 'none',
       }}
     >
       {isIsolated ? (

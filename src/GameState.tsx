@@ -238,14 +238,7 @@ export const GameStateProvider = ({
       case 3:
         /* End phase 3: store true poll, update public opinion based on 
            fact-checking, reset coins/ads */
-        const redPercent = getRedSample(
-          gameState.board,
-          0,
-          size - 1,
-          0,
-          size - 1,
-          true
-        );
+        const redPercent = getRedSample(gameState.board, undefined, true);
         newRedPublicOpinion[gameState.turnNumber]['trueRedPercent'] =
           redPercent;
 

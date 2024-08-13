@@ -27,8 +27,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
   let redInfluence = calculateTotalInfluence('red', board);
   let blueInfluence = calculateTotalInfluence('blue', board);
 
-  const size = board.length;
-  const currentRedPercent = getRedSample(board, 0, size - 1, 0, size - 1, true);
+  const currentRedPercent = getRedSample(board, undefined, true);
   const currentBluePercent = 1 - currentRedPercent;
 
   const redPercentResult =
@@ -50,22 +49,28 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
         width: '95%',
       }}
     >
-      {/* True polling button */}
-      {debugMode && phaseNumber !== 4 && (
-        <Button onClick={() => setShowStats(!showStats)} size={'small'}>
-          {showStats ? 'Hide True Polling' : 'Show True Polling'}
-        </Button>
-      )}
-
-      {/* True road influence button */}
-      {(debugMode || phaseNumber === 2) && (
-        <Button
-          onClick={() => setShowRoadInfluence(!showRoadInfluence)}
-          size={'small'}
-        >
-          {showRoadInfluence ? 'Hide Road Influence' : 'Show Road Influence'}
-        </Button>
-      )}
+      <div
+        style={{
+          display: 'flex',
+          gap: '10px',
+        }}
+      >
+        {/* True polling button */}
+        {debugMode && phaseNumber !== 4 && (
+          <Button onClick={() => setShowStats(!showStats)} size={'small'}>
+            {showStats ? 'Hide True Polling' : 'Show True Polling'}
+          </Button>
+        )}
+        {/* True road influence button */}
+        {(debugMode || phaseNumber === 2) && (
+          <Button
+            onClick={() => setShowRoadInfluence(!showRoadInfluence)}
+            size={'small'}
+          >
+            {showRoadInfluence ? 'Hide Road Influence' : 'Show Road Influence'}
+          </Button>
+        )}
+      </div>
 
       {/* Reported poll results */}
       {phaseNumber === 3 &&
@@ -154,11 +159,11 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
             }}
           >
             <div style={{ color: 'red' }}>
-              <h3>Red Influence: {redInfluence}</h3>
+              {phaseNumber !== 4 && <h3>Red Influence: {redInfluence}</h3>}
               <p>Vote Percent: {(redPercent * 100).toFixed(2)}%</p>
             </div>
             <div style={{ color: 'blue' }}>
-              <h3>Blue Influence: {blueInfluence}</h3>
+              {phaseNumber !== 4 && <h3>Blue Influence: {blueInfluence}</h3>}
               <p>Vote Percent: {(bluePercent * 100).toFixed(2)}%</p>
             </div>
           </div>
