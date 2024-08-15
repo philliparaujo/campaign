@@ -3,7 +3,6 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Button from '../components/Button';
-import { createNewGameState } from '../GameState';
 import { useGlobalState } from '../GlobalState';
 import { PlayerId } from '../types';
 
@@ -27,17 +26,37 @@ function HomeScreen() {
     setPlayerId(idFromUrl);
   }, [location.search, navigate]);
 
-  const handleCreateGame = () => {
+  const handleCreateGame = async () => {
     if (!playerId) {
       console.error('No player ID found.');
       return;
     }
 
     const newGameId = uuidv4();
-    navigate(`/game?gameId=${newGameId}&playerId=${playerId}`);
+    try {
+      const response = await fetch('http://localhost:5000/rooms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          gameId: newGameId,
+          playerId: playerId,
+        }),
+      });
 
-    createGame(newGameId, createNewGameState());
-    addPlayerToGame(playerId, 'red', newGameId);
+      if (response.ok) {
+        // Game created successfully on the server
+        navigate(`/game?gameId=${newGameId}&playerId=${playerId}`);
+      } else {
+        console.error('Failed to create the game:', response.json());
+      }
+    } catch (error) {
+      console.error('Error creating game:', error);
+    }
+
+    // createGame(newGameId, createNewGameState());
+    // addPlayerToGame(playerId, 'red', newGameId);
   };
 
   return (
