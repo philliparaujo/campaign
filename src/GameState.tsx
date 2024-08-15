@@ -1,8 +1,10 @@
 import { createContext, useContext, useState } from 'react';
+import { useGlobalState } from './GlobalState';
 import {
   Board,
   Cell,
   Floor,
+  GameId,
   GameState,
   Influence,
   Opinion,
@@ -27,7 +29,7 @@ const startingCoins = 10;
 const debugMode = true;
 
 const initialPlayer: PlayerInfo = {
-  id: 'PLACEHOLDER',
+  id: '',
   coins: startingCoins,
   phaseAction: '',
   pollHistory: [
@@ -41,7 +43,7 @@ const initialPlayer: PlayerInfo = {
   ],
 };
 
-export const initialGameState: GameState = {
+export const createNewGameState = (): GameState => ({
   board: initializeBoard(size),
   turnNumber: 1,
   phaseNumber: 1,
@@ -54,7 +56,7 @@ export const initialGameState: GameState = {
     red: { ...initialPlayer },
     blue: { ...initialPlayer },
   },
-};
+});
 
 type GameStateContextType = {
   gameState: GameState;
@@ -82,10 +84,14 @@ const GameStateContext = createContext<GameStateContextType | undefined>(
 );
 
 export const GameStateProvider = ({
+  gameId,
   children,
 }: {
+  gameId: GameId;
   children: React.ReactNode;
 }) => {
+  const { activeGames } = useGlobalState();
+  const initialGameState = activeGames[gameId] || createNewGameState();
   const [gameState, setGameState] = useState<GameState>(initialGameState);
 
   const setFloorInfluence = (

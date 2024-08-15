@@ -26,8 +26,8 @@ function Game() {
   const [settingPollRegion, setSettingPollRegion] =
     useState<PlayerColor | null>(null);
 
-  const [playerId, setPlayerId] = useState<PlayerId | null>(null);
-  const [gameId, setGameId] = useState<GameId | null>(null);
+  const [playerId, setPlayerId] = useState<PlayerId>('');
+  const [gameId, setGameId] = useState<GameId>('');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -55,7 +55,7 @@ function Game() {
   console.log('active games: ', activeGames);
 
   return (
-    <GameStateProvider>
+    <GameStateProvider gameId={gameId}>
       <div
         style={{
           padding: '40px',

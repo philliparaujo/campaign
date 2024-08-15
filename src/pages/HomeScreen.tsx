@@ -1,14 +1,14 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 
+import { useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import Button from '../components/Button';
-import { useEffect, useState } from 'react';
+import { createNewGameState } from '../GameState';
 import { useGlobalState } from '../GlobalState';
-import { initialGameState } from '../GameState';
 import { PlayerId } from '../types';
 
 function HomeScreen() {
-  const [playerId, setPlayerId] = useState<PlayerId | null>(null);
+  const [playerId, setPlayerId] = useState<PlayerId>('');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -36,7 +36,7 @@ function HomeScreen() {
     const newGameId = uuidv4();
     navigate(`/game?gameId=${newGameId}&playerId=${playerId}`);
 
-    createGame(newGameId, initialGameState);
+    createGame(newGameId, createNewGameState());
     addPlayerToGame(playerId, 'red', newGameId);
   };
 
