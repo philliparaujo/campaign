@@ -23,22 +23,13 @@ const HUD: React.FC<HUDProps> = ({
 }) => {
   const {
     gameState,
-    setRedCoins,
-    setBlueCoins,
+    setCoins,
     setTurnNumber,
     setPhaseAction,
     savePoll,
     incrementPhaseNumber,
   } = useGameState();
-  const {
-    redCoins,
-    blueCoins,
-    turnNumber,
-    board,
-    phaseNumber,
-    phaseActions,
-    debugMode,
-  } = gameState;
+  const { players, turnNumber, board, phaseNumber, debugMode } = gameState;
 
   // Update poll boundary variables when any input's value changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,13 +84,19 @@ const HUD: React.FC<HUDProps> = ({
           <h3 style={{ color: '#ff6666', margin: '5px' }}>Red Coins</h3>
           <div>
             {debugMode && (
-              <Button onClick={() => setRedCoins(redCoins + 1)} size={'small'}>
+              <Button
+                onClick={() => setCoins('red', players.red.coins + 1)}
+                size={'small'}
+              >
                 +
               </Button>
             )}
-            <span style={{ margin: '0 10px' }}>{redCoins}</span>
+            <span style={{ margin: '0 10px' }}>{players.red.coins}</span>
             {debugMode && (
-              <Button onClick={() => setRedCoins(redCoins - 1)} size={'small'}>
+              <Button
+                onClick={() => setCoins('red', players.red.coins - 1)}
+                size={'small'}
+              >
                 -
               </Button>
             )}
@@ -111,16 +108,16 @@ const HUD: React.FC<HUDProps> = ({
           <div>
             {debugMode && (
               <Button
-                onClick={() => setBlueCoins(blueCoins + 1)}
+                onClick={() => setCoins('blue', players.blue.coins + 1)}
                 size={'small'}
               >
                 +
               </Button>
             )}
-            <span style={{ margin: '0 10px' }}>{blueCoins}</span>
+            <span style={{ margin: '0 10px' }}>{players.blue.coins}</span>
             {debugMode && (
               <Button
-                onClick={() => setBlueCoins(blueCoins - 1)}
+                onClick={() => setCoins('blue', players.blue.coins - 1)}
                 size={'small'}
               >
                 -
@@ -278,7 +275,7 @@ const HUD: React.FC<HUDProps> = ({
               <Button
                 onClick={() => handleConductPoll('red')}
                 color={'red'}
-                clicked={phaseActions['red'] === 'conductPoll'}
+                clicked={players.red.phaseAction === 'conductPoll'}
               >
                 Conduct Poll
               </Button>
@@ -372,7 +369,7 @@ const HUD: React.FC<HUDProps> = ({
               <Button
                 onClick={() => handleConductPoll('blue')}
                 color={'blue'}
-                clicked={phaseActions['blue'] === 'conductPoll'}
+                clicked={players.blue.phaseAction === 'conductPoll'}
               >
                 Conduct Poll
               </Button>
@@ -413,21 +410,21 @@ const HUD: React.FC<HUDProps> = ({
               <Button
                 onClick={() => setPhaseAction('red', 'trust')}
                 color={'green'}
-                clicked={phaseActions['red'] === 'trust'}
+                clicked={players.red.phaseAction === 'trust'}
               >
                 Trust
               </Button>
               <Button
                 onClick={() => setPhaseAction('red', 'doubt')}
                 color={'orange'}
-                clicked={phaseActions['red'] === 'doubt'}
+                clicked={players.red.phaseAction === 'doubt'}
               >
                 Doubt
               </Button>
               <Button
                 onClick={() => setPhaseAction('red', 'accuse')}
                 color={'red'}
-                clicked={phaseActions['red'] === 'accuse'}
+                clicked={players.red.phaseAction === 'accuse'}
               >
                 Accuse
               </Button>
@@ -459,21 +456,21 @@ const HUD: React.FC<HUDProps> = ({
               <Button
                 onClick={() => setPhaseAction('blue', 'trust')}
                 color={'green'}
-                clicked={phaseActions['blue'] === 'trust'}
+                clicked={players.blue.phaseAction === 'trust'}
               >
                 Trust
               </Button>
               <Button
                 onClick={() => setPhaseAction('blue', 'doubt')}
                 color={'orange'}
-                clicked={phaseActions['blue'] === 'doubt'}
+                clicked={players.blue.phaseAction === 'doubt'}
               >
                 Doubt
               </Button>
               <Button
                 onClick={() => setPhaseAction('blue', 'accuse')}
                 color={'red'}
-                clicked={phaseActions['blue'] === 'accuse'}
+                clicked={players.blue.phaseAction === 'accuse'}
               >
                 Accuse
               </Button>

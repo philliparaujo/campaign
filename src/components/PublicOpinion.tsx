@@ -6,10 +6,10 @@ interface PublicOpinionProps {}
 
 const PublicOpinion: React.FC<PublicOpinionProps> = () => {
   const { gameState } = useGameState();
-  const { turnNumber, phaseNumber, redPublicOpinion } = gameState;
+  const { turnNumber, phaseNumber, publicOpinionHistory } = gameState;
 
   const redPercentResult =
-    redPublicOpinion[turnNumber]?.redPublicOpinion[phaseNumber - 1];
+    publicOpinionHistory[turnNumber]?.redPublicOpinion[phaseNumber - 1];
   const bluePercentResult = 1 - redPercentResult;
 
   return (

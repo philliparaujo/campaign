@@ -376,24 +376,24 @@ export const getRedSample = (
 
 // Logic for toggling ability of next phase button
 export const canEndPhase = (gameState: GameState): boolean => {
-  const { phaseNumber, phaseActions, redCoins, blueCoins } = gameState;
+  const { phaseNumber, players } = gameState;
 
-  const coinCheck = redCoins >= 0 && blueCoins >= 0;
+  const coinCheck = players.red.coins >= 0 && players.blue.coins >= 0;
 
   switch (phaseNumber) {
     case 1:
       return coinCheck;
     case 2:
       return (
-        phaseActions['red'] === 'conductPoll' &&
-        phaseActions['blue'] === 'conductPoll' &&
+        players.red.phaseAction === 'conductPoll' &&
+        players.blue.phaseAction === 'conductPoll' &&
         coinCheck
       );
     case 3:
       const factCheckOptions: PlayerAction[] = ['trust', 'doubt', 'accuse'];
       return (
-        factCheckOptions.includes(phaseActions['red']) &&
-        factCheckOptions.includes(phaseActions['blue']) &&
+        factCheckOptions.includes(players.red.phaseAction) &&
+        factCheckOptions.includes(players.blue.phaseAction) &&
         coinCheck
       );
     case 4:
@@ -411,11 +411,13 @@ export const handleDoubtPoll = (
   playerColor: PlayerColor,
   gameState: GameState
 ): number => {
-  const { board, turnNumber, redPolls, bluePolls } = gameState;
+  const { board, turnNumber, players } = gameState;
 
   let truePercent = getRedSample(board, undefined, true);
   let poll =
-    playerColor === 'red' ? bluePolls[turnNumber] : redPolls[turnNumber];
+    playerColor === 'red'
+      ? players.blue.pollHistory[turnNumber]
+      : players.red.pollHistory[turnNumber];
   let pollPercent = poll['redPercent'];
 
   if (Math.abs(pollPercent - truePercent) < doubtPercent) {
@@ -433,11 +435,13 @@ export const handleAccusePoll = (
   playerColor: PlayerColor,
   gameState: GameState
 ): number => {
-  const { board, turnNumber, redPolls, bluePolls } = gameState;
+  const { board, turnNumber, players } = gameState;
 
   let truePercent = getRedSample(board, undefined, true);
   let poll =
-    playerColor === 'red' ? bluePolls[turnNumber] : redPolls[turnNumber];
+    playerColor === 'red'
+      ? players.blue.pollHistory[turnNumber]
+      : players.red.pollHistory[turnNumber];
   let pollPercent = poll['redPercent'];
 
   if (Math.abs(pollPercent - truePercent) < accusePercent) {

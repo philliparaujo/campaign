@@ -16,9 +16,8 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   floors,
   baseCost,
 }) => {
-  const { gameState, setFloorInfluence, setRedCoins, setBlueCoins } =
-    useGameState();
-  const { board, redCoins, blueCoins } = gameState;
+  const { gameState, setFloorInfluence, setCoins } = useGameState();
+  const { board, players } = gameState;
   const height = floors.length;
 
   // calculates the cost of a floor given its index in a building's Floor[]
@@ -46,18 +45,18 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
 
     // Calculate new coin counts
     const newRedCoins =
-      redCoins +
+      players.red.coins +
       (currentInfluence === 'red' ? influenceCost : 0) -
       (newInfluence === 'red' ? influenceCost : 0);
     const newBlueCoins =
-      blueCoins +
+      players.blue.coins +
       (currentInfluence === 'blue' ? influenceCost : 0) -
       (newInfluence === 'blue' ? influenceCost : 0);
 
     // Update game state
     setFloorInfluence(rowIndex, colIndex, floorIndex, newInfluence);
-    setRedCoins(newRedCoins);
-    setBlueCoins(newBlueCoins);
+    setCoins('red', newRedCoins);
+    setCoins('blue', newBlueCoins);
   };
 
   return (

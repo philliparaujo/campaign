@@ -16,13 +16,11 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
   const { gameState } = useGameState();
   const {
     board,
-    redPolls,
-    bluePolls,
-    redPublicOpinion,
+    players,
+    publicOpinionHistory,
     turnNumber,
     phaseNumber,
     debugMode,
-    phaseActions,
   } = gameState;
   const [showStats, setShowStats] = useState<boolean>(false);
 
@@ -33,7 +31,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
   const currentBluePercent = 1 - currentRedPercent;
 
   const redPercentResult =
-    redPublicOpinion[turnNumber]['trueRedPercent'] || 0.5;
+    publicOpinionHistory[turnNumber]['trueRedPercent'] || 0.5;
   const bluePercentResult = 1 - redPercentResult;
 
   const redPercent = phaseNumber === 4 ? redPercentResult : currentRedPercent;
@@ -41,14 +39,14 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
     phaseNumber === 4 ? bluePercentResult : currentBluePercent;
 
   const bufferPercent = (playerColor: PlayerColor) => {
-    return phaseActions[playerColor] === 'doubt'
+    return players[playerColor].phaseAction === 'doubt'
       ? 0.025
-      : phaseActions[playerColor] === 'accuse'
+      : players[playerColor].phaseAction === 'accuse'
         ? 0.05
         : 0;
   };
 
-  console.log(redPublicOpinion);
+  console.log(publicOpinionHistory);
 
   return (
     <div
@@ -84,7 +82,8 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
 
       {/* Reported poll results */}
       {phaseNumber === 3 &&
-        (redPolls.length > turnNumber && bluePolls.length > turnNumber ? (
+        (players.red.pollHistory.length > turnNumber &&
+        players.blue.pollHistory.length > turnNumber ? (
           <div
             style={{
               marginTop: '10px',
@@ -96,7 +95,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
           >
             <div style={{ color: 'red', marginBottom: '15px' }}>
               <h3>Red Poll Results:</h3>
-              {formatPoll(redPolls[turnNumber]['redPercent'])}
+              {formatPoll(players.red.pollHistory[turnNumber]['redPercent'])}
               <div
                 style={{
                   display: 'flex',
@@ -110,7 +109,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
                 <div
                   style={{
                     height: '100%',
-                    width: `${(redPolls[turnNumber]['redPercent'] - bufferPercent('blue')) * 100}%`,
+                    width: `${(players.red.pollHistory[turnNumber]['redPercent'] - bufferPercent('blue')) * 100}%`,
                     backgroundColor: 'red',
                   }}
                 />
@@ -131,7 +130,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
                 <div
                   style={{
                     height: '100%',
-                    width: `${(1 - redPolls[turnNumber]['redPercent'] - bufferPercent('blue')) * 100}%`,
+                    width: `${(1 - players.red.pollHistory[turnNumber]['redPercent'] - bufferPercent('blue')) * 100}%`,
                     backgroundColor: 'blue',
                   }}
                 />
@@ -139,7 +138,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
             </div>
             <div style={{ color: 'blue' }}>
               <h3>Blue Poll Results:</h3>
-              {formatPoll(bluePolls[turnNumber]['redPercent'])}
+              {formatPoll(players.blue.pollHistory[turnNumber]['redPercent'])}
               <div
                 style={{
                   display: 'flex',
@@ -153,7 +152,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
                 <div
                   style={{
                     height: '100%',
-                    width: `${(bluePolls[turnNumber]['redPercent'] - -bufferPercent('red')) * 100}%`,
+                    width: `${(players.blue.pollHistory[turnNumber]['redPercent'] - -bufferPercent('red')) * 100}%`,
                     backgroundColor: 'red',
                   }}
                 />
@@ -174,7 +173,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
                 <div
                   style={{
                     height: '100%',
-                    width: `${(1 - bluePolls[turnNumber]['redPercent'] - -bufferPercent('red')) * 100}%`,
+                    width: `${(1 - players.blue.pollHistory[turnNumber]['redPercent'] - -bufferPercent('red')) * 100}%`,
                     backgroundColor: 'blue',
                   }}
                 />

@@ -22,16 +22,18 @@ export type PlayerAction = '' | 'conductPoll' | 'trust' | 'doubt' | 'accuse';
 /* Game state types */
 export type GameState = {
   board: Board;
-  redCoins: number;
-  blueCoins: number;
   turnNumber: number;
   phaseNumber: number;
-  // maps every player to what actions they've taken, if any
-  phaseActions: Record<PlayerColor, PlayerAction>;
-  redPublicOpinion: Opinion[];
-  redPolls: Poll[];
-  bluePolls: Poll[];
+  publicOpinionHistory: Opinion[];
   debugMode: boolean;
+  players: Record<PlayerColor, PlayerInfo>;
+};
+
+export type PlayerInfo = {
+  id: PlayerId;
+  coins: number;
+  phaseAction: PlayerAction;
+  pollHistory: Poll[];
 };
 
 export type Poll = PollRegion & {
@@ -49,3 +51,7 @@ export type Opinion = {
   redPublicOpinion: number[]; // to keep track of four phases
   trueRedPercent: number | null; // whether poll has come out or not
 };
+
+/* Multiplayer types */
+export type GameId = string;
+export type PlayerId = string;
