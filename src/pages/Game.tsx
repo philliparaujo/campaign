@@ -28,6 +28,7 @@ function Game() {
     useState<PlayerColor | null>(null);
 
   const [playerId, setPlayerId] = useState<string | null>(null);
+  const [gameId, setGameId] = useState<string | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -48,6 +49,7 @@ function Game() {
     }
 
     setPlayerId(idFromUrl);
+    setGameId(gameId);
   }, [location.search, navigate]);
 
   return (
@@ -67,7 +69,8 @@ function Game() {
           {/* Left Side */}
           <div>
             <h1 style={{ paddingBottom: '35px' }}>Campaign</h1>
-            {playerId}
+            <p>{`Player ID: ${playerId}`}</p>
+            <p>{`Game ID: ${gameId}`}</p>
             <BoardUI
               pollInputs={pollInputs}
               setPollInputs={setPollInputs}
