@@ -31,6 +31,8 @@ function Game() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { fetchGame } = useGlobalState();
+
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     const playerId = queryParams.get('playerId');
@@ -49,28 +51,8 @@ function Game() {
     setPlayerId(playerId);
     setGameId(gameId);
 
-    const fetchGameState = async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/rooms/${gameId}`);
-        if (response.ok) {
-          const gameState = await response.json();
-          // You can now use this gameState in your component
-          console.log('Fetched game state:', gameState);
-          // You might want to set this gameState in your component's state
-        } else {
-          console.error('Failed to fetch the game.');
-        }
-      } catch (error) {
-        console.error('Error fetching game:', error);
-      }
-    };
-
-    fetchGameState();
-  }, [location.search, navigate]);
-
-  const { playerGames, activeGames } = useGlobalState();
-  console.log('player games: ', playerGames);
-  console.log('active games: ', activeGames);
+    fetchGame(gameId);
+  }, [location.search, navigate, fetchGame]);
 
   return (
     <GameStateProvider gameId={gameId}>

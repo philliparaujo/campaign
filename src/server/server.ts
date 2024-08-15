@@ -1,10 +1,10 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
-import mongoose from 'mongoose';
+import mongoose, { Error } from 'mongoose';
 import { createNewGameState } from '../GameState';
-import ActiveGameModel from './models/ActiveGame'; // Adjust the import path as necessary
-import PlayerGameModel from './models/PlayerGame'; // Adjust the import path as necessary
+import ActiveGameModel from './models/ActiveGame';
+import PlayerGameModel from './models/PlayerGame';
 
 dotenv.config();
 
@@ -24,8 +24,8 @@ mongoose.connect(URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error(err));
 
-// Create a room
-app.post('/rooms', async (req, res) => {
+// Create a game and have player join as red
+app.post('/game/create', async (req, res) => {
   try {
     const { gameId, playerId } = req.body;
 
@@ -49,13 +49,17 @@ app.post('/rooms', async (req, res) => {
     await playerGame.save();
 
     res.status(201).json({ message: 'Room created successfully', gameState: newGameState });
-  } catch (error) {
-    res.status(500).json({ message: 'Error creating room', error });
+  } catch (error: any) {
+    if (error.code === 11000) {  // Check for duplicate key error
+      res.status(400).json({ message: 'Player is already associated with a game.', error });
+    } else {
+      res.status(500).json({ message: 'Error creating room', error });
+    }
   }
 });
 
-// Join a room by gameId
-app.post('/rooms/join', async (req, res) => {
+// Join a game as blue
+app.post('/game/join', async (req, res) => {
   try {
     const { gameId, playerId } = req.body;
 
@@ -87,7 +91,7 @@ app.post('/rooms/join', async (req, res) => {
 });
 
 // Fetch a room by gameId
-app.get('/rooms/:gameId', async (req, res) => {
+app.get('/games/:gameId', async (req, res) => {
   try {
     const { gameId } = req.params;
 
@@ -102,6 +106,36 @@ app.get('/rooms/:gameId', async (req, res) => {
     res.status(500).json({ message: 'Error fetching room', error });
   }
 });
+
+// Fetch all games
+app.get('/games', async (req, res) => {
+  try {
+    const activeGames = await ActiveGameModel.find();
+    const playerGames = await PlayerGameModel.find();
+
+    // Combine the data to map players to their games
+    const gameData = {
+      activeGames,
+      playerGames,
+    };
+
+    res.status(200).json(gameData);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching games and players', error });
+  }
+});
+
+// Delete all games
+app.delete('/games/deleteAll', async (req, res) => {
+  try {
+    await ActiveGameModel.deleteMany({});
+    await PlayerGameModel.deleteMany({});
+    res.status(200).json({ message: 'All games deleted successfully' });
+   } catch (error) {
+    res.status(500).json({ message: 'Error deleting games and players', error });
+  }
+});
+
 
 app.get('/', (req, res) => {
   res.send('Welcome to the Game Server!');

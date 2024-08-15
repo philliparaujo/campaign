@@ -1,25 +1,15 @@
-import { createContext, useContext, useState } from 'react';
-import {
-  ActiveGames,
-  GameId,
-  GameState,
-  PlayerColor,
-  PlayerGames,
-  PlayerId,
-} from './types';
+import { createContext, useContext, useEffect, useState } from 'react';
+import { ActiveGames, GameId, PlayerGames, PlayerId } from './types';
 
 type GlobalStateContextType = {
   playerGames: PlayerGames;
   activeGames: ActiveGames;
 
-  addPlayerToGame: (
-    playerId: PlayerId,
-    color: PlayerColor,
-    gameId: GameId
-  ) => void;
-  removePlayerFromGame: (playerId: PlayerId) => void;
-  createGame: (gameId: GameId, gameState: GameState) => void;
-  removeGame: (gameId: GameId) => void;
+  createGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
+  joinGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
+  deleteAllGames: () => Promise<void>;
+
+  fetchGame: (gameId: GameId) => Promise<void>;
 };
 
 const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
@@ -34,17 +24,120 @@ export const GlobalStateProvider = ({
   const [playerGames, setPlayerGames] = useState<PlayerGames>({});
   const [activeGames, setActiveGames] = useState<ActiveGames>({});
 
-  const addPlayerToGame = (
-    playerId: PlayerId,
-    color: PlayerColor,
-    gameId: GameId
-  ) => {
-    setPlayerGames(prevRecord => ({ ...prevRecord, [playerId]: gameId }));
-    setActiveGames(prevRecord => {
-      const newRecord = { ...prevRecord };
-      newRecord[gameId].players[color].id = playerId;
-      return newRecord;
-    });
+  // Load games from database
+  useEffect(() => {
+    const initializeGames = async (): Promise<void> => {
+      fetch('http://localhost:5000/games')
+        .then(response => {
+          if (!response.ok) {
+            return response.json().then(errorData => {
+              throw new Error(
+                'Failed to fetch initial state: ' + JSON.stringify(errorData)
+              );
+            });
+          }
+          return response.json();
+        })
+        .then(gameData => {
+          setActiveGames(gameData.activeGames);
+          setPlayerGames(gameData.playerGames);
+        })
+        .catch(error => {
+          console.error(error.message);
+        });
+    };
+
+    initializeGames();
+  }, []);
+
+  const createGame = (gameId: GameId, playerId: PlayerId): Promise<void> => {
+    return fetch('http://localhost:5000/game/create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ gameId, playerId }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error('Failed to create the game: ' + errorData.message);
+          });
+        }
+        return response.json();
+      })
+      .then(gameState => {
+        setActiveGames(prevRecord => ({ ...prevRecord, [gameId]: gameState }));
+        setPlayerGames(prevRecord => ({ ...prevRecord, [playerId]: gameId }));
+      })
+      .catch(error => {
+        console.error(error.message);
+      });
+  };
+
+  const joinGame = (gameId: GameId, playerId: PlayerId): Promise<void> => {
+    return fetch('http://localhost:5000/game/join', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ gameId, playerId }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error('Failed to join the game: ' + errorData.message);
+          });
+        }
+        return response.json();
+      })
+      .then(gameState => {
+        setActiveGames(prevRecord => ({ ...prevRecord, [gameId]: gameState }));
+        setPlayerGames(prevRecord => ({ ...prevRecord, [playerId]: gameId }));
+      })
+      .catch(error => {
+        console.error(error.message);
+      });
+  };
+
+  const deleteAllGames = (): Promise<void> => {
+    return fetch('http://localhost:5000/games/deleteAll', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error('Failed to delete all games: ' + errorData.message);
+          });
+        }
+        setActiveGames({});
+        setPlayerGames({});
+        console.log('All games deleted successfully');
+      })
+      .catch(error => {
+        console.error(error.message);
+      });
+  };
+
+  const fetchGame = (gameId: GameId): Promise<void> => {
+    return fetch(`http://localhost:5000/games/${gameId}`)
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error('Failed to fetch game: ' + errorData.message);
+          });
+        }
+        return response.json();
+      })
+      .then(gameState => {
+        console.log('Fetched game:', gameState);
+      })
+      .catch(error => {
+        console.error(error.message);
+      });
   };
 
   const removePlayerFromGame = (playerId: PlayerId) => {
@@ -53,10 +146,6 @@ export const GlobalStateProvider = ({
       delete newRecord[playerId];
       return newRecord;
     });
-  };
-
-  const createGame = (gameId: GameId, gameState: GameState) => {
-    setActiveGames(prevRecord => ({ ...prevRecord, [gameId]: gameState }));
   };
 
   const removeGame = (gameId: GameId) => {
@@ -72,10 +161,10 @@ export const GlobalStateProvider = ({
       value={{
         playerGames,
         activeGames,
-        addPlayerToGame,
-        removePlayerFromGame,
         createGame,
-        removeGame,
+        joinGame,
+        deleteAllGames,
+        fetchGame,
       }}
     >
       {children}
