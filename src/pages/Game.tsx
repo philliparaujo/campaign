@@ -5,9 +5,8 @@ import HUD from '../components/HUD';
 import PublicOpinion from '../components/PublicOpinion';
 import Scoreboard from '../components/Scoreboard';
 import { GameStateProvider, size } from '../GameState';
-import { PlayerColor, PollRegion } from '../types';
-
-import { v4 as uuidv4 } from 'uuid';
+import { useGlobalState } from '../GlobalState';
+import { GameId, PlayerColor, PlayerId, PollRegion } from '../types';
 
 function Game() {
   const defaultPollRegion: PollRegion = {
@@ -27,30 +26,33 @@ function Game() {
   const [settingPollRegion, setSettingPollRegion] =
     useState<PlayerColor | null>(null);
 
-  const [playerId, setPlayerId] = useState<string | null>(null);
-  const [gameId, setGameId] = useState<string | null>(null);
+  const [playerId, setPlayerId] = useState<PlayerId | null>(null);
+  const [gameId, setGameId] = useState<GameId | null>(null);
   const location = useLocation();
   const navigate = useNavigate();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    let idFromUrl = queryParams.get('playerId');
+    const playerId = queryParams.get('playerId');
     const gameId = queryParams.get('gameId');
+
+    if (!playerId) {
+      console.error('No Player ID found in the URL.');
+      return;
+    }
 
     if (!gameId) {
       console.error('No Game ID found in the URL.');
       return;
     }
 
-    if (!idFromUrl) {
-      idFromUrl = uuidv4();
-      queryParams.set('playerId', idFromUrl);
-      navigate({ search: queryParams.toString() }, { replace: true });
-    }
-
-    setPlayerId(idFromUrl);
+    setPlayerId(playerId);
     setGameId(gameId);
   }, [location.search, navigate]);
+
+  const { playerGames, activeGames } = useGlobalState();
+  console.log('player games: ', playerGames);
+  console.log('active games: ', activeGames);
 
   return (
     <GameStateProvider>

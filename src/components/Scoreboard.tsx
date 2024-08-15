@@ -46,8 +46,6 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
         : 0;
   };
 
-  console.log(publicOpinionHistory);
-
   return (
     <div
       style={{

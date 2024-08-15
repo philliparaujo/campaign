@@ -55,3 +55,6 @@ export type Opinion = {
 /* Multiplayer types */
 export type GameId = string;
 export type PlayerId = string;
+
+export type PlayerGames = Record<PlayerId, GameId | null>;
+export type ActiveGames = Record<GameId, GameState>;

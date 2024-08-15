@@ -41,7 +41,7 @@ const initialPlayer: PlayerInfo = {
   ],
 };
 
-const initialGameState: GameState = {
+export const initialGameState: GameState = {
   board: initializeBoard(size),
   turnNumber: 1,
   phaseNumber: 1,
@@ -51,8 +51,8 @@ const initialGameState: GameState = {
   ],
   debugMode,
   players: {
-    red: initialPlayer,
-    blue: initialPlayer,
+    red: { ...initialPlayer },
+    blue: { ...initialPlayer },
   },
 };
 

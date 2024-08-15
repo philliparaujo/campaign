@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { size, useGameState } from '../GameState';
 import { PlayerColor, Poll, PollRegion } from '../types';
 import { canEndPhase, getRedSample } from '../utils';
@@ -43,10 +43,6 @@ const HUD: React.FC<HUDProps> = ({
       },
     }));
   };
-
-  useEffect(() => {
-    console.log(settingPollRegion);
-  }, [settingPollRegion]);
 
   // Sample a population within your boundary and save your poll result
   const handleConductPoll = (pollColor: PlayerColor) => {
