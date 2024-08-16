@@ -1,16 +1,19 @@
 import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import BoardUI from '../components/Board';
-import EndTurnButton from '../components/EndTurnButton';
+import Button from '../components/Button';
 import HUD from '../components/HUD';
 import PublicOpinion from '../components/PublicOpinion';
 import Scoreboard from '../components/Scoreboard';
-import { GameStateProvider, size } from '../GameState';
+import { size, useGameState } from '../GameState';
 import { useGlobalState } from '../GlobalState';
 import { GameId, PlayerColor, PlayerId, PollRegion } from '../types';
-import RefreshButton from '../components/RefreshButton';
 
-function Game() {
+type GameProps = {
+  playerId: PlayerId;
+  gameId: GameId;
+};
+
+const Game: React.FC<GameProps> = ({ playerId, gameId }) => {
   const defaultPollRegion: PollRegion = {
     startRow: 0,
     endRow: size - 1,
@@ -28,79 +31,82 @@ function Game() {
   const [settingPollRegion, setSettingPollRegion] =
     useState<PlayerColor | null>(null);
 
-  const [playerId, setPlayerId] = useState<PlayerId>('');
-  const [gameId, setGameId] = useState<GameId>('');
-  const location = useLocation();
+  const [playerColor, setPlayerColor] = useState<PlayerColor | null>(null);
 
-  const { fetchGame } = useGlobalState();
+  const { updateGame, fetchGame } = useGlobalState();
+  const { gameState, setGameState } = useGameState();
 
+  // Set and display color of player
   useEffect(() => {
-    const queryParams = new URLSearchParams(location.search);
-    const playerId = queryParams.get('playerId');
-    const gameId = queryParams.get('gameId');
+    setPlayerColor(gameState.players.red.id === playerId ? 'red' : 'blue');
+  }, [gameState, playerId]);
 
-    if (!playerId) {
-      console.error('No Player ID found in the URL.');
-      return;
+  const handleEndTurn = async () => {
+    try {
+      await updateGame(gameId, gameState);
+    } catch (error) {
+      console.error('Error updating the game state:', error);
     }
+  };
 
-    if (!gameId) {
-      console.error('No Game ID found in the URL.');
-      return;
+  const handleRefresh = async () => {
+    try {
+      const gameState = await fetchGame(gameId);
+      setGameState(gameState);
+      console.log('Game state successfully updated!');
+    } catch (error) {
+      console.error('Error updating the game state:', error);
     }
-
-    setPlayerId(playerId);
-    setGameId(gameId);
-  }, [location.search]);
+  };
 
   return (
-    <GameStateProvider gameId={gameId}>
+    <div
+      style={{
+        padding: '40px',
+      }}
+    >
       <div
         style={{
-          padding: '40px',
+          display: 'flex',
+          width: '100%',
+          gap: '80px',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            width: '100%',
-            gap: '80px',
-          }}
-        >
-          {/* Left Side */}
-          <div>
-            <h1 style={{ paddingBottom: '35px' }}>Campaign</h1>
-            <p>{`Player ID: ${playerId}`}</p>
-            <p>{`Game ID: ${gameId}`}</p>
-            <BoardUI
-              pollInputs={pollInputs}
-              setPollInputs={setPollInputs}
-              showRoadInfluence={showRoadInfluence}
-              settingPollRegion={settingPollRegion}
-              setSettingPollRegion={setSettingPollRegion}
-            />
-          </div>
+        {/* Left Side */}
+        <div>
+          <h1 style={{ paddingBottom: '35px' }}>Campaign</h1>
+          <p
+            style={{ color: playerColor ?? 'black' }}
+          >{`Player ID: ${playerId}`}</p>
+          <p>{`Game ID: ${gameId}`}</p>
+          <BoardUI
+            pollInputs={pollInputs}
+            setPollInputs={setPollInputs}
+            showRoadInfluence={showRoadInfluence}
+            settingPollRegion={settingPollRegion}
+            setSettingPollRegion={setSettingPollRegion}
+          />
+        </div>
 
-          {/* Right Side */}
-          <div style={{ width: '650px' }}>
-            <PublicOpinion />
-            <HUD
-              pollInputs={pollInputs}
-              setPollInputs={setPollInputs}
-              settingPollRegion={settingPollRegion}
-              setSettingPollRegion={setSettingPollRegion}
-            />
-            <Scoreboard
-              showRoadInfluence={showRoadInfluence}
-              setShowRoadInfluence={setShowRoadInfluence}
-            />
-            <EndTurnButton gameId={gameId} />
-            <RefreshButton gameId={gameId} />
-          </div>
+        {/* Right Side */}
+        <div style={{ width: '650px' }}>
+          <PublicOpinion />
+          <HUD
+            pollInputs={pollInputs}
+            setPollInputs={setPollInputs}
+            settingPollRegion={settingPollRegion}
+            setSettingPollRegion={setSettingPollRegion}
+          />
+          <Scoreboard
+            showRoadInfluence={showRoadInfluence}
+            setShowRoadInfluence={setShowRoadInfluence}
+          />
+          <Button onClick={handleEndTurn}>End Turn</Button>
+          <Button onClick={handleRefresh}>Refresh</Button>
         </div>
       </div>
-    </GameStateProvider>
+    </div>
   );
-}
+};
 
 export default Game;

@@ -26,6 +26,7 @@ const BoardUI: React.FC<BoardUIProps> = ({
 }) => {
   const { gameState, regenerateBoard } = useGameState();
   const { board, phaseNumber } = gameState;
+
   const cellSize = 100;
 
   const [isDragging, setIsDragging] = useState<boolean>(false);

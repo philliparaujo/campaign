@@ -26,7 +26,7 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   };
 
   // update game state when toggling ownership of a floor
-  const updateFloorInfluence = (
+  const updateFloorInfluence = async (
     rowIndex: number,
     colIndex: number,
     floorIndex: number

@@ -97,8 +97,8 @@ export const GameStateProvider = ({
   // Once new gameId received, load in initial state if game already exists
   useEffect(() => {
     if (gameId) {
-      fetchGame(gameId).then(newGame => {
-        setGameState(newGame.gameState);
+      fetchGame(gameId).then(gameState => {
+        setGameState(gameState);
       });
     }
   }, [gameId, fetchGame]);

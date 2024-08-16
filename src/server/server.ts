@@ -52,9 +52,9 @@ app.post('/game/create', async (req, res) => {
     playerGame = new PlayerGameModel({ playerId, gameId });
     await playerGame.save();
 
-    res.status(201).json({ message: 'Room created successfully', gameState: newGameState });
+    res.status(201).json(newGameState);
   } catch (error: any) {
-      res.status(500).json({ message: 'Error creating room', error });
+    res.status(500).json({ message: 'Error creating room', error });
   }
 });
 
@@ -84,7 +84,7 @@ app.post('/game/join', async (req, res) => {
     const playerGame = new PlayerGameModel({ playerId, gameId });
     await playerGame.save();
 
-    res.status(200).json({ message: 'Joined room successfully', activeGame });
+    res.status(200).json(activeGame.gameState);
   } catch (error) {
     res.status(500).json({ message: 'Error joining room', error });
   }
@@ -101,7 +101,8 @@ app.put('/game/update', async (req, res) => {
 
     activeGame.gameState = gameState;
     await activeGame.save();
-    res.status(200).json({ message: 'Updated room successfully', activeGame });
+
+    res.status(200).json(activeGame.gameState);
   } catch (error) {
     res.status(500).json({ message: 'Error updating room', error });
   }
@@ -113,12 +114,12 @@ app.get('/games/:gameId', async (req, res) => {
     const { gameId } = req.params;
 
     // Fetch the game state by gameId
-    const gameState = await ActiveGameModel.findOne({ gameId });
-    if (!gameState) {
+    const activeGame = await ActiveGameModel.findOne({ gameId });
+    if (!activeGame) {
       return res.status(404).json({ message: 'Room not found' });
     }
 
-    res.status(200).json(gameState);
+    res.status(200).json(activeGame.gameState);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching room', error });
   }

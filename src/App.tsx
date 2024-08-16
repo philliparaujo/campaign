@@ -1,8 +1,8 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import HomeScreen from './pages/HomeScreen';
-import Game from './pages/Game';
 import { GlobalStateProvider } from './GlobalState';
+import GameWrapper from './pages/GameWrapper';
+import HomeScreen from './pages/HomeScreen';
 
 function App() {
   return (
@@ -10,7 +10,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<HomeScreen />} />
-          <Route path="/game" element={<Game />} />
+          <Route path="/game" element={<GameWrapper />} />
         </Routes>
       </BrowserRouter>
     </GlobalStateProvider>
