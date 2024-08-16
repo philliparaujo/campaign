@@ -7,6 +7,7 @@ import Scoreboard from '../components/Scoreboard';
 import { size, useGameState } from '../GameState';
 import { useGlobalState } from '../GlobalState';
 import { GameId, PlayerColor, PlayerId, PollRegion } from '../types';
+import { useNavigate } from 'react-router-dom';
 
 type GameProps = {
   gameId: GameId;
@@ -32,8 +33,9 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
   const [settingPollRegion, setSettingPollRegion] =
     useState<PlayerColor | null>(null);
 
-  const { updateGame, fetchGame } = useGlobalState();
+  const { leaveGame, updateGame, fetchGame } = useGlobalState();
   const { gameState, setGameState } = useGameState();
+  const navigate = useNavigate();
 
   const handleEndTurn = async () => {
     try {
@@ -50,6 +52,15 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
       console.log('Game state successfully updated!');
     } catch (error) {
       console.error('Error updating the game state:', error);
+    }
+  };
+
+  const handleLeaveGame = async () => {
+    try {
+      await leaveGame(gameId, playerId);
+      navigate('/');
+    } catch (error) {
+      console.error('Error leaving the game:', error);
     }
   };
 
@@ -98,6 +109,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
           />
           <Button onClick={handleEndTurn}>End Turn</Button>
           <Button onClick={handleRefresh}>Refresh</Button>
+          <Button onClick={handleLeaveGame}>Leave Game</Button>
         </div>
       </div>
     </div>

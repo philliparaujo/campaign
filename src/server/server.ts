@@ -90,6 +90,58 @@ app.post('/game/join', async (req, res) => {
   }
 });
 
+// Leave game that you are in
+app.post('/game/leave', async (req, res) => {
+  try {
+    const { gameId, playerId } = req.body;
+    let activeGame = await ActiveGameModel.findOne({ gameId });
+    if (!activeGame) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    // Remove playerId from game state
+    if (playerId === activeGame.gameState.players.red.id) {
+      activeGame.gameState.players.red.id = '';
+    } else if (playerId === activeGame.gameState.players.blue.id) {
+      activeGame.gameState.players.blue.id = '';
+    } else {
+      return res.status(400).json({ message: 'Player is not in this game.' });
+    }
+
+    // Save the updated game state
+    await activeGame.save();
+
+    // Find and delete the player game entry
+    await PlayerGameModel.findOneAndDelete({ playerId, gameId });
+
+    res.status(200).json(activeGame.gameState);
+  } catch (error) {
+    res.status(500).json({ message: 'Error leaving room', error });
+  }
+});
+
+// Delete a game
+app.delete('/game/delete', async (req, res) => {
+  try {
+    const { gameId } = req.body;
+    const activeGame = await ActiveGameModel.findOne({ gameId });
+    if (!activeGame) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    // Delete the game
+    await ActiveGameModel.findOneAndDelete({ gameId });
+
+    // Optionally, delete any related player games if needed
+    await PlayerGameModel.deleteMany({ gameId });
+
+    res.status(200).json({ message: 'Game deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting room', error });
+  }
+});
+
+
 // Update a game's state
 app.put('/game/update', async (req, res) => {
   try {

@@ -13,6 +13,7 @@ type GlobalStateContextType = {
 
   createGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
   joinGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
+  leaveGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
   deleteAllGames: () => Promise<void>;
 
   fetchGame: (gameId: GameId) => Promise<any>; // Returns GameState
@@ -118,6 +119,63 @@ export const GlobalStateProvider = ({
     []
   );
 
+  const leaveGame = useCallback(
+    async (gameId: GameId, playerId: PlayerId): Promise<void> => {
+      try {
+        const response = await fetch('http://localhost:5000/game/leave', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ gameId, playerId }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`Failed to leave the game: ${errorData.message}`);
+        }
+
+        // Update game state, or delete it if both players gone
+        const gameState = await response.json();
+        if (!gameState.players.red.id && !gameState.players.blue.id) {
+          await fetch('http://localhost:5000/game/delete', {
+            method: 'DELETE',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ gameId }),
+          });
+
+          setActiveGames(prevRecord => {
+            const updatedRecord = { ...prevRecord };
+            delete updatedRecord[gameId];
+            return updatedRecord;
+          });
+        } else {
+          setActiveGames(prevRecord => ({
+            ...prevRecord,
+            [gameId]: gameState,
+          }));
+        }
+
+        // Remove player from game
+        setPlayerGames(prevRecord => {
+          const updatedRecord = { ...prevRecord };
+          delete updatedRecord[playerId];
+          return updatedRecord;
+        });
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error(error.message);
+        } else {
+          console.error('An unknown error occurred during game leaving');
+        }
+        throw error;
+      }
+    },
+    []
+  );
+
   const deleteAllGames = useCallback(async (): Promise<void> => {
     try {
       const response = await fetch('http://localhost:5000/games/deleteAll', {
@@ -215,6 +273,7 @@ export const GlobalStateProvider = ({
         activeGames,
         createGame,
         joinGame,
+        leaveGame,
         deleteAllGames,
         fetchGame,
         gameExists,
