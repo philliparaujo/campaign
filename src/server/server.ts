@@ -35,26 +35,27 @@ app.post('/game/create', async (req, res) => {
       return res.status(400).json({ message: 'Game already exists with this gameId.' });
     }
 
+    // Check if player is already associated with a game
+    let playerGame = await PlayerGameModel.findOne({ playerId });
+    if (playerGame) {
+      return res.status(400).json({ message: 'Player is already associated with a game.' });
+    }
+
     // Create a new game state
     const newGameState = createNewGameState();
     newGameState.players.red.id = playerId;  // Assign playerId to red player
 
     const newGame = new ActiveGameModel({ gameId: gameId, gameState: newGameState });
-
-    // Save the new game state
+    console.log("Should be saving to:", newGameState);
     await newGame.save();
 
     // Associate player with this game
-    const playerGame = new PlayerGameModel({ playerId, gameId });
+    playerGame = new PlayerGameModel({ playerId, gameId });
     await playerGame.save();
 
     res.status(201).json({ message: 'Room created successfully', gameState: newGameState });
   } catch (error: any) {
-    if (error.code === 11000) {  // Check for duplicate key error
-      res.status(400).json({ message: 'Player is already associated with a game.', error });
-    } else {
       res.status(500).json({ message: 'Error creating room', error });
-    }
   }
 });
 
@@ -87,6 +88,23 @@ app.post('/game/join', async (req, res) => {
     res.status(200).json({ message: 'Joined room successfully', activeGame });
   } catch (error) {
     res.status(500).json({ message: 'Error joining room', error });
+  }
+});
+
+// Update a game's state
+app.put('/game/update', async (req, res) => {
+  try {
+    const { gameId, gameState } = req.body;
+    let activeGame = await ActiveGameModel.findOne({ gameId });
+    if (!activeGame) {
+      return res.status(404).json({ message: 'Room not found' });
+    }
+
+    activeGame.gameState = gameState;
+    await activeGame.save();
+    res.status(200).json({ message: 'Updated room successfully', activeGame });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating room', error });
   }
 });
 

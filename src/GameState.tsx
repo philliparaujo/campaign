@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import { useGlobalState } from './GlobalState';
 import {
   Board,
@@ -90,9 +90,18 @@ export const GameStateProvider = ({
   gameId: GameId;
   children: React.ReactNode;
 }) => {
-  const { activeGames } = useGlobalState();
+  const { activeGames, fetchGame } = useGlobalState();
   const initialGameState = activeGames[gameId] || createNewGameState();
   const [gameState, setGameState] = useState<GameState>(initialGameState);
+
+  // Once new gameId received, load in initial state if game already exists
+  useEffect(() => {
+    if (gameId) {
+      fetchGame(gameId).then(newGame => {
+        setGameState(newGame.gameState);
+      });
+    }
+  }, [gameId, fetchGame]);
 
   const setFloorInfluence = (
     rowIndex: number,

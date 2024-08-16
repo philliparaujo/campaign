@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import { ActiveGames, GameId, PlayerGames, PlayerId } from './types';
+import { ActiveGames, GameId, GameState, PlayerGames, PlayerId } from './types';
 
 type GlobalStateContextType = {
   playerGames: PlayerGames;
@@ -9,7 +9,8 @@ type GlobalStateContextType = {
   joinGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
   deleteAllGames: () => Promise<void>;
 
-  fetchGame: (gameId: GameId) => Promise<void>;
+  fetchGame: (gameId: GameId) => Promise<any>;
+  updateGame: (gameId: GameId, gameState: GameState) => Promise<void>;
 };
 
 const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
@@ -72,6 +73,7 @@ export const GlobalStateProvider = ({
       })
       .catch(error => {
         console.error(error.message);
+        throw error;
       });
   };
 
@@ -97,6 +99,7 @@ export const GlobalStateProvider = ({
       })
       .catch(error => {
         console.error(error.message);
+        throw error;
       });
   };
 
@@ -119,10 +122,11 @@ export const GlobalStateProvider = ({
       })
       .catch(error => {
         console.error(error.message);
+        throw error;
       });
   };
 
-  const fetchGame = (gameId: GameId): Promise<void> => {
+  const fetchGame = (gameId: GameId): Promise<any> => {
     return fetch(`http://localhost:5000/games/${gameId}`)
       .then(response => {
         if (!response.ok) {
@@ -132,28 +136,32 @@ export const GlobalStateProvider = ({
         }
         return response.json();
       })
-      .then(gameState => {
-        console.log('Fetched game:', gameState);
-      })
       .catch(error => {
         console.error(error.message);
+        throw error;
       });
   };
 
-  const removePlayerFromGame = (playerId: PlayerId) => {
-    setPlayerGames(prevRecord => {
-      const newRecord = { ...prevRecord };
-      delete newRecord[playerId];
-      return newRecord;
-    });
-  };
-
-  const removeGame = (gameId: GameId) => {
-    setActiveGames(prevRecord => {
-      const newRecord = { ...prevRecord };
-      delete newRecord[gameId];
-      return newRecord;
-    });
+  const updateGame = (gameId: GameId, gameState: GameState): Promise<void> => {
+    return fetch('http://localhost:5000/game/update', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ gameId, gameState }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          return response.json().then(errorData => {
+            throw new Error('Failed to update game: ' + errorData.message);
+          });
+        }
+        setActiveGames(prevRecord => ({ ...prevRecord, [gameId]: gameState }));
+      })
+      .catch(error => {
+        console.error(error.message);
+        throw error;
+      });
   };
 
   return (
@@ -165,6 +173,7 @@ export const GlobalStateProvider = ({
         joinGame,
         deleteAllGames,
         fetchGame,
+        updateGame,
       }}
     >
       {children}

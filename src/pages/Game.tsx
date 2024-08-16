@@ -52,7 +52,7 @@ function Game() {
     setGameId(gameId);
 
     fetchGame(gameId);
-  }, [location.search, navigate, fetchGame]);
+  }, [location.search, fetchGame]);
 
   return (
     <GameStateProvider gameId={gameId}>
