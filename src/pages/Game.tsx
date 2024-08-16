@@ -85,12 +85,14 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
         <div style={{ width: '650px' }}>
           <PublicOpinion />
           <HUD
+            playerColor={playerColor}
             pollInputs={pollInputs}
             setPollInputs={setPollInputs}
             settingPollRegion={settingPollRegion}
             setSettingPollRegion={setSettingPollRegion}
           />
           <Scoreboard
+            playerColor={playerColor}
             showRoadInfluence={showRoadInfluence}
             setShowRoadInfluence={setShowRoadInfluence}
           />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { size, useGameState } from '../GameState';
 import { PlayerColor, Poll, PollRegion } from '../types';
-import { canEndPhase, getRedSample } from '../utils';
+import { canEndPhase, formatPoll, getRedSample } from '../utils';
 import Button from './Button';
 
 interface HUDProps {
@@ -13,6 +13,7 @@ interface HUDProps {
   setSettingPollRegion: React.Dispatch<
     React.SetStateAction<PlayerColor | null>
   >;
+  playerColor: PlayerColor;
 }
 
 const HUD: React.FC<HUDProps> = ({
@@ -20,6 +21,7 @@ const HUD: React.FC<HUDProps> = ({
   setPollInputs,
   settingPollRegion,
   setSettingPollRegion,
+  playerColor,
 }) => {
   const {
     gameState,
@@ -30,29 +32,30 @@ const HUD: React.FC<HUDProps> = ({
     incrementPhaseNumber,
   } = useGameState();
   const { players, turnNumber, board, phaseNumber, debugMode } = gameState;
+  const opponentColor = playerColor === 'red' ? 'blue' : 'red';
 
   // Update poll boundary variables when any input's value changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    const [color, key] = name.split('.');
+    const key = name.split('.')[1];
     setPollInputs(prevInputs => ({
       ...prevInputs,
-      [color]: {
-        ...prevInputs[color as keyof typeof prevInputs],
+      [playerColor]: {
+        ...prevInputs[playerColor],
         [key]: Math.min(Math.max(Number(value), 0), size - 1),
       },
     }));
   };
 
   // Sample a population within your boundary and save your poll result
-  const handleConductPoll = (pollColor: PlayerColor) => {
-    const pollRegion = pollInputs[pollColor];
+  const handleConductPoll = () => {
+    const pollRegion = pollInputs[playerColor];
     const redPercent = getRedSample(board, pollRegion);
 
     const poll: Poll = { ...pollRegion, redPercent };
 
-    savePoll(pollColor, poll);
-    setPhaseAction(pollColor, 'conductPoll');
+    savePoll(playerColor, poll);
+    setPhaseAction(playerColor, 'conductPoll');
   };
 
   const phaseDescriptions: { [key: number]: string } = {
@@ -175,8 +178,10 @@ const HUD: React.FC<HUDProps> = ({
         <b>Phase {phaseNumber}:</b> {phaseDescriptions[phaseNumber]}
       </div>
 
+      {phaseNumber === 2 && <h2>Select a region of the city to poll.</h2>}
+
       {/* Turn actions */}
-      {phaseNumber === 2 && (
+      {(phaseNumber === 2 || phaseNumber === 3) && (
         <div
           style={{
             display: 'flex',
@@ -184,293 +189,150 @@ const HUD: React.FC<HUDProps> = ({
             marginTop: '20px',
           }}
         >
-          {/* Red Polling Column */}
           <div
             style={{
-              width: '45%',
+              width: '100%',
               padding: '20px',
-              border: '2px solid red',
+              border: `2px solid ${playerColor}`,
               borderRadius: '10px',
-              backgroundColor: '#ffe5e5',
+              backgroundColor: playerColor === 'red' ? '#ffe5e5' : '#e5e5ff',
             }}
           >
-            <h3 style={{ color: 'red', textAlign: 'center' }}>Red Poll</h3>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-around',
-                marginBottom: '10px',
-              }}
-            >
-              <div>
-                <label>Start Row: </label>
-                <input
-                  type="number"
-                  name="red.startRow"
-                  value={pollInputs['red']['startRow']}
-                  onChange={handleInputChange}
-                  style={{ width: '50px', marginRight: '10px' }}
-                />
-              </div>
-              <div>
-                <label>Start Col: </label>
-                <input
-                  type="number"
-                  name="red.startCol"
-                  value={pollInputs['red']['startCol']}
-                  onChange={handleInputChange}
-                  style={{ width: '50px', marginRight: '10px' }}
-                />
-              </div>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-around',
-                marginBottom: '10px',
-              }}
-            >
-              <div>
-                <label>End Row: </label>
-                <input
-                  type="number"
-                  name="red.endRow"
-                  value={pollInputs['red']['endRow']}
-                  onChange={handleInputChange}
-                  style={{ width: '50px', marginRight: '10px' }}
-                />
-              </div>
-              <div>
-                <label>End Col: </label>
-                <input
-                  type="number"
-                  name="red.endCol"
-                  value={pollInputs['red']['endCol']}
-                  onChange={handleInputChange}
-                  style={{ width: '50px', marginRight: '10px' }}
-                />
-              </div>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                width: '100%',
-                alignItems: 'center',
-              }}
-            >
-              <Button
-                onClick={() => {
-                  setSettingPollRegion('red');
-                }}
-                color={'red'}
-                disabled={settingPollRegion === 'red'}
-              >
-                Set poll region
-              </Button>
-              <Button
-                onClick={() => handleConductPoll('red')}
-                color={'red'}
-                clicked={players.red.phaseAction === 'conductPoll'}
-              >
-                Conduct Poll
-              </Button>
-            </div>
-          </div>
+            {phaseNumber === 2 && (
+              <>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    marginBottom: '10px',
+                  }}
+                >
+                  <div>
+                    <label>Start Row: </label>
+                    <input
+                      type="number"
+                      name={`${playerColor}.startRow`}
+                      value={pollInputs[playerColor]['startRow']}
+                      onChange={handleInputChange}
+                      style={{ width: '50px', marginRight: '10px' }}
+                    />
+                  </div>
+                  <div>
+                    <label>Start Col: </label>
+                    <input
+                      type="number"
+                      name={`${playerColor}.startCol`}
+                      value={pollInputs[playerColor]['startCol']}
+                      onChange={handleInputChange}
+                      style={{ width: '50px', marginRight: '10px' }}
+                    />
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-around',
+                    marginBottom: '10px',
+                  }}
+                >
+                  <div>
+                    <label>End Row: </label>
+                    <input
+                      type="number"
+                      name={`${playerColor}.endRow`}
+                      value={pollInputs[playerColor]['endRow']}
+                      onChange={handleInputChange}
+                      style={{ width: '50px', marginRight: '10px' }}
+                    />
+                  </div>
+                  <div>
+                    <label>End Col: </label>
+                    <input
+                      type="number"
+                      name={`${playerColor}.endCol`}
+                      value={pollInputs[playerColor]['endCol']}
+                      onChange={handleInputChange}
+                      style={{ width: '50px', marginRight: '10px' }}
+                    />
+                  </div>
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Button
+                    onClick={() => {
+                      setSettingPollRegion(playerColor);
+                    }}
+                    color={playerColor}
+                    disabled={settingPollRegion === playerColor}
+                  >
+                    Select poll region
+                  </Button>
+                  <Button
+                    onClick={() => handleConductPoll()}
+                    color={playerColor}
+                    clicked={players[playerColor].phaseAction === 'conductPoll'}
+                  >
+                    Conduct Poll
+                  </Button>
+                </div>
+              </>
+            )}
 
-          {/* Blue Polling Column */}
-          <div
-            style={{
-              width: '45%',
-              padding: '20px',
-              border: '2px solid blue',
-              borderRadius: '10px',
-              backgroundColor: '#e5e5ff',
-            }}
-          >
-            <h3 style={{ color: 'blue', textAlign: 'center' }}>Blue Poll</h3>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-around',
-                marginBottom: '10px',
-              }}
-            >
-              <div>
-                <label>Start Row: </label>
-                <input
-                  type="number"
-                  name="blue.startRow"
-                  value={pollInputs['blue']['startRow']}
-                  onChange={handleInputChange}
-                  style={{ width: '50px', marginRight: '10px' }}
-                />
-              </div>
-              <div>
-                <label>Start Col: </label>
-                <input
-                  type="number"
-                  name="blue.startCol"
-                  value={pollInputs['blue']['startCol']}
-                  onChange={handleInputChange}
-                  style={{ width: '50px', marginRight: '10px' }}
-                />
-              </div>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-around',
-                marginBottom: '10px',
-              }}
-            >
-              <div>
-                <label>End Row: </label>
-                <input
-                  type="number"
-                  name="blue.endRow"
-                  value={pollInputs['blue']['endRow']}
-                  onChange={handleInputChange}
-                  style={{ width: '50px', marginRight: '10px' }}
-                />
-              </div>
-              <div>
-                <label>End Col: </label>
-                <input
-                  type="number"
-                  name="blue.endCol"
-                  value={pollInputs['blue']['endCol']}
-                  onChange={handleInputChange}
-                  style={{ width: '50px', marginRight: '10px' }}
-                />
-              </div>
-            </div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                width: '100%',
-                alignItems: 'center',
-              }}
-            >
-              <Button
-                onClick={() => {
-                  setSettingPollRegion('blue');
-                }}
-                color={'blue'}
-                disabled={settingPollRegion === 'blue'}
-              >
-                Set poll region
-              </Button>
-              <Button
-                onClick={() => handleConductPoll('blue')}
-                color={'blue'}
-                clicked={players.blue.phaseAction === 'conductPoll'}
-              >
-                Conduct Poll
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-      {phaseNumber === 3 && (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginTop: '20px',
-          }}
-        >
-          {/* Red Fact-Checking Column */}
-          <div
-            style={{
-              width: '45%',
-              padding: '20px',
-              border: '2px solid red',
-              borderRadius: '10px',
-              backgroundColor: '#ffe5e5',
-            }}
-          >
-            <h3 style={{ color: 'red', textAlign: 'center' }}>
-              Red Fact-Checking
-            </h3>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                gap: '10px',
-                width: '100%',
-              }}
-            >
-              <Button
-                onClick={() => setPhaseAction('red', 'trust')}
-                color={'green'}
-                clicked={players.red.phaseAction === 'trust'}
-              >
-                Trust
-              </Button>
-              <Button
-                onClick={() => setPhaseAction('red', 'doubt')}
-                color={'orange'}
-                clicked={players.red.phaseAction === 'doubt'}
-              >
-                Doubt
-              </Button>
-              <Button
-                onClick={() => setPhaseAction('red', 'accuse')}
-                color={'red'}
-                clicked={players.red.phaseAction === 'accuse'}
-              >
-                Accuse
-              </Button>
-            </div>
-          </div>
-
-          {/* Blue Fact-Checking Column */}
-          <div
-            style={{
-              width: '45%',
-              padding: '20px',
-              border: '2px solid blue',
-              borderRadius: '10px',
-              backgroundColor: '#e5e5ff',
-            }}
-          >
-            <h3 style={{ color: 'blue', textAlign: 'center' }}>
-              Blue Fact-Checking
-            </h3>
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'row',
-                justifyContent: 'center',
-                gap: '10px',
-                width: '100%',
-              }}
-            >
-              <Button
-                onClick={() => setPhaseAction('blue', 'trust')}
-                color={'green'}
-                clicked={players.blue.phaseAction === 'trust'}
-              >
-                Trust
-              </Button>
-              <Button
-                onClick={() => setPhaseAction('blue', 'doubt')}
-                color={'orange'}
-                clicked={players.blue.phaseAction === 'doubt'}
-              >
-                Doubt
-              </Button>
-              <Button
-                onClick={() => setPhaseAction('blue', 'accuse')}
-                color={'red'}
-                clicked={players.blue.phaseAction === 'accuse'}
-              >
-                Accuse
-              </Button>
-            </div>
+            {phaseNumber === 3 && (
+              <>
+                <h3 style={{ color: playerColor, textAlign: 'center' }}>
+                  {formatPoll(
+                    players[opponentColor].pollHistory[turnNumber]['redPercent']
+                  )}
+                </h3>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                    gap: '10px',
+                    width: '100%',
+                  }}
+                >
+                  <div>
+                    <Button
+                      onClick={() => setPhaseAction(playerColor, 'trust')}
+                      color={'green'}
+                      clicked={players[playerColor].phaseAction === 'trust'}
+                    >
+                      Trust
+                    </Button>
+                    <p>(accurate)</p>
+                  </div>
+                  <div>
+                    <Button
+                      onClick={() => setPhaseAction(playerColor, 'doubt')}
+                      color={'orange'}
+                      clicked={players[playerColor].phaseAction === 'doubt'}
+                    >
+                      Doubt
+                    </Button>
+                    <p>(off by &gt;5 %)</p> {/* 2x doubtPenalty */}
+                  </div>
+                  <div>
+                    <Button
+                      onClick={() => setPhaseAction(playerColor, 'accuse')}
+                      color={'red'}
+                      clicked={players[playerColor].phaseAction === 'accuse'}
+                    >
+                      Accuse
+                    </Button>
+                    <p>(off by &gt;10 %)</p> {/* 2x accusePenalty */}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

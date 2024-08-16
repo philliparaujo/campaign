@@ -33,12 +33,11 @@ const BoardUI: React.FC<BoardUIProps> = ({
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
 
+  const myPollInputs = pollInputs[playerColor];
+
   // return a CSS style used for formatting poll boundaries
-  const getBoundaryStyle = (
-    pollRegion: PollRegion,
-    color: PlayerColor
-  ): React.CSSProperties => {
-    const { startRow, startCol, endRow, endCol } = pollRegion;
+  const getBoundaryStyle = (): React.CSSProperties => {
+    const { startRow, startCol, endRow, endCol } = myPollInputs;
 
     return {
       position: 'absolute',
@@ -46,7 +45,7 @@ const BoardUI: React.FC<BoardUIProps> = ({
       left: startCol * cellSize,
       width: (endCol - startCol + 1) * cellSize,
       height: (endRow - startRow + 1) * cellSize,
-      border: `2px solid ${color}`,
+      border: `2px solid ${playerColor}`,
       boxSizing: 'border-box',
       pointerEvents: 'none',
     };
@@ -107,9 +106,6 @@ const BoardUI: React.FC<BoardUIProps> = ({
     }
   };
 
-  const redPollRegion = pollInputs['red'];
-  const bluePollRegion = pollInputs['blue'];
-
   return (
     <div
       style={{
@@ -165,14 +161,8 @@ const BoardUI: React.FC<BoardUIProps> = ({
         )}
       </div>
 
-      {phaseNumber === 2 && (
-        <>
-          {/* Red Poll Boundary */}
-          <div style={getBoundaryStyle(redPollRegion, 'red')}></div>
-
-          {/* Blue Poll Boundary */}
-          <div style={getBoundaryStyle(bluePollRegion, 'blue')}></div>
-        </>
+      {phaseNumber === 2 && playerColor && (
+        <div style={getBoundaryStyle()}></div>
       )}
 
       <Button onClick={regenerateBoard}>Regenerate board</Button>

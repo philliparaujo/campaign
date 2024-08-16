@@ -7,11 +7,13 @@ import { PlayerColor } from '../types';
 interface ScoreboardProps {
   showRoadInfluence: boolean;
   setShowRoadInfluence: React.Dispatch<React.SetStateAction<boolean>>;
+  playerColor: PlayerColor;
 }
 
 const Scoreboard: React.FC<ScoreboardProps> = ({
   showRoadInfluence,
   setShowRoadInfluence,
+  playerColor,
 }) => {
   const { gameState } = useGameState();
   const {
@@ -23,6 +25,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
     debugMode,
   } = gameState;
   const [showStats, setShowStats] = useState<boolean>(false);
+  const opponentColor = playerColor === 'red' ? 'blue' : 'red';
 
   let redInfluence = calculateTotalInfluence('red', board);
   let blueInfluence = calculateTotalInfluence('blue', board);
@@ -91,9 +94,11 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
               backgroundColor: '#e0e0e0',
             }}
           >
-            <div style={{ color: 'red', marginBottom: '15px' }}>
-              <h3>Red Poll Results:</h3>
-              {formatPoll(players.red.pollHistory[turnNumber]['redPercent'])}
+            <div style={{ color: playerColor, marginBottom: '15px' }}>
+              <h3>Your Poll:</h3>
+              {formatPoll(
+                players[playerColor].pollHistory[turnNumber]['redPercent']
+              )}
               <div
                 style={{
                   display: 'flex',
@@ -107,36 +112,38 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
                 <div
                   style={{
                     height: '100%',
-                    width: `${(players.red.pollHistory[turnNumber]['redPercent'] - bufferPercent('blue')) * 100}%`,
+                    width: `${(players[playerColor].pollHistory[turnNumber]['redPercent'] - bufferPercent(opponentColor)) * 100}%`,
                     backgroundColor: 'red',
                   }}
                 />
                 <div
                   style={{
                     height: '100%',
-                    width: `${bufferPercent('blue') * 100}%`,
+                    width: `${bufferPercent(opponentColor) * 100}%`,
                     backgroundColor: '#ff8888',
                   }}
                 />
                 <div
                   style={{
                     height: '100%',
-                    width: `${bufferPercent('blue') * 100}%`,
+                    width: `${bufferPercent(opponentColor) * 100}%`,
                     backgroundColor: '#8888ff',
                   }}
                 />
                 <div
                   style={{
                     height: '100%',
-                    width: `${(1 - players.red.pollHistory[turnNumber]['redPercent'] - bufferPercent('blue')) * 100}%`,
+                    width: `${(1 - players[playerColor].pollHistory[turnNumber]['redPercent'] - bufferPercent(opponentColor)) * 100}%`,
                     backgroundColor: 'blue',
                   }}
                 />
               </div>
             </div>
-            <div style={{ color: 'blue' }}>
-              <h3>Blue Poll Results:</h3>
-              {formatPoll(players.blue.pollHistory[turnNumber]['redPercent'])}
+            <div style={{ color: opponentColor }}>
+              <h3>Opponent Poll:</h3>
+              {formatPoll(
+                players[opponentColor].pollHistory[turnNumber]['redPercent']
+              )}
               <div
                 style={{
                   display: 'flex',
@@ -150,28 +157,28 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
                 <div
                   style={{
                     height: '100%',
-                    width: `${(players.blue.pollHistory[turnNumber]['redPercent'] - -bufferPercent('red')) * 100}%`,
+                    width: `${(players[opponentColor].pollHistory[turnNumber]['redPercent'] - bufferPercent(playerColor)) * 100}%`,
                     backgroundColor: 'red',
                   }}
                 />
                 <div
                   style={{
                     height: '100%',
-                    width: `${bufferPercent('red') * 100}%`,
+                    width: `${bufferPercent(playerColor) * 100}%`,
                     backgroundColor: '#ff8888',
                   }}
                 />
                 <div
                   style={{
                     height: '100%',
-                    width: `${bufferPercent('red') * 100}%`,
+                    width: `${bufferPercent(playerColor) * 100}%`,
                     backgroundColor: '#8888ff',
                   }}
                 />
                 <div
                   style={{
                     height: '100%',
-                    width: `${(1 - players.blue.pollHistory[turnNumber]['redPercent'] - -bufferPercent('red')) * 100}%`,
+                    width: `${(1 - players[opponentColor].pollHistory[turnNumber]['redPercent'] - bufferPercent(playerColor)) * 100}%`,
                     backgroundColor: 'blue',
                   }}
                 />
