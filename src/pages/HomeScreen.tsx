@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { v4 as uuidv4 } from 'uuid';
 import Button from '../components/Button';
 import { useGlobalState } from '../GlobalState';
 import { GameId, PlayerId } from '../types';
+import { newGameId, newPlayerId } from '../utils';
 
 function HomeScreen() {
   const [playerId, setPlayerId] = useState<PlayerId>('');
@@ -11,20 +11,26 @@ function HomeScreen() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { activeGames, playerGames, createGame, joinGame, deleteAllGames } =
-    useGlobalState();
+  const {
+    activeGames,
+    playerGames,
+    createGame,
+    joinGame,
+    deleteAllGames,
+    gameExists,
+  } = useGlobalState();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    let idFromUrl = queryParams.get('playerId');
+    let playerId = queryParams.get('playerId');
 
-    if (!idFromUrl) {
-      idFromUrl = uuidv4();
-      queryParams.set('playerId', idFromUrl);
+    if (!playerId) {
+      playerId = newPlayerId();
+      queryParams.set('playerId', playerId);
       navigate({ search: queryParams.toString() }, { replace: true });
     }
 
-    setPlayerId(idFromUrl);
+    setPlayerId(playerId);
   }, [location.search, navigate]);
 
   useEffect(() => {
@@ -38,11 +44,11 @@ function HomeScreen() {
       console.error('No player ID found.');
       return;
     }
-    const newGameId = uuidv4();
+    const gameId = await newGameId(gameExists);
 
-    createGame(newGameId, playerId)
+    createGame(gameId, playerId)
       .then(() => {
-        navigate(`/game?gameId=${newGameId}&playerId=${playerId}`);
+        navigate(`/game?gameId=${gameId}&playerId=${playerId}`);
       })
       .catch(error => {
         console.error('Error creating game:', error);

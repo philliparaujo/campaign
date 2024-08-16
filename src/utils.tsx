@@ -2,12 +2,14 @@ import { maxRoadsAllowed, size } from './GameState';
 import {
   Board,
   Floor,
+  GameId,
   GameState,
   PlayerAction,
   PlayerColor,
   Poll,
   PollRegion,
 } from './types';
+import { v4 as uuidv4 } from 'uuid';
 
 // Generate a random number of building floors
 const maxFloorHeight = 3;
@@ -449,4 +451,37 @@ export const handleAccusePoll = (
   } else {
     return playerColor === 'red' ? accusePenalty : -accusePenalty;
   }
+};
+
+// Generate unique 4 length game ID
+export const newGameId = async (
+  gameExists: (gameId: GameId) => Promise<boolean>
+): Promise<GameId> => {
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const idLength = 4;
+  const generateRandomCode = (): GameId => {
+    let result = '';
+    for (let i = 0; i < idLength; i++) {
+      result += characters.charAt(
+        Math.floor(Math.random() * characters.length)
+      );
+    }
+    return result;
+  };
+
+  let gameId = '';
+  while (true) {
+    gameId = generateRandomCode();
+    try {
+      if (await !gameExists(gameId)) return gameId;
+    } catch (error) {
+      console.error('error happened');
+      throw error;
+    }
+  }
+};
+
+// Generate unique player ID
+export const newPlayerId = (): string => {
+  return uuidv4();
 };

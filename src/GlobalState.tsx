@@ -15,7 +15,8 @@ type GlobalStateContextType = {
   joinGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
   deleteAllGames: () => Promise<void>;
 
-  fetchGame: (gameId: GameId) => Promise<any>;
+  fetchGame: (gameId: GameId) => Promise<any>; // Returns GameState
+  gameExists: (gameId: GameId) => Promise<boolean>;
   updateGame: (gameId: GameId, gameState: GameState) => Promise<void>;
 };
 
@@ -165,6 +166,16 @@ export const GlobalStateProvider = ({
     }
   }, []);
 
+  const gameExists = useCallback(async (gameId: GameId): Promise<boolean> => {
+    try {
+      const response = await fetch(`http://localhost:5000/games/${gameId}`);
+      return response.ok;
+    } catch (error: unknown) {
+      console.error('An unknown error occurred during game existence check');
+      return false;
+    }
+  }, []);
+
   const updateGame = useCallback(
     async (gameId: GameId, gameState: GameState): Promise<void> => {
       try {
@@ -203,6 +214,7 @@ export const GlobalStateProvider = ({
         joinGame,
         deleteAllGames,
         fetchGame,
+        gameExists,
         updateGame,
       }}
     >
