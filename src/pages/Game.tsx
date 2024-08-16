@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import BoardUI from '../components/Board';
+import EndTurnButton from '../components/EndTurnButton';
 import HUD from '../components/HUD';
 import PublicOpinion from '../components/PublicOpinion';
 import Scoreboard from '../components/Scoreboard';
 import { GameStateProvider, size } from '../GameState';
 import { useGlobalState } from '../GlobalState';
 import { GameId, PlayerColor, PlayerId, PollRegion } from '../types';
+import RefreshButton from '../components/RefreshButton';
 
 function Game() {
   const defaultPollRegion: PollRegion = {
@@ -29,7 +31,6 @@ function Game() {
   const [playerId, setPlayerId] = useState<PlayerId>('');
   const [gameId, setGameId] = useState<GameId>('');
   const location = useLocation();
-  const navigate = useNavigate();
 
   const { fetchGame } = useGlobalState();
 
@@ -50,9 +51,7 @@ function Game() {
 
     setPlayerId(playerId);
     setGameId(gameId);
-
-    fetchGame(gameId);
-  }, [location.search, fetchGame]);
+  }, [location.search]);
 
   return (
     <GameStateProvider gameId={gameId}>
@@ -95,6 +94,8 @@ function Game() {
               showRoadInfluence={showRoadInfluence}
               setShowRoadInfluence={setShowRoadInfluence}
             />
+            <EndTurnButton gameId={gameId} />
+            <RefreshButton gameId={gameId} />
           </div>
         </div>
       </div>

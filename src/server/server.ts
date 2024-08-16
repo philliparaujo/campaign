@@ -46,7 +46,6 @@ app.post('/game/create', async (req, res) => {
     newGameState.players.red.id = playerId;  // Assign playerId to red player
 
     const newGame = new ActiveGameModel({ gameId: gameId, gameState: newGameState });
-    console.log("Should be saving to:", newGameState);
     await newGame.save();
 
     // Associate player with this game
