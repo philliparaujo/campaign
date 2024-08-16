@@ -5,6 +5,7 @@ import mongoose, { Error } from 'mongoose';
 import { createNewGameState } from '../GameState';
 import ActiveGameModel from './models/ActiveGame';
 import PlayerGameModel from './models/PlayerGame';
+import { PlayerColor } from '../types';
 
 dotenv.config();
 
@@ -27,7 +28,7 @@ mongoose.connect(URI)
 // Create a game and have player join as red
 app.post('/game/create', async (req, res) => {
   try {
-    const { gameId, playerId } = req.body;
+    const { gameId, playerId, playerColor } = req.body;
 
     // Check if the game already exists
     let gameState = await ActiveGameModel.findOne({ gameId });
@@ -43,7 +44,7 @@ app.post('/game/create', async (req, res) => {
 
     // Create a new game state
     const newGameState = createNewGameState();
-    newGameState.players.red.id = playerId;  // Assign playerId to red player
+    newGameState.players[playerColor as PlayerColor].id = playerId;
 
     const newGame = new ActiveGameModel({ gameId: gameId, gameState: newGameState });
     await newGame.save();
@@ -61,7 +62,7 @@ app.post('/game/create', async (req, res) => {
 // Join a game as blue
 app.post('/game/join', async (req, res) => {
   try {
-    const { gameId, playerId } = req.body;
+    const { gameId, playerId, playerColor } = req.body;
 
     // Fetch the game state by gameId
     let activeGame = await ActiveGameModel.findOne({ gameId });
@@ -69,13 +70,13 @@ app.post('/game/join', async (req, res) => {
       return res.status(404).json({ message: 'Room not found' });
     }
 
-    // Check if the blue player slot is already taken
-    if (activeGame.gameState.players.blue.id) {
-      return res.status(400).json({ message: 'Blue player slot is already taken.' });
+    // Check if the player slot is already taken
+    if (activeGame.gameState.players[playerColor as PlayerColor].id) {
+      return res.status(400).json({ message: `${playerColor} player slot is already taken.` });
     }
 
     // Assign playerId to blue player
-    activeGame.gameState.players.blue.id = playerId;
+    activeGame.gameState.players[playerColor as PlayerColor].id = playerId;
 
     // Save the updated game state
     await activeGame.save();

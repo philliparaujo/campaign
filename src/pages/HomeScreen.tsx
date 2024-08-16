@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../components/Button';
 import { useGlobalState } from '../GlobalState';
-import { GameId, PlayerId } from '../types';
+import { GameId, PlayerColor, PlayerId } from '../types';
 import { newGameId, newPlayerId } from '../utils';
+import Switch from 'react-switch';
 
 function HomeScreen() {
   const [playerId, setPlayerId] = useState<PlayerId>('');
   const [inputGameId, setInputGameId] = useState<GameId>('');
+  const [inputPlayerColor, setInputPlayerColor] = useState<PlayerColor>('red');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -46,7 +48,7 @@ function HomeScreen() {
     }
     const gameId = await newGameId(gameExists);
 
-    createGame(gameId, playerId)
+    createGame(gameId, playerId, inputPlayerColor)
       .then(() => {
         navigate(`/game?gameId=${gameId}&playerId=${playerId}`);
       })
@@ -61,7 +63,7 @@ function HomeScreen() {
       return;
     }
 
-    joinGame(gameId, playerId)
+    joinGame(gameId, playerId, inputPlayerColor)
       .then(() => {
         navigate(`/game?gameId=${gameId}&playerId=${playerId}`);
       })
@@ -77,8 +79,20 @@ function HomeScreen() {
   return (
     <div>
       <h1>CAMPAIGN</h1>
-      <p>{`Player ID: ${playerId}`}</p>
-      <Button onClick={handleCreateGame}>Create Game</Button>
+      <p style={{ color: inputPlayerColor }}>{`Player ID: ${playerId}`}</p>
+      <Switch
+        checked={inputPlayerColor === 'blue'}
+        onChange={() =>
+          setInputPlayerColor(inputPlayerColor === 'red' ? 'blue' : 'red')
+        }
+        offColor="#CC0000"
+        onColor="#0059b3"
+        uncheckedIcon={false}
+        checkedIcon={false}
+      />
+      <div>
+        <Button onClick={handleCreateGame}>Create Game</Button>
+      </div>
       <div>
         <Button onClick={() => handleJoinGame(inputGameId)}>Join Game</Button>
         <input

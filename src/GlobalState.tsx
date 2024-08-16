@@ -5,14 +5,29 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { ActiveGames, GameId, GameState, PlayerGames, PlayerId } from './types';
+import {
+  ActiveGames,
+  GameId,
+  GameState,
+  PlayerColor,
+  PlayerGames,
+  PlayerId,
+} from './types';
 
 type GlobalStateContextType = {
   playerGames: PlayerGames;
   activeGames: ActiveGames;
 
-  createGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
-  joinGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
+  createGame: (
+    gameId: GameId,
+    playerId: PlayerId,
+    playerColor: PlayerColor
+  ) => Promise<void>;
+  joinGame: (
+    gameId: GameId,
+    playerId: PlayerId,
+    playerColor: PlayerColor
+  ) => Promise<void>;
   leaveGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
   deleteAllGames: () => Promise<void>;
 
@@ -58,14 +73,18 @@ export const GlobalStateProvider = ({
   }, []);
 
   const createGame = useCallback(
-    async (gameId: GameId, playerId: PlayerId): Promise<void> => {
+    async (
+      gameId: GameId,
+      playerId: PlayerId,
+      playerColor: PlayerColor
+    ): Promise<void> => {
       try {
         const response = await fetch('http://localhost:5000/game/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ gameId, playerId }),
+          body: JSON.stringify({ gameId, playerId, playerColor }),
         });
 
         if (!response.ok) {
@@ -89,14 +108,18 @@ export const GlobalStateProvider = ({
   );
 
   const joinGame = useCallback(
-    async (gameId: GameId, playerId: PlayerId): Promise<void> => {
+    async (
+      gameId: GameId,
+      playerId: PlayerId,
+      playerColor: PlayerColor
+    ): Promise<void> => {
       try {
         const response = await fetch('http://localhost:5000/game/join', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ gameId, playerId }),
+          body: JSON.stringify({ gameId, playerId, playerColor }),
         });
 
         if (!response.ok) {
