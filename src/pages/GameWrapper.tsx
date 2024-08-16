@@ -9,11 +9,12 @@ function GameWrapper() {
   const [gameId, setGameId] = useState<GameId | null>(null);
   const [playerId, setPlayerId] = useState<PlayerId | null>(null);
   const [playerColor, setPlayerColor] = useState<PlayerColor | null>(null);
+  const [opponentId, setOpponentId] = useState<PlayerId | null>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
   const location = useLocation();
 
-  const { fetchGame } = useGlobalState();
+  const { fetchPlayer, fetchOpponentOf } = useGlobalState();
 
   // Extract gameId, playerId, playerColor from URL
   useEffect(() => {
@@ -25,11 +26,13 @@ function GameWrapper() {
     if (playerIdFromUrl && gameIdFromUrl) {
       setGameId(gameIdFromUrl);
       setPlayerId(playerIdFromUrl);
-      fetchGame(gameIdFromUrl)
-        .then(gameState => {
-          setPlayerColor(
-            gameState.players.red.id === playerIdFromUrl ? 'red' : 'blue'
-          );
+      fetchPlayer(playerIdFromUrl)
+        .then(player => {
+          setPlayerColor(player.playerColor);
+          fetchOpponentOf(playerIdFromUrl).then(opponent => {
+            console.log('fetching opponent', opponent);
+            setOpponentId(opponent);
+          });
         })
         .finally(() => {
           setLoading(false);
@@ -37,7 +40,7 @@ function GameWrapper() {
     } else {
       setLoading(false);
     }
-  }, [location.search, fetchGame]);
+  }, [location.search, fetchPlayer, fetchOpponentOf]);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -50,7 +53,12 @@ function GameWrapper() {
 
   return (
     <GameStateProvider gameId={gameId}>
-      <Game gameId={gameId} playerId={playerId} playerColor={playerColor} />
+      <Game
+        gameId={gameId}
+        playerId={playerId}
+        playerColor={playerColor}
+        opponentId={opponentId}
+      />
     </GameStateProvider>
   );
 }

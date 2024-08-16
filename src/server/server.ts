@@ -6,6 +6,7 @@ import { createNewGameState } from '../GameState';
 import ActiveGameModel from './models/ActiveGame';
 import PlayerGameModel from './models/PlayerGame';
 import { PlayerColor } from '../types';
+import { opponentOf } from '../utils';
 
 dotenv.config();
 
@@ -50,7 +51,7 @@ app.post('/game/create', async (req, res) => {
     await newGame.save();
 
     // Associate player with this game
-    playerGame = new PlayerGameModel({ playerId, gameId });
+    playerGame = new PlayerGameModel({ playerId, gameId, playerColor });
     await playerGame.save();
 
     res.status(201).json(newGameState);
@@ -82,7 +83,7 @@ app.post('/game/join', async (req, res) => {
     await activeGame.save();
 
     // Associate player with this game
-    const playerGame = new PlayerGameModel({ playerId, gameId });
+    const playerGame = new PlayerGameModel({ playerId, gameId, playerColor });
     await playerGame.save();
 
     res.status(200).json(activeGame.gameState);
@@ -177,6 +178,47 @@ app.get('/games/:gameId', async (req, res) => {
     res.status(500).json({ message: 'Error fetching room', error });
   }
 });
+
+// Fetch a player by playerId
+app.get('/players/:playerId', async (req, res) => {
+  try {
+    const { playerId } = req.params;
+    const playerGame = await PlayerGameModel.findOne({ playerId });
+    if (!playerGame) {
+      return res.status(404).json({ message: 'Player not found' });
+    }
+
+    res.status(200).json(playerGame);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching player', error });
+  }
+});
+
+// Fetch an opponent of playerId
+app.get('/players/:playerId/opponent', async (req, res) => {
+  try {
+    const { playerId } = req.params;
+    const playerGame = await PlayerGameModel.findOne({ playerId });
+    if (!playerGame) {
+      return res.status(404).json({ message: 'Player not found' });
+    }
+
+    // Find the opponent's game
+    const opponentGame = await PlayerGameModel.findOne({
+      gameId: playerGame.gameId,
+      playerColor: opponentOf(playerGame.playerColor as PlayerColor),
+    });
+
+    if (!opponentGame) {
+      return res.status(204).send(); // No Content
+    }
+
+    return res.status(200).json(opponentGame);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching opponent', error });
+  }
+});
+
 
 // Return whether a game exists
 app.get('/games/exists/:gameId', async (req, res) => {

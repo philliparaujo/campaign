@@ -32,6 +32,8 @@ type GlobalStateContextType = {
   deleteAllGames: () => Promise<void>;
 
   fetchGame: (gameId: GameId) => Promise<any>; // Returns GameState
+  fetchPlayer: (playerId: PlayerId) => Promise<any>; // Returns id, color, gameId
+  fetchOpponentOf: (playerId: PlayerId) => Promise<any>; // Returns id, color, gameId
   gameExists: (gameId: GameId) => Promise<boolean>;
   updateGame: (gameId: GameId, gameState: GameState) => Promise<void>;
 };
@@ -247,6 +249,59 @@ export const GlobalStateProvider = ({
     }
   }, []);
 
+  const fetchPlayer = useCallback(async (playerId: PlayerId): Promise<any> => {
+    try {
+      const response = await fetch(`http://localhost:5000/players/${playerId}`);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          `Failed to fetch player ${playerId}: ${errorData.message}`
+        );
+      }
+
+      return await response.json();
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(error.message);
+      } else {
+        console.error('An unknown error occurred during players fetching');
+      }
+    }
+  }, []);
+
+  const fetchOpponentOf = useCallback(
+    async (playerId: PlayerId): Promise<any> => {
+      try {
+        const response = await fetch(
+          `http://localhost:5000/players/${playerId}/opponent`
+        );
+
+        if (response.status === 204) {
+          // No opponent found
+          return null;
+        }
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            `Failed to fetch opponent of player ${playerId}: ${errorData.message}`
+          );
+        }
+
+        return (await response.json()).playerId;
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          console.error(error.message);
+        } else {
+          console.error('An unknown error occurred during opponent fetching');
+        }
+        return null; // Return null in case of error
+      }
+    },
+    []
+  );
+
   const gameExists = useCallback(async (gameId: GameId): Promise<boolean> => {
     try {
       const response = await fetch(
@@ -299,6 +354,8 @@ export const GlobalStateProvider = ({
         leaveGame,
         deleteAllGames,
         fetchGame,
+        fetchPlayer,
+        fetchOpponentOf,
         gameExists,
         updateGame,
       }}

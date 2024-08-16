@@ -4,6 +4,7 @@ import mongoose, { Schema } from 'mongoose';
 const playerGameSchema = new Schema({
     playerId: { type: String, required: true, unique: true },
     gameId: { type: String, required: true },
+    playerColor: { type: String, required: true },
 });
 
 const PlayerGameModel = mongoose.model('PlayerGame', playerGameSchema);

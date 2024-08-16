@@ -8,14 +8,21 @@ import { size, useGameState } from '../GameState';
 import { useGlobalState } from '../GlobalState';
 import { GameId, PlayerColor, PlayerId, PollRegion } from '../types';
 import { useNavigate } from 'react-router-dom';
+import { opponentOf } from '../utils';
 
 type GameProps = {
   gameId: GameId;
   playerId: PlayerId;
   playerColor: PlayerColor;
+  opponentId: PlayerId | null;
 };
 
-const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
+const Game: React.FC<GameProps> = ({
+  gameId,
+  playerId,
+  playerColor,
+  opponentId,
+}) => {
   const defaultPollRegion: PollRegion = {
     startRow: 0,
     endRow: size - 1,
@@ -81,6 +88,11 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
         <div>
           <h1 style={{ paddingBottom: '35px' }}>Campaign</h1>
           <p style={{ color: playerColor }}>{`Player ID: ${playerId}`}</p>
+          {opponentId && (
+            <p
+              style={{ color: opponentOf(playerColor) }}
+            >{`Opponent ID: ${opponentId}`}</p>
+          )}
           <p>{`Game ID: ${gameId}`}</p>
           <BoardUI
             playerColor={playerColor}

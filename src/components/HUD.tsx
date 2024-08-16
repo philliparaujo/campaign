@@ -1,7 +1,7 @@
 import React from 'react';
 import { size, useGameState } from '../GameState';
 import { PlayerColor, Poll, PollRegion } from '../types';
-import { canEndPhase, formatPoll, getRedSample } from '../utils';
+import { canEndPhase, formatPoll, getRedSample, opponentOf } from '../utils';
 import Button from './Button';
 
 interface HUDProps {
@@ -32,7 +32,6 @@ const HUD: React.FC<HUDProps> = ({
     incrementPhaseNumber,
   } = useGameState();
   const { players, turnNumber, board, phaseNumber, debugMode } = gameState;
-  const opponentColor = playerColor === 'red' ? 'blue' : 'red';
 
   // Update poll boundary variables when any input's value changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -288,7 +287,9 @@ const HUD: React.FC<HUDProps> = ({
               <>
                 <h3 style={{ color: playerColor, textAlign: 'center' }}>
                   {formatPoll(
-                    players[opponentColor].pollHistory[turnNumber]['redPercent']
+                    players[opponentOf(playerColor)].pollHistory[turnNumber][
+                      'redPercent'
+                    ]
                   )}
                 </h3>
                 <div

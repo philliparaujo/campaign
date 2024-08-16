@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
 import { useGameState } from '../GameState';
-import { calculateTotalInfluence, formatPoll, getRedSample } from '../utils';
+import {
+  calculateTotalInfluence,
+  formatPoll,
+  getRedSample,
+  opponentOf,
+} from '../utils';
 import Button from './Button';
 import { PlayerColor } from '../types';
 
@@ -25,7 +30,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
     debugMode,
   } = gameState;
   const [showStats, setShowStats] = useState<boolean>(false);
-  const opponentColor = playerColor === 'red' ? 'blue' : 'red';
+  const opponentColor = opponentOf(playerColor);
 
   let redInfluence = calculateTotalInfluence('red', board);
   let blueInfluence = calculateTotalInfluence('blue', board);

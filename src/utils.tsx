@@ -490,3 +490,7 @@ export const newGameId = async (
 export const newPlayerId = (): string => {
   return uuidv4();
 };
+
+export const opponentOf = (playerColor: PlayerColor): PlayerColor => {
+  return playerColor === 'red' ? 'blue' : 'red';
+};
