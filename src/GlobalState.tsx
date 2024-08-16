@@ -13,6 +13,7 @@ import {
   PlayerGames,
   PlayerId,
 } from './types';
+import { io } from 'socket.io-client';
 
 type GlobalStateContextType = {
   playerGames: PlayerGames;
@@ -42,6 +43,8 @@ const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
   undefined
 );
 
+const socket = io('http://localhost:5000');
+
 export const GlobalStateProvider = ({
   children,
 }: {
@@ -52,26 +55,26 @@ export const GlobalStateProvider = ({
 
   // Load games from database
   useEffect(() => {
-    const initializeGames = async (): Promise<void> => {
-      try {
-        const response = await fetch('http://localhost:5000/games');
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            'Failed to fetch initial state: ' + JSON.stringify(errorData)
-          );
-        }
-        const gameData = await response.json();
+    const initializeGames = (): void => {
+      socket.emit('games/fetchAll');
+
+      socket.on('allGamesFetched', gameData => {
         setActiveGames(gameData.activeGames);
         setPlayerGames(gameData.playerGames);
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error(error.message);
-        }
-      }
+      });
+
+      socket.on('error', errorData => {
+        console.error('Failed to fetch initial state:', errorData.message);
+      });
     };
 
     initializeGames();
+
+    // Cleanup the socket listeners when the component unmounts
+    return () => {
+      socket.off('allGamesFetched');
+      socket.off('error');
+    };
   }, []);
 
   const createGame = useCallback(
@@ -80,31 +83,23 @@ export const GlobalStateProvider = ({
       playerId: PlayerId,
       playerColor: PlayerColor
     ): Promise<void> => {
-      try {
-        const response = await fetch('http://localhost:5000/game/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ gameId, playerId, playerColor }),
+      return new Promise<void>((resolve, reject) => {
+        socket.emit('game/create', { gameId, playerId, playerColor });
+
+        socket.on('gameCreated', gameState => {
+          setActiveGames(prevRecord => ({
+            ...prevRecord,
+            [gameId]: gameState,
+          }));
+          setPlayerGames(prevRecord => ({ ...prevRecord, [playerId]: gameId }));
+          resolve();
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Failed to create the game: ${errorData.message}`);
-        }
-
-        const gameState = await response.json();
-        setActiveGames(prevRecord => ({ ...prevRecord, [gameId]: gameState }));
-        setPlayerGames(prevRecord => ({ ...prevRecord, [playerId]: gameId }));
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error(error.message);
-        } else {
-          console.error('An unknown error occurred during game creation');
-        }
-        throw error;
-      }
+        socket.on('error', errorData => {
+          console.error('Error during game creation:', errorData.message);
+          reject(new Error(errorData.message));
+        });
+      });
     },
     []
   );
@@ -115,231 +110,169 @@ export const GlobalStateProvider = ({
       playerId: PlayerId,
       playerColor: PlayerColor
     ): Promise<void> => {
-      try {
-        const response = await fetch('http://localhost:5000/game/join', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ gameId, playerId, playerColor }),
+      return new Promise<void>((resolve, reject) => {
+        socket.emit('game/join', { gameId, playerId, playerColor });
+
+        socket.on('gameJoined', gameState => {
+          setActiveGames(prevRecord => ({
+            ...prevRecord,
+            [gameId]: gameState,
+          }));
+          setPlayerGames(prevRecord => ({ ...prevRecord, [playerId]: gameId }));
+          resolve();
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Failed to join the game: ${errorData.message}`);
-        }
-
-        const gameState = await response.json();
-        setActiveGames(prevRecord => ({ ...prevRecord, [gameId]: gameState }));
-        setPlayerGames(prevRecord => ({ ...prevRecord, [playerId]: gameId }));
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error(error.message);
-        } else {
-          console.error('An unknown error occurred during game joining');
-        }
-        throw error;
-      }
+        socket.on('error', errorData => {
+          console.error('Error during game joining:', errorData.message);
+          reject(new Error(errorData.message));
+        });
+      });
     },
     []
   );
 
   const leaveGame = useCallback(
     async (gameId: GameId, playerId: PlayerId): Promise<void> => {
-      try {
-        const response = await fetch('http://localhost:5000/game/leave', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ gameId, playerId }),
-        });
+      return new Promise<void>((resolve, reject) => {
+        socket.emit('game/leave', { gameId, playerId });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Failed to leave the game: ${errorData.message}`);
-        }
+        socket.on('gameLeft', gameState => {
+          if (!gameState.players.red.id && !gameState.players.blue.id) {
+            socket.emit('game/delete', { gameId });
 
-        // Update game state, or delete it if both players gone
-        const gameState = await response.json();
-        if (!gameState.players.red.id && !gameState.players.blue.id) {
-          await fetch('http://localhost:5000/game/delete', {
-            method: 'DELETE',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ gameId }),
-          });
+            setActiveGames(prevRecord => {
+              const updatedRecord = { ...prevRecord };
+              delete updatedRecord[gameId];
+              return updatedRecord;
+            });
+          } else {
+            setActiveGames(prevRecord => ({
+              ...prevRecord,
+              [gameId]: gameState,
+            }));
+          }
 
-          setActiveGames(prevRecord => {
+          setPlayerGames(prevRecord => {
             const updatedRecord = { ...prevRecord };
-            delete updatedRecord[gameId];
+            delete updatedRecord[playerId];
             return updatedRecord;
           });
-        } else {
-          setActiveGames(prevRecord => ({
-            ...prevRecord,
-            [gameId]: gameState,
-          }));
-        }
 
-        // Remove player from game
-        setPlayerGames(prevRecord => {
-          const updatedRecord = { ...prevRecord };
-          delete updatedRecord[playerId];
-          return updatedRecord;
+          resolve();
         });
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error(error.message);
-        } else {
-          console.error('An unknown error occurred during game leaving');
-        }
-        throw error;
-      }
+
+        socket.on('error', errorData => {
+          console.error('Error during game leaving:', errorData.message);
+          reject(new Error(errorData.message));
+        });
+      });
     },
     []
   );
 
   const deleteAllGames = useCallback(async (): Promise<void> => {
-    try {
-      const response = await fetch('http://localhost:5000/games/deleteAll', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+    return new Promise<void>((resolve, reject) => {
+      socket.emit('games/deleteAll');
+
+      socket.on('allGamesDeleted', result => {
+        setActiveGames({});
+        setPlayerGames({});
+        console.log(result.message);
+        resolve();
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Failed to delete all games: ${errorData.message}`);
-      }
-
-      const result = await response.json();
-      setActiveGames({});
-      setPlayerGames({});
-
-      console.log(result.message);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      } else {
-        console.error('An unknown error occurred during games deletion');
-      }
-      throw error;
-    }
+      socket.on('error', errorData => {
+        console.error('Error during games deletion:', errorData.message);
+        reject(new Error(errorData.message));
+      });
+    });
   }, []);
 
   const fetchGame = useCallback(async (gameId: GameId): Promise<any> => {
-    try {
-      const response = await fetch(`http://localhost:5000/games/${gameId}`);
+    return new Promise<any>((resolve, reject) => {
+      socket.emit('games/fetch', { gameId });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(`Failed to fetch game: ${errorData.message}`);
-      }
+      socket.on('gameFetched', gameState => {
+        resolve(gameState);
+      });
 
-      return await response.json();
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      } else {
-        console.error('An unknown error occurred during game fetching');
-      }
-    }
+      socket.on('error', errorData => {
+        console.error('Error during game fetching:', errorData.message);
+        reject(new Error(errorData.message));
+      });
+    });
   }, []);
 
   const fetchPlayer = useCallback(async (playerId: PlayerId): Promise<any> => {
-    try {
-      const response = await fetch(`http://localhost:5000/players/${playerId}`);
+    return new Promise<any>((resolve, reject) => {
+      socket.emit('players/fetch', { playerId });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          `Failed to fetch player ${playerId}: ${errorData.message}`
-        );
-      }
+      socket.on('playerFetched', playerGame => {
+        resolve(playerGame);
+      });
 
-      return await response.json();
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      } else {
-        console.error('An unknown error occurred during players fetching');
-      }
-    }
+      socket.on('error', errorData => {
+        console.error('Error during player fetching:', errorData.message);
+        reject(new Error(errorData.message));
+      });
+    });
   }, []);
 
   const fetchOpponentOf = useCallback(
     async (playerId: PlayerId): Promise<any> => {
-      try {
-        const response = await fetch(
-          `http://localhost:5000/players/${playerId}/opponent`
-        );
+      return new Promise<any>((resolve, reject) => {
+        socket.emit('players/fetchOpponent', { playerId });
 
-        if (response.status === 204) {
-          // No opponent found
-          return null;
-        }
+        socket.on('opponentFetched', opponentGame => {
+          resolve(opponentGame.playerId);
+        });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            `Failed to fetch opponent of player ${playerId}: ${errorData.message}`
-          );
-        }
+        socket.on('opponentNotFound', () => {
+          resolve(null); // No opponent found
+        });
 
-        return (await response.json()).playerId;
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error(error.message);
-        } else {
-          console.error('An unknown error occurred during opponent fetching');
-        }
-        return null; // Return null in case of error
-      }
+        socket.on('error', errorData => {
+          console.error('Error during opponent fetching:', errorData.message);
+          reject(new Error(errorData.message));
+        });
+      });
     },
     []
   );
 
   const gameExists = useCallback(async (gameId: GameId): Promise<boolean> => {
-    try {
-      const response = await fetch(
-        `http://localhost:5000/games/exists/${gameId}`
-      );
-      const result = await response.json();
-      return result.exists;
-    } catch (error: unknown) {
-      console.error('An error occurred during game existence check:', error);
-      return false;
-    }
+    return new Promise<boolean>((resolve, reject) => {
+      socket.emit('games/exists', { gameId });
+
+      socket.on('gameExists', ({ exists }) => {
+        resolve(exists);
+      });
+
+      socket.on('error', errorData => {
+        console.error('Error during game existence check:', errorData.message);
+        reject(new Error(errorData.message));
+      });
+    });
   }, []);
 
   const updateGame = useCallback(
     async (gameId: GameId, gameState: GameState): Promise<void> => {
-      try {
-        const response = await fetch('http://localhost:5000/game/update', {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ gameId, gameState }),
+      return new Promise<void>((resolve, reject) => {
+        socket.emit('game/update', { gameId, gameState });
+
+        socket.on('gameUpdated', updatedGameState => {
+          setActiveGames(prevRecord => ({
+            ...prevRecord,
+            [gameId]: updatedGameState,
+          }));
+          resolve();
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`Failed to update game: ${errorData.message}`);
-        }
-
-        setActiveGames(prevRecord => ({ ...prevRecord, [gameId]: gameState }));
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error(error.message);
-        } else {
-          console.error('An unknown error occurred during game update');
-        }
-        throw error;
-      }
+        socket.on('error', errorData => {
+          console.error('Error during game update:', errorData.message);
+          reject(new Error(errorData.message));
+        });
+      });
     },
     []
   );
