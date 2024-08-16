@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGameState } from '../GameState';
-import { Floor, Influence } from '../types';
+import { Floor, Influence, PlayerColor } from '../types';
 import FloorUI from './Floor';
 
 interface BuildingUIProps {
@@ -8,6 +8,7 @@ interface BuildingUIProps {
   colIndex: number;
   floors: Floor[];
   baseCost: number;
+  playerColor: PlayerColor;
 }
 
 const BuildingUI: React.FC<BuildingUIProps> = ({
@@ -15,6 +16,7 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   colIndex,
   floors,
   baseCost,
+  playerColor,
 }) => {
   const { gameState, setFloorInfluence, setCoins } = useGameState();
   const { board, players } = gameState;
@@ -29,34 +31,29 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   const updateFloorInfluence = async (
     rowIndex: number,
     colIndex: number,
-    floorIndex: number
+    floorIndex: number,
+    playerColor: PlayerColor
   ) => {
     const cell = board[rowIndex][colIndex];
     if (cell.type !== 'building') return;
 
     const influenceCost = floorCost(floorIndex);
     const currentInfluence = cell.floors[floorIndex].influence;
+    if (currentInfluence !== '' && currentInfluence !== playerColor) {
+      return;
+    }
 
     // Determine the new influence
-    const influenceOrder: Influence[] = ['', 'red', 'blue'];
-    const currentIndex = influenceOrder.indexOf(currentInfluence);
-    const newInfluence =
-      influenceOrder[(currentIndex + 1) % influenceOrder.length];
+    const newInfluence = currentInfluence === '' ? playerColor : '';
 
     // Calculate new coin counts
-    const newRedCoins =
-      players.red.coins +
-      (currentInfluence === 'red' ? influenceCost : 0) -
-      (newInfluence === 'red' ? influenceCost : 0);
-    const newBlueCoins =
-      players.blue.coins +
-      (currentInfluence === 'blue' ? influenceCost : 0) -
-      (newInfluence === 'blue' ? influenceCost : 0);
+    const newCoins =
+      players[playerColor].coins +
+      (currentInfluence === '' ? -influenceCost : influenceCost);
 
     // Update game state
     setFloorInfluence(rowIndex, colIndex, floorIndex, newInfluence);
-    setCoins('red', newRedCoins);
-    setCoins('blue', newBlueCoins);
+    setCoins(playerColor, newCoins);
   };
 
   return (
@@ -75,7 +72,9 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
           key={floorIndex}
           influence={floor.influence}
           cost={floorCost(floorIndex)}
-          onClick={() => updateFloorInfluence(rowIndex, colIndex, floorIndex)}
+          onClick={() =>
+            updateFloorInfluence(rowIndex, colIndex, floorIndex, playerColor)
+          }
         />
       ))}
     </div>

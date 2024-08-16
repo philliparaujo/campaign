@@ -1,10 +1,11 @@
 import mongoose, { Schema } from 'mongoose';
+import { debugMode, startingCoins } from '../../GameState';
 
 // Define schemas for nested structures
 const playerSchema = new Schema({
   // id/phaseAction are not required because mongoose treats '' as not provided
   id: { type: String, default: ''},
-  coins: { type: Number, default: 10, required: true },
+  coins: { type: Number, default: startingCoins, required: true },
   phaseAction: { type: String, default: '' },
   pollHistory: { type: Array, default: [], required: true },
 });
@@ -19,7 +20,7 @@ const gameStateSchema = new Schema({
   turnNumber: { type: Number, default: 1 },
   phaseNumber: { type: Number, default: 1 },
   publicOpinionHistory: { type: Array, default: [] },
-  debugMode: { type: Boolean, default: false },
+  debugMode: { type: Boolean, default: debugMode },
   players: {
     type: playersSchema, required: true
   }

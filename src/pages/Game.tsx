@@ -9,11 +9,12 @@ import { useGlobalState } from '../GlobalState';
 import { GameId, PlayerColor, PlayerId, PollRegion } from '../types';
 
 type GameProps = {
-  playerId: PlayerId;
   gameId: GameId;
+  playerId: PlayerId;
+  playerColor: PlayerColor;
 };
 
-const Game: React.FC<GameProps> = ({ playerId, gameId }) => {
+const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
   const defaultPollRegion: PollRegion = {
     startRow: 0,
     endRow: size - 1,
@@ -31,15 +32,8 @@ const Game: React.FC<GameProps> = ({ playerId, gameId }) => {
   const [settingPollRegion, setSettingPollRegion] =
     useState<PlayerColor | null>(null);
 
-  const [playerColor, setPlayerColor] = useState<PlayerColor | null>(null);
-
   const { updateGame, fetchGame } = useGlobalState();
   const { gameState, setGameState } = useGameState();
-
-  // Set and display color of player
-  useEffect(() => {
-    setPlayerColor(gameState.players.red.id === playerId ? 'red' : 'blue');
-  }, [gameState, playerId]);
 
   const handleEndTurn = async () => {
     try {
@@ -75,11 +69,10 @@ const Game: React.FC<GameProps> = ({ playerId, gameId }) => {
         {/* Left Side */}
         <div>
           <h1 style={{ paddingBottom: '35px' }}>Campaign</h1>
-          <p
-            style={{ color: playerColor ?? 'black' }}
-          >{`Player ID: ${playerId}`}</p>
+          <p style={{ color: playerColor }}>{`Player ID: ${playerId}`}</p>
           <p>{`Game ID: ${gameId}`}</p>
           <BoardUI
+            playerColor={playerColor}
             pollInputs={pollInputs}
             setPollInputs={setPollInputs}
             showRoadInfluence={showRoadInfluence}

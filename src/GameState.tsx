@@ -25,8 +25,8 @@ import {
 export const size = 5;
 export const maxRoadsAllowed = 15; // ~ 3*size is best
 
-const startingCoins = 10;
-const debugMode = true;
+export const startingCoins = 10;
+export const debugMode = false;
 
 const initialPlayer: PlayerInfo = {
   id: '',

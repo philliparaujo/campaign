@@ -15,6 +15,7 @@ interface BoardUIProps {
   setSettingPollRegion: React.Dispatch<
     React.SetStateAction<PlayerColor | null>
   >;
+  playerColor: PlayerColor;
 }
 
 const BoardUI: React.FC<BoardUIProps> = ({
@@ -23,6 +24,7 @@ const BoardUI: React.FC<BoardUIProps> = ({
   showRoadInfluence,
   settingPollRegion,
   setSettingPollRegion,
+  playerColor,
 }) => {
   const { gameState, regenerateBoard } = useGameState();
   const { board, phaseNumber } = gameState;
@@ -50,6 +52,7 @@ const BoardUI: React.FC<BoardUIProps> = ({
     };
   };
 
+  /* For poll region setting */
   const handleMouseDown = (rowIndex: number, colIndex: number) => {
     if (settingPollRegion !== null) {
       setIsDragging(true);
@@ -148,6 +151,7 @@ const BoardUI: React.FC<BoardUIProps> = ({
                   baseCost={cell.baseCost}
                   rowIndex={rowIndex}
                   colIndex={colIndex}
+                  playerColor={playerColor}
                 />
               ) : (
                 <RoadUI

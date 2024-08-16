@@ -3,29 +3,37 @@ import { useLocation, Navigate } from 'react-router-dom';
 import { GameStateProvider } from '../GameState';
 import { useGlobalState } from '../GlobalState';
 import Game from './Game';
-import { GameId, PlayerId } from '../types';
+import { GameId, PlayerColor, PlayerId } from '../types';
 
 function GameWrapper() {
   const [gameId, setGameId] = useState<GameId | null>(null);
   const [playerId, setPlayerId] = useState<PlayerId | null>(null);
+  const [playerColor, setPlayerColor] = useState<PlayerColor | null>(null);
+
   const [loading, setLoading] = useState<boolean>(true);
   const location = useLocation();
 
   const { fetchGame } = useGlobalState();
 
-  // Extract gameId and playerId from URL
+  // Extract gameId, playerId, playerColor from URL
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
 
-    const playerIdFromUrl = queryParams.get('playerId') as PlayerId;
     const gameIdFromUrl = queryParams.get('gameId') as GameId;
+    const playerIdFromUrl = queryParams.get('playerId') as PlayerId;
 
     if (playerIdFromUrl && gameIdFromUrl) {
-      setPlayerId(playerIdFromUrl);
       setGameId(gameIdFromUrl);
-      fetchGame(gameIdFromUrl).finally(() => {
-        setLoading(false);
-      });
+      setPlayerId(playerIdFromUrl);
+      fetchGame(gameIdFromUrl)
+        .then(gameState => {
+          setPlayerColor(
+            gameState.players.red.id === playerIdFromUrl ? 'red' : 'blue'
+          );
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     } else {
       setLoading(false);
     }
@@ -35,14 +43,14 @@ function GameWrapper() {
     return <div>Loading...</div>;
   }
 
-  if (!gameId || !playerId) {
+  if (!gameId || !playerId || !playerColor) {
     console.log('Navigating back due to missing IDs');
     return <Navigate to="/" />;
   }
 
   return (
     <GameStateProvider gameId={gameId}>
-      <Game playerId={playerId} gameId={gameId} />
+      <Game gameId={gameId} playerId={playerId} playerColor={playerColor} />
     </GameStateProvider>
   );
 }
