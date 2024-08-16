@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { maxRoadsAllowed, size } from './GameState';
 import {
   Board,
@@ -9,7 +10,6 @@ import {
   Poll,
   PollRegion,
 } from './types';
-import { v4 as uuidv4 } from 'uuid';
 
 // Generate a random number of building floors
 const maxFloorHeight = 3;
@@ -470,15 +470,20 @@ export const newGameId = async (
   };
 
   let gameId = '';
-  while (true) {
+  let attempts = 0;
+  while (attempts < 10) {
     gameId = generateRandomCode();
     try {
-      if (await !gameExists(gameId)) return gameId;
+      if (!(await gameExists(gameId))) return gameId;
+      attempts++;
     } catch (error) {
       console.error('error happened');
       throw error;
     }
   }
+
+  // Worst case scenario, we generate larger id codes
+  return uuidv4();
 };
 
 // Generate unique player ID

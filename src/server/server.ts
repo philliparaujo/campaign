@@ -108,7 +108,7 @@ app.put('/game/update', async (req, res) => {
   }
 });
 
-// Fetch a room by gameId
+// Fetch a game by gameId
 app.get('/games/:gameId', async (req, res) => {
   try {
     const { gameId } = req.params;
@@ -124,6 +124,22 @@ app.get('/games/:gameId', async (req, res) => {
     res.status(500).json({ message: 'Error fetching room', error });
   }
 });
+
+// Return whether a game exists
+app.get('/games/exists/:gameId', async (req, res) => {
+  try {
+    const { gameId } = req.params;
+
+    const activeGame = await ActiveGameModel.findOne({ gameId });
+    if (!activeGame) {
+      return res.status(200).json({ exists: false });
+    }
+
+    res.status(200).json({ exists: true });
+  } catch (error) {
+    res.status(500).json({ message: 'Error checking game existence', error });
+  }
+}); 
 
 // Fetch all games
 app.get('/games', async (req, res) => {

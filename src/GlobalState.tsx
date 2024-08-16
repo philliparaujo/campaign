@@ -168,10 +168,13 @@ export const GlobalStateProvider = ({
 
   const gameExists = useCallback(async (gameId: GameId): Promise<boolean> => {
     try {
-      const response = await fetch(`http://localhost:5000/games/${gameId}`);
-      return response.ok;
+      const response = await fetch(
+        `http://localhost:5000/games/exists/${gameId}`
+      );
+      const result = await response.json();
+      return result.exists;
     } catch (error: unknown) {
-      console.error('An unknown error occurred during game existence check');
+      console.error('An error occurred during game existence check:', error);
       return false;
     }
   }, []);
