@@ -9,7 +9,6 @@ function GameWrapper() {
   const [gameId, setGameId] = useState<GameId | null>(null);
   const [playerId, setPlayerId] = useState<PlayerId | null>(null);
   const [playerColor, setPlayerColor] = useState<PlayerColor | null>(null);
-  const [opponentId, setOpponentId] = useState<PlayerId | null>(null);
 
   const [loading, setLoading] = useState<boolean>(true);
   const location = useLocation();
@@ -29,16 +28,10 @@ function GameWrapper() {
       fetchPlayer(playerIdFromUrl)
         .then(player => {
           setPlayerColor(player.playerColor);
-          fetchOpponentOf(playerIdFromUrl).then(opponent => {
-            console.log('fetching opponent', opponent);
-            setOpponentId(opponent);
-          });
         })
         .finally(() => {
           setLoading(false);
         });
-    } else {
-      setLoading(false);
     }
   }, [location.search, fetchPlayer, fetchOpponentOf]);
 
@@ -53,12 +46,7 @@ function GameWrapper() {
 
   return (
     <GameStateProvider gameId={gameId}>
-      <Game
-        gameId={gameId}
-        playerId={playerId}
-        playerColor={playerColor}
-        opponentId={opponentId}
-      />
+      <Game gameId={gameId} playerId={playerId} playerColor={playerColor} />
     </GameStateProvider>
   );
 }

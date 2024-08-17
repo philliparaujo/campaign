@@ -37,7 +37,7 @@ type GlobalStateContextType = {
   fetchOpponentOf: (playerId: PlayerId) => Promise<any>; // Returns id, color, gameId
   gameExists: (gameId: GameId) => Promise<boolean>;
   updateGame: (gameId: GameId, gameState: GameState) => Promise<void>;
-  setupListener: (event: string, callback: (data: any) => void) => void;
+  setupListener: (event: string, callback: (data: any) => void) => () => void;
 };
 
 const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
@@ -256,23 +256,41 @@ export const GlobalStateProvider = ({
     });
   }, []);
 
-  const updateGame = useCallback(
-    async (gameId: GameId, gameState: GameState): Promise<void> => {
+  const emitSocketEvent = useCallback(
+    async (event: string, data: any): Promise<void> => {
       return new Promise<void>((resolve, reject) => {
-        socket.emit('game/update', { gameId, gameState });
+        socket.emit(event, data);
+
+        socket.once('success', () => {
+          resolve();
+        });
+
+        socket.once('error', errorData => {
+          console.error(`Error during ${event}:`, errorData.message);
+          reject(new Error(errorData.message));
+        });
       });
     },
     []
   );
 
-  const setupListener = (event: string, callback: (data: any) => void) => {
-    socket.on(event, callback);
+  const updateGame = useCallback(
+    async (gameId: GameId, gameState: GameState): Promise<void> => {
+      return emitSocketEvent('game/update', { gameId, gameState });
+    },
+    [emitSocketEvent]
+  );
 
-    // Handle errors
-    socket.on('error', errorData => {
-      console.error('Error during game update:', errorData.message);
-    });
-  };
+  const setupListener = useCallback(
+    (event: string, callback: (data: any) => void): (() => void) => {
+      socket.on(event, callback);
+
+      return () => {
+        socket.off(event, callback);
+      };
+    },
+    []
+  );
 
   return (
     <GlobalStateContext.Provider

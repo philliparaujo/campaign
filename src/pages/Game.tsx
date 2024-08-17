@@ -15,17 +15,11 @@ type GameProps = {
   gameId: GameId;
   playerId: PlayerId;
   playerColor: PlayerColor;
-  opponentId: PlayerId | null;
 };
 
 const socket = io('http://localhost:5000');
 
-const Game: React.FC<GameProps> = ({
-  gameId,
-  playerId,
-  playerColor,
-  opponentId,
-}) => {
+const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
   const defaultPollRegion: PollRegion = {
     startRow: 0,
     endRow: size - 1,
@@ -42,8 +36,10 @@ const Game: React.FC<GameProps> = ({
   const [showRoadInfluence, setShowRoadInfluence] = useState<boolean>(false);
   const [settingPollRegion, setSettingPollRegion] =
     useState<PlayerColor | null>(null);
+  const [opponentId, setOpponentId] = useState<PlayerId | null>(null);
 
-  const { leaveGame, updateGame, fetchGame, setupListener } = useGlobalState();
+  const { leaveGame, updateGame, fetchGame, setupListener, fetchOpponentOf } =
+    useGlobalState();
   const { gameState, setGameState } = useGameState();
   const navigate = useNavigate();
 
@@ -65,6 +61,15 @@ const Game: React.FC<GameProps> = ({
     }
   }, [fetchGame, gameId, setGameState]);
 
+  const handleOpponentJoin = useCallback(async () => {
+    try {
+      const opponentId = await fetchOpponentOf(playerId);
+      setOpponentId(opponentId);
+    } catch (error) {
+      console.error('Error fetching opponent id:', error);
+    }
+  }, [fetchOpponentOf, playerId, setOpponentId]);
+
   const handleLeaveGame = async () => {
     try {
       await leaveGame(gameId, playerId);
@@ -74,18 +79,30 @@ const Game: React.FC<GameProps> = ({
     }
   };
 
+  // Listen and react to game events
   useEffect(() => {
-    const listener = () => {
-      handleRefresh();
-    };
+    const removeGameJoinedListener = setupListener(
+      'gameJoined',
+      handleOpponentJoin
+    );
+    const removeGameUpdatedListener = setupListener(
+      'gameUpdated',
+      handleRefresh
+    );
 
-    setupListener('gameUpdated', listener);
-
-    // Cleanup listener on unmount
+    // Cleanup listeners on unmount
     return () => {
-      socket.off('gameUpdated', listener);
+      removeGameUpdatedListener();
+      removeGameJoinedListener();
     };
-  }, [setupListener, handleRefresh]);
+  }, [setupListener, handleRefresh, handleOpponentJoin]);
+
+  // On load, set opponent id if it exists
+  useEffect(() => {
+    fetchOpponentOf(playerId).then(opponent => {
+      setOpponentId(opponent);
+    });
+  });
 
   return (
     <div
@@ -136,7 +153,7 @@ const Game: React.FC<GameProps> = ({
             setShowRoadInfluence={setShowRoadInfluence}
           />
           <Button onClick={handleEndTurn}>End Turn</Button>
-          <Button onClick={handleRefresh}>Refresh</Button>
+          {/* <Button onClick={handleRefresh}>Refresh</Button> */}
           <Button onClick={handleLeaveGame}>Leave Game</Button>
         </div>
       </div>

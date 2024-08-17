@@ -71,7 +71,8 @@ io.on('connection', socket => {
       await playerGame.save();
 
       // Emit the new game state to the client
-      socket.emit('gameCreated', newGameState);
+      socket.join(gameId);
+      io.to(gameId).emit('gameCreated', newGameState);
     } catch (error: any) {
       socket.emit('error', { message: 'Error creating room', error });
     }
@@ -102,7 +103,8 @@ io.on('connection', socket => {
       await playerGame.save();
 
       // Emit the updated game state to the client
-      socket.emit('gameJoined', activeGame.gameState);
+      socket.join(gameId);
+      io.to(gameId).emit('gameJoined', activeGame.gameState);
     } catch (error: any) {
       socket.emit('error', { message: 'Error joining room', error });
     }
@@ -131,7 +133,7 @@ io.on('connection', socket => {
       // Find and delete the player game entry
       await PlayerGameModel.findOneAndDelete({ playerId, gameId });
 
-      socket.emit('gameLeft', activeGame.gameState);
+      io.to(gameId).emit('gameLeft', activeGame.gameState);
     } catch (error: any) {
       socket.emit('error', { message: 'Error leaving room', error });
     }
@@ -151,7 +153,7 @@ io.on('connection', socket => {
       // Optionally, delete any related player games if needed
       await PlayerGameModel.deleteMany({ gameId });
 
-      socket.emit('gameDeleted', { message: 'Game deleted successfully' });
+      io.to(gameId).emit('gameDeleted', { message: 'Game deleted successfully' });
     } catch (error: any) {
       socket.emit('error', { message: 'Error deleting room', error });
     }
@@ -164,11 +166,12 @@ io.on('connection', socket => {
       if (!activeGame) {
         return socket.emit('error', { message: 'Room not found' });
       }
-
+  
       activeGame.gameState = gameState;
       await activeGame.save();
-
-      io.emit('gameUpdated', activeGame.gameState);
+  
+      // Emit only to clients in the specific game room
+      io.to(gameId).emit('gameUpdated', activeGame.gameState);
     } catch (error: any) {
       socket.emit('error', { message: 'Error updating room', error });
     }
