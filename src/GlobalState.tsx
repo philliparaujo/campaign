@@ -37,6 +37,7 @@ type GlobalStateContextType = {
   fetchOpponentOf: (playerId: PlayerId) => Promise<any>; // Returns id, color, gameId
   gameExists: (gameId: GameId) => Promise<boolean>;
   updateGame: (gameId: GameId, gameState: GameState) => Promise<void>;
+  setupListener: (event: string, callback: (data: any) => void) => void;
 };
 
 const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
@@ -259,23 +260,19 @@ export const GlobalStateProvider = ({
     async (gameId: GameId, gameState: GameState): Promise<void> => {
       return new Promise<void>((resolve, reject) => {
         socket.emit('game/update', { gameId, gameState });
-
-        socket.on('gameUpdated', updatedGameState => {
-          setActiveGames(prevRecord => ({
-            ...prevRecord,
-            [gameId]: updatedGameState,
-          }));
-          resolve();
-        });
-
-        socket.on('error', errorData => {
-          console.error('Error during game update:', errorData.message);
-          reject(new Error(errorData.message));
-        });
       });
     },
     []
   );
+
+  const setupListener = (event: string, callback: (data: any) => void) => {
+    socket.on(event, callback);
+
+    // Handle errors
+    socket.on('error', errorData => {
+      console.error('Error during game update:', errorData.message);
+    });
+  };
 
   return (
     <GlobalStateContext.Provider
@@ -291,6 +288,7 @@ export const GlobalStateProvider = ({
         fetchOpponentOf,
         gameExists,
         updateGame,
+        setupListener,
       }}
     >
       {children}

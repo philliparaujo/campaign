@@ -168,7 +168,7 @@ io.on('connection', socket => {
       activeGame.gameState = gameState;
       await activeGame.save();
 
-      socket.emit('gameUpdated', activeGame.gameState);
+      io.emit('gameUpdated', activeGame.gameState);
     } catch (error: any) {
       socket.emit('error', { message: 'Error updating room', error });
     }

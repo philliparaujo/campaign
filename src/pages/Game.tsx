@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import BoardUI from '../components/Board';
 import Button from '../components/Button';
 import HUD from '../components/HUD';
@@ -6,9 +7,9 @@ import PublicOpinion from '../components/PublicOpinion';
 import Scoreboard from '../components/Scoreboard';
 import { size, useGameState } from '../GameState';
 import { useGlobalState } from '../GlobalState';
-import { GameId, PlayerColor, PlayerId, PollRegion } from '../types';
-import { useNavigate } from 'react-router-dom';
+import { GameId, GameState, PlayerColor, PlayerId, PollRegion } from '../types';
 import { opponentOf } from '../utils';
+import { io } from 'socket.io-client';
 
 type GameProps = {
   gameId: GameId;
@@ -16,6 +17,8 @@ type GameProps = {
   playerColor: PlayerColor;
   opponentId: PlayerId | null;
 };
+
+const socket = io('http://localhost:5000');
 
 const Game: React.FC<GameProps> = ({
   gameId,
@@ -40,7 +43,7 @@ const Game: React.FC<GameProps> = ({
   const [settingPollRegion, setSettingPollRegion] =
     useState<PlayerColor | null>(null);
 
-  const { leaveGame, updateGame, fetchGame } = useGlobalState();
+  const { leaveGame, updateGame, fetchGame, setupListener } = useGlobalState();
   const { gameState, setGameState } = useGameState();
   const navigate = useNavigate();
 
@@ -52,7 +55,7 @@ const Game: React.FC<GameProps> = ({
     }
   };
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     try {
       const gameState = await fetchGame(gameId);
       setGameState(gameState);
@@ -60,7 +63,7 @@ const Game: React.FC<GameProps> = ({
     } catch (error) {
       console.error('Error updating the game state:', error);
     }
-  };
+  }, [fetchGame, gameId, setGameState]);
 
   const handleLeaveGame = async () => {
     try {
@@ -70,6 +73,19 @@ const Game: React.FC<GameProps> = ({
       console.error('Error leaving the game:', error);
     }
   };
+
+  useEffect(() => {
+    const listener = () => {
+      handleRefresh();
+    };
+
+    setupListener('gameUpdated', listener);
+
+    // Cleanup listener on unmount
+    return () => {
+      socket.off('gameUpdated', listener);
+    };
+  }, [setupListener, handleRefresh]);
 
   return (
     <div
