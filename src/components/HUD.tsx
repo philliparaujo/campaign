@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { size, useGameState } from '../GameState';
 import { PlayerColor, Poll, PollRegion } from '../types';
 import { canEndPhase, formatPoll, getRedSample, opponentOf } from '../utils';
@@ -14,6 +14,7 @@ interface HUDProps {
     React.SetStateAction<PlayerColor | null>
   >;
   playerColor: PlayerColor;
+  syncStateToGlobal: () => Promise<void>;
 }
 
 const HUD: React.FC<HUDProps> = ({
@@ -22,6 +23,7 @@ const HUD: React.FC<HUDProps> = ({
   settingPollRegion,
   setSettingPollRegion,
   playerColor,
+  syncStateToGlobal,
 }) => {
   const {
     gameState,
@@ -32,6 +34,8 @@ const HUD: React.FC<HUDProps> = ({
     incrementPhaseNumber,
   } = useGameState();
   const { players, turnNumber, board, phaseNumber, debugMode } = gameState;
+
+  const [conductedPoll, setConductedPoll] = useState<boolean>(false);
 
   // Update poll boundary variables when any input's value changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +51,7 @@ const HUD: React.FC<HUDProps> = ({
   };
 
   // Sample a population within your boundary and save your poll result
-  const handleConductPoll = () => {
+  const handleConductPoll = async () => {
     const pollRegion = pollInputs[playerColor];
     const redPercent = getRedSample(board, pollRegion);
 
@@ -55,6 +59,8 @@ const HUD: React.FC<HUDProps> = ({
 
     savePoll(playerColor, poll);
     setPhaseAction(playerColor, 'conductPoll');
+
+    setConductedPoll(true);
   };
 
   const phaseDescriptions: { [key: number]: string } = {
@@ -63,6 +69,15 @@ const HUD: React.FC<HUDProps> = ({
     3: 'Fact-Checking',
     4: 'Funding',
   };
+
+  useEffect(() => {
+    if (conductedPoll) {
+      syncStateToGlobal().then(() => {
+        // Reset the conductedPoll flag after syncing
+        setConductedPoll(false);
+      });
+    }
+  }, [conductedPoll, syncStateToGlobal]);
 
   return (
     <div style={{ width: '100%', marginBottom: '20px' }}>

@@ -52,13 +52,13 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   );
 
   /* Event handlers */
-  const syncStateToGlobal = async () => {
+  const syncStateToGlobal = useCallback(async () => {
     try {
       await updateGame(gameId, gameState);
     } catch (error) {
       console.error('Error updating the game state:', error);
     }
-  };
+  }, [gameId, gameState, updateGame]);
 
   const tryToLeaveGame = async () => {
     try {
@@ -182,6 +182,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
     }
   }, [gameId, playerId, playerGame]);
 
+  // Rejoin game if reconnected and player information stored locally
   useEffect(() => {
     const savedGameId = localStorage.getItem('gameId');
     const savedPlayerId = localStorage.getItem('playerId');
@@ -214,10 +215,13 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
         {/* Left Side */}
         <div>
           <h1 style={{ paddingBottom: '35px' }}>Campaign</h1>
-          <p style={{ color: playerColor }}>{displayName}</p>
+          <p style={{ color: playerColor }}>
+            {displayName} {gameState.players[playerColor].phaseAction}
+          </p>
           {opponentDisplayName && (
             <p style={{ color: opponentOf(playerColor) }}>
-              {opponentDisplayName}
+              {opponentDisplayName}{' '}
+              {gameState.players[opponentOf(playerColor)].phaseAction}
             </p>
           )}
           <p>{`Game ID: ${gameId}`}</p>
@@ -240,6 +244,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
             setPollInputs={setPollInputs}
             settingPollRegion={settingPollRegion}
             setSettingPollRegion={setSettingPollRegion}
+            syncStateToGlobal={syncStateToGlobal}
           />
           <Scoreboard
             playerColor={playerColor}
