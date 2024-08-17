@@ -14,7 +14,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   return (
     <Modal show={show} onClose={onClose}>
       <h1 style={{ marginBottom: '20px', textAlign: 'center' }}>Settings</h1>
-      <div style={{ display: 'flex', justifyContent: 'center' }}>{buttons}</div>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          width: '100%',
+          alignItems: 'center',
+        }}
+      >
+        {buttons}
+      </div>
     </Modal>
   );
 };

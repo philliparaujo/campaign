@@ -263,7 +263,7 @@ io.on('connection', socket => {
     try {
       await ActiveGameModel.deleteMany({});
       await PlayerGameModel.deleteMany({});
-      socket.emit('allGamesDeleted', { message: 'All games deleted successfully' });
+      io.emit('allGamesDeleted', { message: 'All games deleted successfully' });
     } catch (error: any) {
       socket.emit('error', { message: 'Error deleting games and players', error });
     }

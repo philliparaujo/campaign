@@ -23,8 +23,6 @@ type GameProps = {
   playerGame: PlayerGame;
 };
 
-const socket = io('http://localhost:5000');
-
 const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   const { playerColor, displayName } = playerGame;
 
@@ -93,6 +91,10 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
     }
   }, [fetchOpponentOf, playerId, setOpponentDisplayName]);
 
+  const handleGameDeleted = useCallback(async () => {
+    navigate('/');
+  }, [navigate]);
+
   const handleLeaveGame = async () => {
     try {
       await leaveGame(gameId, playerId);
@@ -116,14 +118,30 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
       'gameUpdated',
       handleRefresh
     );
+    const removeGameDeletedListener = setupListener(
+      'gameDeleted',
+      handleGameDeleted
+    );
+    const removeAllGamesDeletedListener = setupListener(
+      'allGamesDeleted',
+      handleGameDeleted
+    );
 
     // Cleanup listeners on unmount
     return () => {
-      removeGameUpdatedListener();
-      removeGameLeftListener();
       removeGameJoinedListener();
+      removeGameLeftListener();
+      removeGameUpdatedListener();
+      removeGameDeletedListener();
+      removeAllGamesDeletedListener();
     };
-  }, [setupListener, handleRefresh, handleOpponentLeft, handleOpponentJoin]);
+  }, [
+    setupListener,
+    handleRefresh,
+    handleOpponentLeft,
+    handleOpponentJoin,
+    handleGameDeleted,
+  ]);
 
   // On load, set display name and opponent id if it exists
   useEffect(() => {

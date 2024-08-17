@@ -159,7 +159,9 @@ function HomeScreen() {
         onClose={handleCloseModal}
         buttons={
           <>
-            <Button onClick={handleDeleteAllGames}>Delete All Games</Button>
+            <Button
+              onClick={handleDeleteAllGames}
+            >{`Delete All Games (${activeGames.length ?? 0})`}</Button>
           </>
         }
       />
