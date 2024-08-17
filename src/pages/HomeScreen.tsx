@@ -12,6 +12,7 @@ function HomeScreen() {
   const [playerId, setPlayerId] = useState<PlayerId>('');
   const [inputGameId, setInputGameId] = useState<GameId>('');
   const [inputPlayerColor, setInputPlayerColor] = useState<PlayerColor>('red');
+  const [inputDisplayName, setInputDisplayName] = useState<string>('');
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -40,6 +41,7 @@ function HomeScreen() {
     }
 
     setPlayerId(playerId);
+    setInputDisplayName(playerId);
   }, [location.search, navigate]);
 
   useEffect(() => {
@@ -54,7 +56,7 @@ function HomeScreen() {
     }
     const gameId = await newGameId(gameExists);
 
-    createGame(gameId, playerId, inputPlayerColor)
+    createGame(gameId, playerId, inputPlayerColor, inputDisplayName)
       .then(() => {
         navigate(`/game?gameId=${gameId}&playerId=${playerId}`);
       })
@@ -69,7 +71,7 @@ function HomeScreen() {
       return;
     }
 
-    joinGame(gameId, playerId, inputPlayerColor)
+    joinGame(gameId, playerId, inputPlayerColor, inputDisplayName)
       .then(() => {
         navigate(`/game?gameId=${gameId}&playerId=${playerId}`);
       })
@@ -108,19 +110,19 @@ function HomeScreen() {
             alignItems: 'center',
           }}
         >
-          <div
+          <input
+            type="text"
+            value={inputDisplayName}
+            onChange={e => setInputDisplayName(e.target.value)}
             style={{
               color: inputPlayerColor,
               marginBottom: '10px',
               padding: '8px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
+              borderRadius: '16px',
               textAlign: 'center',
               boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
             }}
-          >
-            {`Player ID: ${playerId}`}
-          </div>
+          />
           <div
             style={{
               display: 'flex',

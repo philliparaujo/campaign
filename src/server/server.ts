@@ -45,7 +45,7 @@ io.on('connection', socket => {
   console.log('A user connected');
 
   // Create a game and join it
-  socket.on('game/create', async ({gameId, playerId, playerColor}) => {
+  socket.on('game/create', async ({gameId, playerId, playerColor, displayName}) => {
     try {
       // Check if the game already exists
       let gameState = await ActiveGameModel.findOne({ gameId });
@@ -67,19 +67,19 @@ io.on('connection', socket => {
       await newGame.save();
 
       // Associate player with this game
-      playerGame = new PlayerGameModel({ playerId, gameId, playerColor });
+      playerGame = new PlayerGameModel({ playerId, gameId, playerColor, displayName });
       await playerGame.save();
 
       // Emit the new game state to the client
       socket.join(gameId);
-      io.to(gameId).emit('gameCreated', newGameState);
+      io.to(gameId).emit('gameCreated', {gameState: newGameState, gameId, playerColor, displayName});
     } catch (error: any) {
       socket.emit('error', { message: 'Error creating room', error });
     }
   });
 
   // Join a game
-  socket.on('game/join', async ({ gameId, playerId, playerColor }) => {
+  socket.on('game/join', async ({ gameId, playerId, playerColor, displayName }) => {
     try {
       // Fetch the game state by gameId
       let activeGame = await ActiveGameModel.findOne({ gameId });
@@ -99,12 +99,12 @@ io.on('connection', socket => {
       await activeGame.save();
 
       // Associate player with this game
-      const playerGame = new PlayerGameModel({ playerId, gameId, playerColor });
+      const playerGame = new PlayerGameModel({ playerId, gameId, playerColor, displayName });
       await playerGame.save();
 
       // Emit the updated game state to the client
       socket.join(gameId);
-      io.to(gameId).emit('gameJoined', activeGame.gameState);
+      io.to(gameId).emit('gameJoined', {gameState: activeGame.gameState, gameId, playerColor, displayName});
     } catch (error: any) {
       socket.emit('error', { message: 'Error joining room', error });
     }

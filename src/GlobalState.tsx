@@ -22,19 +22,24 @@ type GlobalStateContextType = {
   createGame: (
     gameId: GameId,
     playerId: PlayerId,
-    playerColor: PlayerColor
+    playerColor: PlayerColor,
+    displayName: string
   ) => Promise<void>;
   joinGame: (
     gameId: GameId,
     playerId: PlayerId,
-    playerColor: PlayerColor
+    playerColor: PlayerColor,
+    displayName: string
   ) => Promise<void>;
   leaveGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
   deleteAllGames: () => Promise<void>;
 
   fetchGame: (gameId: GameId) => Promise<any>; // Returns GameState
-  fetchPlayer: (playerId: PlayerId) => Promise<any>; // Returns id, color, gameId
-  fetchOpponentOf: (playerId: PlayerId) => Promise<any>; // Returns id, color, gameId
+
+  // Returns id, color, gameId, displayName
+  fetchPlayer: (playerId: PlayerId) => Promise<any>;
+  fetchOpponentOf: (playerId: PlayerId) => Promise<any>;
+
   gameExists: (gameId: GameId) => Promise<boolean>;
   updateGame: (gameId: GameId, gameState: GameState) => Promise<void>;
   setupListener: (event: string, callback: (data: any) => void) => () => void;
@@ -82,19 +87,31 @@ export const GlobalStateProvider = ({
     async (
       gameId: GameId,
       playerId: PlayerId,
-      playerColor: PlayerColor
+      playerColor: PlayerColor,
+      displayName: string
     ): Promise<void> => {
       return new Promise<void>((resolve, reject) => {
-        socket.emit('game/create', { gameId, playerId, playerColor });
-
-        socket.on('gameCreated', gameState => {
-          setActiveGames(prevRecord => ({
-            ...prevRecord,
-            [gameId]: gameState,
-          }));
-          setPlayerGames(prevRecord => ({ ...prevRecord, [playerId]: gameId }));
-          resolve();
+        socket.emit('game/create', {
+          gameId,
+          playerId,
+          playerColor,
+          displayName,
         });
+
+        socket.on(
+          'gameCreated',
+          ({ gameState, gameId, playerColor, displayName }) => {
+            setActiveGames(prevRecord => ({
+              ...prevRecord,
+              [gameId]: gameState,
+            }));
+            setPlayerGames(prevRecord => ({
+              ...prevRecord,
+              [playerId]: { gameId, playerColor, displayName },
+            }));
+            resolve();
+          }
+        );
 
         socket.on('error', errorData => {
           console.error('Error during game creation:', errorData.message);
@@ -109,19 +126,31 @@ export const GlobalStateProvider = ({
     async (
       gameId: GameId,
       playerId: PlayerId,
-      playerColor: PlayerColor
+      playerColor: PlayerColor,
+      displayName: string
     ): Promise<void> => {
       return new Promise<void>((resolve, reject) => {
-        socket.emit('game/join', { gameId, playerId, playerColor });
-
-        socket.on('gameJoined', gameState => {
-          setActiveGames(prevRecord => ({
-            ...prevRecord,
-            [gameId]: gameState,
-          }));
-          setPlayerGames(prevRecord => ({ ...prevRecord, [playerId]: gameId }));
-          resolve();
+        socket.emit('game/join', {
+          gameId,
+          playerId,
+          playerColor,
+          displayName,
         });
+
+        socket.on(
+          'gameJoined',
+          ({ gameState, gameId, playerColor, displayName }) => {
+            setActiveGames(prevRecord => ({
+              ...prevRecord,
+              [gameId]: gameState,
+            }));
+            setPlayerGames(prevRecord => ({
+              ...prevRecord,
+              [playerId]: { gameId, playerColor, displayName },
+            }));
+            resolve();
+          }
+        );
 
         socket.on('error', errorData => {
           console.error('Error during game joining:', errorData.message);
@@ -225,7 +254,7 @@ export const GlobalStateProvider = ({
         socket.emit('players/fetchOpponent', { playerId });
 
         socket.on('opponentFetched', opponentGame => {
-          resolve(opponentGame.playerId);
+          resolve(opponentGame);
         });
 
         socket.on('opponentNotFound', () => {

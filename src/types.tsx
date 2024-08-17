@@ -56,5 +56,10 @@ export type Opinion = {
 export type GameId = string | '';
 export type PlayerId = string | '';
 
-export type PlayerGames = Record<PlayerId, GameId | ''>;
+export type PlayerGame = {
+  gameId: GameId;
+  playerColor: PlayerColor;
+  displayName: string;
+};
+export type PlayerGames = Record<PlayerId, PlayerGame>;
 export type ActiveGames = Record<GameId, GameState>;

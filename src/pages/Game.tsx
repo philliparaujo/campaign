@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import BoardUI from '../components/Board';
 import Button from '../components/Button';
 import HUD from '../components/HUD';
@@ -7,19 +8,26 @@ import PublicOpinion from '../components/PublicOpinion';
 import Scoreboard from '../components/Scoreboard';
 import { size, useGameState } from '../GameState';
 import { useGlobalState } from '../GlobalState';
-import { GameId, GameState, PlayerColor, PlayerId, PollRegion } from '../types';
+import {
+  GameId,
+  PlayerColor,
+  PlayerGame,
+  PlayerId,
+  PollRegion,
+} from '../types';
 import { opponentOf } from '../utils';
-import { io } from 'socket.io-client';
 
 type GameProps = {
   gameId: GameId;
   playerId: PlayerId;
-  playerColor: PlayerColor;
+  playerGame: PlayerGame;
 };
 
 const socket = io('http://localhost:5000');
 
-const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
+const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
+  const { playerColor, displayName } = playerGame;
+
   const defaultPollRegion: PollRegion = {
     startRow: 0,
     endRow: size - 1,
@@ -36,7 +44,9 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
   const [showRoadInfluence, setShowRoadInfluence] = useState<boolean>(false);
   const [settingPollRegion, setSettingPollRegion] =
     useState<PlayerColor | null>(null);
-  const [opponentId, setOpponentId] = useState<PlayerId | null>(null);
+  const [opponentDisplayName, setOpponentDisplayName] = useState<string | null>(
+    null
+  );
 
   const { leaveGame, updateGame, fetchGame, setupListener, fetchOpponentOf } =
     useGlobalState();
@@ -63,12 +73,25 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
 
   const handleOpponentJoin = useCallback(async () => {
     try {
-      const opponentId = await fetchOpponentOf(playerId);
-      setOpponentId(opponentId);
+      const opponentGame = await fetchOpponentOf(playerId);
+      if (opponentGame) {
+        setOpponentDisplayName(opponentGame.displayName);
+      }
     } catch (error) {
-      console.error('Error fetching opponent id:', error);
+      console.error('Error fetching opponent:', error);
     }
-  }, [fetchOpponentOf, playerId, setOpponentId]);
+  }, [fetchOpponentOf, playerId, setOpponentDisplayName]);
+
+  const handleOpponentLeft = useCallback(async () => {
+    try {
+      const opponentGame = await fetchOpponentOf(playerId);
+      if (!opponentGame) {
+        setOpponentDisplayName(null);
+      }
+    } catch (error) {
+      console.error('Error fetching opponent:', error);
+    }
+  }, [fetchOpponentOf, playerId, setOpponentDisplayName]);
 
   const handleLeaveGame = async () => {
     try {
@@ -85,6 +108,10 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
       'gameJoined',
       handleOpponentJoin
     );
+    const removeGameLeftListener = setupListener(
+      'gameLeft',
+      handleOpponentLeft
+    );
     const removeGameUpdatedListener = setupListener(
       'gameUpdated',
       handleRefresh
@@ -93,14 +120,17 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
     // Cleanup listeners on unmount
     return () => {
       removeGameUpdatedListener();
+      removeGameLeftListener();
       removeGameJoinedListener();
     };
-  }, [setupListener, handleRefresh, handleOpponentJoin]);
+  }, [setupListener, handleRefresh, handleOpponentLeft, handleOpponentJoin]);
 
-  // On load, set opponent id if it exists
+  // On load, set display name and opponent id if it exists
   useEffect(() => {
-    fetchOpponentOf(playerId).then(opponent => {
-      setOpponentId(opponent);
+    fetchOpponentOf(playerId).then(opponentGame => {
+      if (opponentGame) {
+        setOpponentDisplayName(opponentGame.displayName);
+      }
     });
   });
 
@@ -120,11 +150,11 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerColor }) => {
         {/* Left Side */}
         <div>
           <h1 style={{ paddingBottom: '35px' }}>Campaign</h1>
-          <p style={{ color: playerColor }}>{`Player ID: ${playerId}`}</p>
-          {opponentId && (
-            <p
-              style={{ color: opponentOf(playerColor) }}
-            >{`Opponent ID: ${opponentId}`}</p>
+          <p style={{ color: playerColor }}>{displayName}</p>
+          {opponentDisplayName && (
+            <p style={{ color: opponentOf(playerColor) }}>
+              {opponentDisplayName}
+            </p>
           )}
           <p>{`Game ID: ${gameId}`}</p>
           <BoardUI
