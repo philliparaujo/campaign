@@ -37,6 +37,7 @@ const HUD: React.FC<HUDProps> = ({
 
   const [phaseActionTriggered, setPhaseActionTriggered] =
     useState<boolean>(false);
+  const [nextPhaseTriggered, setNextPhaseTriggered] = useState<boolean>(false);
 
   // Update poll boundary variables when any input's value changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,6 +50,11 @@ const HUD: React.FC<HUDProps> = ({
         [key]: Math.min(Math.max(Number(value), 0), size - 1),
       },
     }));
+  };
+
+  const handleNextPhase = () => {
+    incrementPhaseNumber();
+    setNextPhaseTriggered(true);
   };
 
   const handlePhaseAction = (action: PlayerAction, poll?: Poll) => {
@@ -82,13 +88,14 @@ const HUD: React.FC<HUDProps> = ({
 
   // Effect to sync the state globally after any phase action
   useEffect(() => {
-    if (phaseActionTriggered) {
+    if (phaseActionTriggered || nextPhaseTriggered) {
       syncStateToGlobal().then(() => {
         // Reset the phaseActionTriggered flag after syncing
         setPhaseActionTriggered(false);
+        setNextPhaseTriggered(false);
       });
     }
-  }, [phaseActionTriggered, syncStateToGlobal]);
+  }, [phaseActionTriggered, nextPhaseTriggered, syncStateToGlobal]);
 
   return (
     <div style={{ width: '100%', marginBottom: '20px' }}>
@@ -178,7 +185,7 @@ const HUD: React.FC<HUDProps> = ({
           <div>
             <span style={{ margin: '0 10px' }}>{phaseNumber}</span>
             <Button
-              onClick={() => incrementPhaseNumber()}
+              onClick={handleNextPhase}
               size={'small'}
               disabled={!canEndPhase(gameState)}
             >
