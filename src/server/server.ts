@@ -49,7 +49,7 @@ async function handleSocketEvent<T>(
 ) {
   try {
     const result = await query();
-    if (!result) {
+    if (result === null) {
       return socket.emit('error', { message: errorMessage });
     }
     successCallback(result);
@@ -99,39 +99,6 @@ io.on('connection', socket => {
       'Error creating game'
     )
   });
-  
-  // socket.on('game/create', async ({gameId, playerId, playerColor, displayName}) => {
-  //   try {
-  //     // Check if the game already exists
-  //     let gameState = await ActiveGameModel.findOne({ gameId });
-  //     if (gameState) {
-  //       return socket.emit('error', { message: 'Game already exists with this gameId.' });
-  //     }
-
-  //     // Check if player is already associated with a game
-  //     let playerGame = await PlayerGameModel.findOne({ playerId });
-  //     if (playerGame) {
-  //       return socket.emit('error', { message: 'Player is already associated with a game.' });
-  //     }
-
-  //     // Create a new game state
-  //     const newGameState = createNewGameState();
-  //     newGameState.players[playerColor as PlayerColor].id = playerId;
-
-  //     const newGame = new ActiveGameModel({ gameId: gameId, gameState: newGameState });
-  //     await newGame.save();
-
-  //     // Associate player with this game
-  //     playerGame = new PlayerGameModel({ playerId, gameId, playerColor, displayName });
-  //     await playerGame.save();
-
-  //     // Emit the new game state to the client
-  //     socket.join(gameId);
-  //     io.to(gameId).emit('gameCreated', {gameState: newGameState, gameId, playerColor, displayName});
-  //   } catch (error: any) {
-  //     socket.emit('error', { message: 'Error creating room', error });
-  //   }
-  // });
 
   // Join a game
   socket.on('game/join', ({ gameId, playerId, playerColor, displayName }) => {
@@ -169,205 +136,221 @@ io.on('connection', socket => {
       'Error joining game'
     )
   });
-  // socket.on('game/join', async ({ gameId, playerId, playerColor, displayName }) => {
-  //   try {
-  //     // Fetch the game state by gameId
-  //     let activeGame = await ActiveGameModel.findOne({ gameId });
-  //     if (!activeGame) {
-  //       return socket.emit('error', { message: 'Room not found' });
-  //     }
 
-  //     // Check if the player slot is already taken
-  //     if (activeGame.gameState.players[playerColor as PlayerColor].id) {
-  //       return socket.emit('error', { message: `${playerColor} player slot is already taken.` });
-  //     }
+  // Leave a game
+  socket.on('game/leave', ({ gameId, playerId }) => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        // Check if game exists and player is in game
+        let activeGame = await ActiveGameModel.findOne({ gameId });
+        let playerGame = await PlayerGameModel.findOne({ playerId, gameId });
+        if (!activeGame ||!playerGame) return null;
 
-  //     // Assign playerId to the selected player color
-  //     activeGame.gameState.players[playerColor as PlayerColor].id = playerId;
+        // Remove playerId from game state
+        if (playerId === activeGame.gameState.players.red.id) {
+          activeGame.gameState.players.red.id = '';
+        } else if (playerId === activeGame.gameState.players.blue.id) {
+          activeGame.gameState.players.blue.id = '';
+        } else {
+          return null;
+        }
 
-  //     // Save the updated game state
-  //     await activeGame.save();
+        // Save new game models
+        await activeGame.save();
+        await playerGame.deleteOne();
 
-  //     // Associate player with this game
-  //     const playerGame = new PlayerGameModel({ playerId, gameId, playerColor, displayName });
-  //     await playerGame.save();
-
-  //     // Emit the updated game state to the client
-  //     socket.join(gameId);
-  //     io.to(gameId).emit('gameJoined', {gameState: activeGame.gameState, gameId, playerColor, displayName});
-  //   } catch (error: any) {
-  //     socket.emit('error', { message: 'Error joining room', error });
-  //   }
-  // });
-
-  // Leave game
-  socket.on('game/leave', async ({ gameId, playerId }) => {
-    try {
-      let activeGame = await ActiveGameModel.findOne({ gameId });
-      if (!activeGame) {
-        return socket.emit('error', { message: 'Room not found' });
-      }
-
-      // Remove playerId from game state
-      if (playerId === activeGame.gameState.players.red.id) {
-        activeGame.gameState.players.red.id = '';
-      } else if (playerId === activeGame.gameState.players.blue.id) {
-        activeGame.gameState.players.blue.id = '';
-      } else {
-        return socket.emit('error', { message: 'Player is not in this game.' });
-      }
-
-      // Save the updated game state
-      await activeGame.save();
-
-      // Find and delete the player game entry
-      await PlayerGameModel.findOneAndDelete({ playerId, gameId });
-
-      io.to(gameId).emit('gameLeft', activeGame.gameState);
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error leaving room', error });
-    }
+        return activeGame.gameState;
+      },
+      (gameState) => {
+        socket.leave(gameId);
+        io.to(gameId).emit('gameLeft', gameState);
+      },
+      'Error leaving game'
+    )
   });
 
-  // Delete a game
-  socket.on('game/delete', async ({ gameId }) => {
-    try {
-      const activeGame = await ActiveGameModel.findOne({ gameId });
-      if (!activeGame) {
-        return socket.emit('error', { message: 'Room not found' });
-      }
+  socket.on('game/delete', ({gameId}) => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        // Check if game exists
+        let activeGame = await ActiveGameModel.findOne({ gameId });
+        if (!activeGame) return null;
 
-      // Delete the game
-      await ActiveGameModel.findOneAndDelete({ gameId });
+        // Delete the game
+        await ActiveGameModel.findOneAndDelete({ gameId });
+        await PlayerGameModel.deleteMany({ gameId });
 
-      // Optionally, delete any related player games if needed
-      await PlayerGameModel.deleteMany({ gameId });
-
-      io.to(gameId).emit('gameDeleted', { message: 'Game deleted successfully' });
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error deleting room', error });
-    }
+        return;
+      },
+      () => {
+        io.to(gameId).emit('gameDeleted', { message: 'Game deleted successfully' });
+      },
+      'Error deleting game'
+    )
   });
 
   // Update a game's state
-  socket.on('game/update', async ({ gameId, gameState }) => {
-    try {
-      let activeGame = await ActiveGameModel.findOne({ gameId });
-      if (!activeGame) {
-        return socket.emit('error', { message: 'Room not found' });
-      }
-  
-      activeGame.gameState = gameState;
-      await activeGame.save();
-  
-      // Emit only to clients in the specific game room
-      io.to(gameId).emit('gameUpdated', activeGame.gameState);
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error updating room', error });
-    }
+  socket.on('game/update', ({ gameId, gameState }) => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        // Check if game exists
+        let activeGame = await ActiveGameModel.findOne({ gameId });
+        if (!activeGame) return null;
+
+        // Update and save the game state
+        activeGame.gameState = gameState;
+        await activeGame.save();
+
+        return activeGame.gameState;
+      },
+      (gameState) => {
+        io.to(gameId).emit('gameUpdated', gameState);
+      },
+      'Error updating game'
+    )
   });
 
   // Fetch a game by gameId
-  socket.on('games/fetch', async ({ gameId }) => {
-    try {
-      const activeGame = await ActiveGameModel.findOne({ gameId });
-      if (!activeGame) {
-        return socket.emit('error', { message: 'Room not found' });
-      }
+  socket.on('games/fetch', ({ gameId }) => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        // Check if game exists
+        let activeGame = await ActiveGameModel.findOne({ gameId });
+        if (!activeGame) return null;
 
-      socket.emit('gameFetched', activeGame.gameState);
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error fetching room', error });
-    }
+        return activeGame.gameState;
+      },
+      (gameState) => {
+        socket.emit('gameFetched', gameState);
+      },
+      'Error fetching game'
+    )
   });
 
   // Fetch a player by playerId
-  socket.on('players/fetch', async ({ playerId }) => {
-    try {
-      const playerGame = await PlayerGameModel.findOne({ playerId });
-      if (!playerGame) {
-        return socket.emit('error', { message: 'Player not found' });
-      }
+  socket.on('players/fetch', ({ playerId }) => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        // Check if player exists
+        let playerGame = await PlayerGameModel.findOne({ playerId });
+        if (!playerGame) return null;
 
-      socket.emit('playerFetched', playerGame);
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error fetching player', error });
-    }
+        return playerGame;
+      },
+      (playerGame) => {
+        socket.emit('playerFetched', playerGame);
+      },
+      'Error fetching player'
+    )
   });
 
   // Fetch an opponent of playerId
-  socket.on('players/fetchOpponent', async ({ playerId }) => {
-    try {
-      const playerGame = await PlayerGameModel.findOne({ playerId });
-      if (!playerGame) {
-        return socket.emit('error', { message: 'Player not found' });
-      }
+  socket.on('players/fetchOpponent', ({ playerId }) => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        // Check if player exists
+        let playerGame = await PlayerGameModel.findOne({ playerId });
+        if (!playerGame) return null;
 
-      // Find the opponent's game
-      const opponentGame = await PlayerGameModel.findOne({
-        gameId: playerGame.gameId,
-        playerColor: opponentOf(playerGame.playerColor as PlayerColor),
-      });
+        // Find the opponent's game
+        const opponentGame = await PlayerGameModel.findOne({
+          gameId: playerGame.gameId,
+          playerColor: opponentOf(playerGame.playerColor as PlayerColor),
+        });
+        if (!opponentGame) return {opponentGame: null};
 
-      if (!opponentGame) {
-        return socket.emit('opponentNotFound'); // No Content
-      }
-
-      socket.emit('opponentFetched', opponentGame);
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error fetching opponent', error });
-    }
+        return {opponentGame: opponentGame};
+      },
+      (opponentGameData) => {
+        if (opponentGameData?.opponentGame) {
+          socket.emit('opponentFetched', opponentGameData.opponentGame);
+        } else {
+          socket.emit('opponentNotFound');
+        }
+      },
+      'Error fetching opponent'
+    )
   });
 
   // Return whether a game exists
-  socket.on('games/exists', async ({ gameId }) => {
-    try {
-      const activeGame = await ActiveGameModel.findOne({ gameId });
-      const exists = !!activeGame;
-      socket.emit('gameExists', { exists });
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error checking game existence', error });
-    }
+  socket.on('games/exists', ({ gameId }) => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        let activeGame = await ActiveGameModel.findOne({ gameId });
+        return !!activeGame;
+      },
+      (exists) => {
+        socket.emit('gameExists', {exists});
+      },
+      'Error checking game existence'
+    )
   });
+  // socket.on('games/exists', async ({ gameId }) => {
+  //   try {
+  //     const activeGame = await ActiveGameModel.findOne({ gameId });
+  //     const exists = !!activeGame;
+  //     socket.emit('gameExists', { exists });
+  //   } catch (error: any) {
+  //     socket.emit('error', { message: 'Error checking game existence', error });
+  //   }
+  // });
 
   // Return whether a player is in a game
-  socket.on('players/inGame', async ({ playerId }) => {
-    try {
-      const playerGame = await PlayerGameModel.findOne({ playerId });
-      const inGame =!!playerGame && playerGame.gameId!== '';
-      socket.emit('playerInGame', { inGame });
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error checking player in game', error });
-    }
-  })
+  socket.on('players/inGame', ({ playerId }) => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        const playerGame = await PlayerGameModel.findOne({ playerId });
+        return !!playerGame && playerGame.gameId !== '';
+      },
+      (inGame) => {
+        socket.emit('playerInGame', {inGame});
+      },
+      'Error checking player in game'
+    )
+  });
 
   // Fetch all games
-  socket.on('games/fetchAll', async () => {
-    try {
-      const activeGames = await ActiveGameModel.find();
-      const playerGames = await PlayerGameModel.find();
+  socket.on('games/fetchAll', () => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        const activeGames = await ActiveGameModel.find();
+        const playerGames = await PlayerGameModel.find();
 
-      // Combine the data to map players to their games
-      const gameData = {
-        activeGames,
-        playerGames,
-      };
-
-      socket.emit('allGamesFetched', gameData);
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error fetching games and players', error });
-    }
+        return {
+          activeGames,
+          playerGames,
+        };
+      },
+      (gameData) => {
+        socket.emit('allGamesFetched', gameData);
+      },
+      'Error fetching games and players'
+    )
   });
 
   // Delete all games
-  socket.on('games/deleteAll', async () => {
-    try {
-      await ActiveGameModel.deleteMany({});
-      await PlayerGameModel.deleteMany({});
-      io.emit('allGamesDeleted', { message: 'All games deleted successfully' });
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error deleting games and players', error });
-    }
+  socket.on('games/deleteAll', () => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        await ActiveGameModel.deleteMany({});
+        await PlayerGameModel.deleteMany({});
+        return;
+      },
+      () => {
+        io.emit('allGamesDeleted', { message: 'All games deleted successfully' });
+      },
+      'Error deleting games and players'
+    )
   });
 
   socket.on('disconnect', () => {
