@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { size, useGameState } from '../GameState';
-import { PlayerColor, Poll, PollRegion } from '../types';
+import { PlayerAction, PlayerColor, Poll, PollRegion } from '../types';
 import { canEndPhase, formatPoll, getRedSample, opponentOf } from '../utils';
 import Button from './Button';
 
@@ -35,7 +35,8 @@ const HUD: React.FC<HUDProps> = ({
   } = useGameState();
   const { players, turnNumber, board, phaseNumber, debugMode } = gameState;
 
-  const [conductedPoll, setConductedPoll] = useState<boolean>(false);
+  const [phaseActionTriggered, setPhaseActionTriggered] =
+    useState<boolean>(false);
 
   // Update poll boundary variables when any input's value changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,18 +51,27 @@ const HUD: React.FC<HUDProps> = ({
     }));
   };
 
+  const handlePhaseAction = (action: PlayerAction, poll?: Poll) => {
+    if (poll) {
+      savePoll(playerColor, poll);
+    }
+    setPhaseAction(playerColor, action);
+    setPhaseActionTriggered(true);
+  };
+
   // Sample a population within your boundary and save your poll result
-  const handleConductPoll = async () => {
+  const handleConductPoll = () => {
     const pollRegion = pollInputs[playerColor];
     const redPercent = getRedSample(board, pollRegion);
 
     const poll: Poll = { ...pollRegion, redPercent };
-
-    savePoll(playerColor, poll);
-    setPhaseAction(playerColor, 'conductPoll');
-
-    setConductedPoll(true);
+    handlePhaseAction('conductPoll', poll);
   };
+
+  // Trust, doubt, accuse handlers
+  const handleTrust = () => handlePhaseAction('trust');
+  const handleDoubt = () => handlePhaseAction('doubt');
+  const handleAccuse = () => handlePhaseAction('accuse');
 
   const phaseDescriptions: { [key: number]: string } = {
     1: 'Advertising',
@@ -70,14 +80,15 @@ const HUD: React.FC<HUDProps> = ({
     4: 'Funding',
   };
 
+  // Effect to sync the state globally after any phase action
   useEffect(() => {
-    if (conductedPoll) {
+    if (phaseActionTriggered) {
       syncStateToGlobal().then(() => {
-        // Reset the conductedPoll flag after syncing
-        setConductedPoll(false);
+        // Reset the phaseActionTriggered flag after syncing
+        setPhaseActionTriggered(false);
       });
     }
-  }, [conductedPoll, syncStateToGlobal]);
+  }, [phaseActionTriggered, syncStateToGlobal]);
 
   return (
     <div style={{ width: '100%', marginBottom: '20px' }}>
@@ -318,7 +329,7 @@ const HUD: React.FC<HUDProps> = ({
                 >
                   <div>
                     <Button
-                      onClick={() => setPhaseAction(playerColor, 'trust')}
+                      onClick={handleTrust}
                       color={'green'}
                       clicked={players[playerColor].phaseAction === 'trust'}
                     >
@@ -328,7 +339,7 @@ const HUD: React.FC<HUDProps> = ({
                   </div>
                   <div>
                     <Button
-                      onClick={() => setPhaseAction(playerColor, 'doubt')}
+                      onClick={handleDoubt}
                       color={'orange'}
                       clicked={players[playerColor].phaseAction === 'doubt'}
                     >
@@ -338,7 +349,7 @@ const HUD: React.FC<HUDProps> = ({
                   </div>
                   <div>
                     <Button
-                      onClick={() => setPhaseAction(playerColor, 'accuse')}
+                      onClick={handleAccuse}
                       color={'red'}
                       clicked={players[playerColor].phaseAction === 'accuse'}
                     >
