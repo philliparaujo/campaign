@@ -11,6 +11,7 @@ interface RoadUIProps {
 
 type Color = { r: number; g: number; b: number };
 
+// Choose color in-between start and end based on percent
 const interpolateColor = (
   startColor: Color,
   endColor: Color,
@@ -33,7 +34,7 @@ const RoadUI: React.FC<RoadUIProps> = ({
   // return whether a cell is a road, if that cell is in bounds
   const isRoad = (cell: Cell | undefined): boolean => cell?.type === 'road';
 
-  /* On debugMode, show road influence via road background color */
+  /* On debugMode or phase 2, show road influence via road background color */
   const roadPercentInfluence = calculatePercentInfluence(
     calculateRoadInfluence('red', board, rowIndex, colIndex),
     calculateRoadInfluence('blue', board, rowIndex, colIndex)

@@ -29,19 +29,22 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   const [gameId, setGameId] = useState<string | null>(null);
   const [pendingUpdate, setPendingUpdate] = useState(false);
 
+  // Get player and game IDs based on color
   useEffect(() => {
     const playerId = playerIdFromColor(playerColor);
-    setPlayerId(playerId);
-
-    fetchPlayer(playerId)
-      .then(player => {
-        setGameId(player.gameId);
-      })
-      .catch(error => {
-        console.error('Error fetching player:', error);
-      });
+    if (playerId) {
+      setPlayerId(playerId);
+      fetchPlayer(playerId)
+        .then(player => {
+          setGameId(player.gameId);
+        })
+        .catch(error => {
+          console.error('Error fetching player:', error);
+        });
+    }
   }, [fetchPlayer, playerColor, playerIdFromColor]);
 
+  // After the game state is updated, update the game state on the server
   useEffect(() => {
     if (pendingUpdate && gameId) {
       updateGame(gameId, { ...gameState })

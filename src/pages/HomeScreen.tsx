@@ -9,18 +9,6 @@ import { newGameId, newPlayerId } from '../utils';
 import SettingsModal from '../components/SettingsModal';
 
 function HomeScreen() {
-  const [playerId, setPlayerId] = useState<PlayerId>('');
-  const [inputGameId, setInputGameId] = useState<GameId>('');
-  const [inputPlayerColor, setInputPlayerColor] = useState<PlayerColor>('red');
-  const [inputDisplayName, setInputDisplayName] = useState<string>('');
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const [openModal, setOpenModal] = useState<'rules' | 'settings' | null>(null);
-  const handleCloseModal = () => {
-    setOpenModal(null);
-  };
-
   const {
     activeGames,
     playerGames,
@@ -30,6 +18,16 @@ function HomeScreen() {
     gameExists,
   } = useGlobalState();
 
+  const [playerId, setPlayerId] = useState<PlayerId>('');
+  const [inputGameId, setInputGameId] = useState<GameId>('');
+  const [inputPlayerColor, setInputPlayerColor] = useState<PlayerColor>('red');
+  const [inputDisplayName, setInputDisplayName] = useState<string>('');
+  const [openModal, setOpenModal] = useState<'rules' | 'settings' | null>(null);
+
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // On page load/URL change, set playerId or use URL player ID if it exists
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
     let playerId = queryParams.get('playerId');
@@ -44,6 +42,7 @@ function HomeScreen() {
     setInputDisplayName(playerId);
   }, [location.search, navigate]);
 
+  // On page load/refresh, print global states to console
   useEffect(() => {
     console.log('Active games:', activeGames);
     console.log('Player games:', playerGames);
@@ -82,6 +81,10 @@ function HomeScreen() {
 
   const handleDeleteAllGames = async () => {
     deleteAllGames();
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(null);
   };
 
   return (

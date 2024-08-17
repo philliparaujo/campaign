@@ -35,16 +35,15 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
   let redInfluence = calculateTotalInfluence('red', board);
   let blueInfluence = calculateTotalInfluence('blue', board);
 
-  const currentRedPercent = getRedSample(board, undefined, true);
-  const currentBluePercent = 1 - currentRedPercent;
+  const trueRedPercent = getRedSample(board, undefined, true);
+  const trueBluePercent = 1 - trueRedPercent;
 
   const redPercentResult =
     publicOpinionHistory[turnNumber]['trueRedPercent'] || 0.5;
   const bluePercentResult = 1 - redPercentResult;
 
-  const redPercent = phaseNumber === 4 ? redPercentResult : currentRedPercent;
-  const bluePercent =
-    phaseNumber === 4 ? bluePercentResult : currentBluePercent;
+  const redPercent = phaseNumber === 4 ? redPercentResult : trueRedPercent;
+  const bluePercent = phaseNumber === 4 ? bluePercentResult : trueBluePercent;
 
   const bufferPercent = (playerColor: PlayerColor) => {
     return players[playerColor].phaseAction === 'doubt'

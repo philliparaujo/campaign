@@ -8,9 +8,9 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
   const { gameState } = useGameState();
   const { turnNumber, phaseNumber, publicOpinionHistory } = gameState;
 
-  const redPercentResult =
+  const redPublicOpinion =
     publicOpinionHistory[turnNumber]?.redPublicOpinion[phaseNumber - 1];
-  const bluePercentResult = 1 - redPercentResult;
+  const bluePublicOpinion = 1 - redPublicOpinion;
 
   return (
     <div
@@ -23,9 +23,9 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
       }}
     >
       <h4>Public Opinion:</h4>
-      {redPercentResult !== undefined && (
+      {redPublicOpinion !== undefined && (
         <>
-          {formatPoll(redPercentResult)}
+          {formatPoll(redPublicOpinion)}
           <div
             style={{
               backgroundColor: '#f0f0f0',
@@ -40,7 +40,7 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
                 backgroundColor: 'red',
                 borderRadius: '0px',
                 transition: 'width 0.5s',
-                width: `${redPercentResult * 100}%`,
+                width: `${redPublicOpinion * 100}%`,
               }}
             ></div>
             <div
@@ -49,7 +49,7 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
                 backgroundColor: 'blue',
                 borderRadius: '0px',
                 transition: 'width 0.5s',
-                width: `${bluePercentResult * 100}%`,
+                width: `${bluePublicOpinion * 100}%`,
               }}
             ></div>
           </div>

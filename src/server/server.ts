@@ -41,74 +41,164 @@ mongoose.connect(URI)
   .then(() => console.log('MongoDB connected'))
   .catch(err => console.error(err));
 
+async function handleSocketEvent<T>(
+  socket: any,
+  query: () => Promise<T | null>,
+  successCallback: (result: T | null) => void,
+  errorMessage: string
+) {
+  try {
+    const result = await query();
+    if (!result) {
+      return socket.emit('error', { message: errorMessage });
+    }
+    successCallback(result);
+  } catch (error: any) {
+    socket.emit('error', { message: errorMessage, error });
+  }
+}
+
 io.on('connection', socket => {
   console.log('A user connected');
 
   // Create a game and join it
-  socket.on('game/create', async ({gameId, playerId, playerColor, displayName}) => {
-    try {
-      // Check if the game already exists
-      let gameState = await ActiveGameModel.findOne({ gameId });
-      if (gameState) {
-        return socket.emit('error', { message: 'Game already exists with this gameId.' });
-      }
+  socket.on('game/create', ({ gameId, playerId, playerColor, displayName}) => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        // Check if game already exists or player already in game
+        let activeGame = await ActiveGameModel.findOne({ gameId });
+        let playerGame = await PlayerGameModel.findOne({ playerId });
+        if (activeGame || playerGame) return null;
 
-      // Check if player is already associated with a game
-      let playerGame = await PlayerGameModel.findOne({ playerId });
-      if (playerGame) {
-        return socket.emit('error', { message: 'Player is already associated with a game.' });
-      }
+        // Set player color in new game state
+        const gameState = createNewGameState();
+        gameState.players[playerColor as PlayerColor].id = playerId;
 
-      // Create a new game state
-      const newGameState = createNewGameState();
-      newGameState.players[playerColor as PlayerColor].id = playerId;
+        // Create and save new game models, store them in database
+        activeGame = new ActiveGameModel({
+          gameId,
+          gameState,
+        });
+        playerGame = new PlayerGameModel({
+          playerId,
+          gameId,
+          playerColor,
+          displayName,
+        });
 
-      const newGame = new ActiveGameModel({ gameId: gameId, gameState: newGameState });
-      await newGame.save();
+        await activeGame.save();
+        await playerGame.save();
 
-      // Associate player with this game
-      playerGame = new PlayerGameModel({ playerId, gameId, playerColor, displayName });
-      await playerGame.save();
-
-      // Emit the new game state to the client
-      socket.join(gameId);
-      io.to(gameId).emit('gameCreated', {gameState: newGameState, gameId, playerColor, displayName});
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error creating room', error });
-    }
+        return gameState;
+      },
+      (gameState) => {
+        socket.join(gameId);
+        io.to(gameId).emit('gameCreated', {gameState, gameId, playerColor, displayName});
+      },
+      'Error creating game'
+    )
   });
+  
+  // socket.on('game/create', async ({gameId, playerId, playerColor, displayName}) => {
+  //   try {
+  //     // Check if the game already exists
+  //     let gameState = await ActiveGameModel.findOne({ gameId });
+  //     if (gameState) {
+  //       return socket.emit('error', { message: 'Game already exists with this gameId.' });
+  //     }
+
+  //     // Check if player is already associated with a game
+  //     let playerGame = await PlayerGameModel.findOne({ playerId });
+  //     if (playerGame) {
+  //       return socket.emit('error', { message: 'Player is already associated with a game.' });
+  //     }
+
+  //     // Create a new game state
+  //     const newGameState = createNewGameState();
+  //     newGameState.players[playerColor as PlayerColor].id = playerId;
+
+  //     const newGame = new ActiveGameModel({ gameId: gameId, gameState: newGameState });
+  //     await newGame.save();
+
+  //     // Associate player with this game
+  //     playerGame = new PlayerGameModel({ playerId, gameId, playerColor, displayName });
+  //     await playerGame.save();
+
+  //     // Emit the new game state to the client
+  //     socket.join(gameId);
+  //     io.to(gameId).emit('gameCreated', {gameState: newGameState, gameId, playerColor, displayName});
+  //   } catch (error: any) {
+  //     socket.emit('error', { message: 'Error creating room', error });
+  //   }
+  // });
 
   // Join a game
-  socket.on('game/join', async ({ gameId, playerId, playerColor, displayName }) => {
-    try {
-      // Fetch the game state by gameId
-      let activeGame = await ActiveGameModel.findOne({ gameId });
-      if (!activeGame) {
-        return socket.emit('error', { message: 'Room not found' });
-      }
+  socket.on('game/join', ({ gameId, playerId, playerColor, displayName }) => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        // Check if game exists and player is not already in game
+        let activeGame = await ActiveGameModel.findOne({ gameId });
+        let playerGame = await PlayerGameModel.findOne({ playerId });
+        if (!activeGame || playerGame) return null;
 
-      // Check if the player slot is already taken
-      if (activeGame.gameState.players[playerColor as PlayerColor].id) {
-        return socket.emit('error', { message: `${playerColor} player slot is already taken.` });
-      }
+        // Check if color is already taken
+        if (activeGame.gameState.players[playerColor as PlayerColor].id) {
+          return null;
+        }
 
-      // Assign playerId to the selected player color
-      activeGame.gameState.players[playerColor as PlayerColor].id = playerId;
+        // Save new game models
+        activeGame.gameState.players[playerColor as PlayerColor].id = playerId;
+        playerGame = new PlayerGameModel({
+          playerId,
+          gameId,
+          playerColor,
+          displayName,
+        });
 
-      // Save the updated game state
-      await activeGame.save();
+        await activeGame.save();
+        await playerGame.save();
 
-      // Associate player with this game
-      const playerGame = new PlayerGameModel({ playerId, gameId, playerColor, displayName });
-      await playerGame.save();
-
-      // Emit the updated game state to the client
-      socket.join(gameId);
-      io.to(gameId).emit('gameJoined', {gameState: activeGame.gameState, gameId, playerColor, displayName});
-    } catch (error: any) {
-      socket.emit('error', { message: 'Error joining room', error });
-    }
+        return activeGame.gameState;
+      },
+      (gameState) => {
+        socket.join(gameId);
+        io.to(gameId).emit('gameJoined', {gameState, gameId, playerColor, displayName});
+      },
+      'Error joining game'
+    )
   });
+  // socket.on('game/join', async ({ gameId, playerId, playerColor, displayName }) => {
+  //   try {
+  //     // Fetch the game state by gameId
+  //     let activeGame = await ActiveGameModel.findOne({ gameId });
+  //     if (!activeGame) {
+  //       return socket.emit('error', { message: 'Room not found' });
+  //     }
+
+  //     // Check if the player slot is already taken
+  //     if (activeGame.gameState.players[playerColor as PlayerColor].id) {
+  //       return socket.emit('error', { message: `${playerColor} player slot is already taken.` });
+  //     }
+
+  //     // Assign playerId to the selected player color
+  //     activeGame.gameState.players[playerColor as PlayerColor].id = playerId;
+
+  //     // Save the updated game state
+  //     await activeGame.save();
+
+  //     // Associate player with this game
+  //     const playerGame = new PlayerGameModel({ playerId, gameId, playerColor, displayName });
+  //     await playerGame.save();
+
+  //     // Emit the updated game state to the client
+  //     socket.join(gameId);
+  //     io.to(gameId).emit('gameJoined', {gameState: activeGame.gameState, gameId, playerColor, displayName});
+  //   } catch (error: any) {
+  //     socket.emit('error', { message: 'Error joining room', error });
+  //   }
+  // });
 
   // Leave game
   socket.on('game/leave', async ({ gameId, playerId }) => {

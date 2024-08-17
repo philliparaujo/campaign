@@ -23,6 +23,11 @@ type GameProps = {
 };
 
 const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
+  const { leaveGame, updateGame, fetchGame, setupListener, fetchOpponentOf } =
+    useGlobalState();
+  const { gameState, setGameState } = useGameState();
+  const navigate = useNavigate();
+
   const { playerColor, displayName } = playerGame;
 
   const defaultPollRegion: PollRegion = {
@@ -38,18 +43,14 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
       blue: defaultPollRegion,
     }
   );
-  const [showRoadInfluence, setShowRoadInfluence] = useState<boolean>(false);
   const [settingPollRegion, setSettingPollRegion] =
     useState<PlayerColor | null>(null);
+  const [showRoadInfluence, setShowRoadInfluence] = useState<boolean>(false);
   const [opponentDisplayName, setOpponentDisplayName] = useState<string | null>(
     null
   );
 
-  const { leaveGame, updateGame, fetchGame, setupListener, fetchOpponentOf } =
-    useGlobalState();
-  const { gameState, setGameState } = useGameState();
-  const navigate = useNavigate();
-
+  /* Event handlers */
   const handleEndTurn = async () => {
     try {
       await updateGame(gameId, gameState);
@@ -70,10 +71,14 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
 
   const handleOpponentJoin = useCallback(async () => {
     try {
-      const opponentGame = await fetchOpponentOf(playerId);
-      if (opponentGame) {
-        setOpponentDisplayName(opponentGame.displayName);
-      }
+      fetchGame(gameId).then(gameState => {
+        setGameState(gameState);
+      });
+      fetchOpponentOf(playerId).then(opponentGame => {
+        if (opponentGame) {
+          setOpponentDisplayName(opponentGame.displayName);
+        }
+      });
     } catch (error) {
       console.error('Error fetching opponent:', error);
     }
@@ -97,10 +102,10 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   const handleLeaveGame = async () => {
     try {
       await leaveGame(gameId, playerId);
-      navigate('/');
     } catch (error) {
       console.error('Error leaving the game:', error);
     }
+    navigate('/');
   };
 
   // Listen and react to game events
@@ -144,12 +149,15 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
 
   // On load, set display name and opponent id if it exists
   useEffect(() => {
+    fetchGame(gameId).then(gameState => {
+      setGameState(gameState);
+    });
     fetchOpponentOf(playerId).then(opponentGame => {
       if (opponentGame) {
         setOpponentDisplayName(opponentGame.displayName);
       }
     });
-  });
+  }, []);
 
   return (
     <div

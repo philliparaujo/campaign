@@ -32,7 +32,6 @@ const BoardUI: React.FC<BoardUIProps> = ({
   const cellSize = 100;
 
   const [isDragging, setIsDragging] = useState<boolean>(false);
-
   const myPollInputs = pollInputs[playerColor];
 
   // return a CSS style used for formatting poll boundaries

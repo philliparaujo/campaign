@@ -1,4 +1,10 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { useGlobalState } from './GlobalState';
 import {
   Board,
@@ -357,16 +363,19 @@ export const GameStateProvider = ({
     setPublicOpinionHistory(newPublicOpinionHistory);
   };
 
-  const playerIdFromColor = (color: PlayerColor): PlayerId => {
-    switch (color) {
-      case 'red':
-        return gameState.players.red.id;
-      case 'blue':
-        return gameState.players.blue.id;
-      default:
-        throw new Error('Invalid color');
-    }
-  };
+  const playerIdFromColor = useCallback(
+    (color: PlayerColor): PlayerId => {
+      switch (color) {
+        case 'red':
+          return gameState.players.red.id;
+        case 'blue':
+          return gameState.players.blue.id;
+        default:
+          throw new Error('Invalid color');
+      }
+    },
+    [gameState.players.blue.id, gameState.players.red.id]
+  );
 
   return (
     <GameStateContext.Provider

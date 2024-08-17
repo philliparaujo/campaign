@@ -23,7 +23,7 @@ const Modal: React.FC<ModalProps> = ({ show, onClose, children }) => {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 1000, // Ensure the modal appears on top
+        zIndex: 1000,
       }}
     >
       <div
@@ -49,7 +49,7 @@ const Modal: React.FC<ModalProps> = ({ show, onClose, children }) => {
             cursor: 'pointer',
           }}
         >
-          &times; {/* This is the 'X' character */}
+          &times; {/* 'X' button */}
         </button>
         {children}
       </div>

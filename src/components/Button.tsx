@@ -50,7 +50,6 @@ const Button: React.FC<ButtonProps> = ({
   };
 
   const colors = color ? colorMap[color] : colorMap['default'];
-
   const backgroundColor =
     disabled || clicked
       ? colors.disabled
@@ -58,7 +57,6 @@ const Button: React.FC<ButtonProps> = ({
         ? colors.hover
         : colors.base;
   const borderColor = clicked ? 'black' : 'transparent';
-
   const padding =
     size === 'small'
       ? '5px 10px'
