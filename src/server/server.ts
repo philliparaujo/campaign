@@ -240,6 +240,17 @@ io.on('connection', socket => {
     }
   });
 
+  // Return whether a player is in a game
+  socket.on('players/inGame', async ({ playerId }) => {
+    try {
+      const playerGame = await PlayerGameModel.findOne({ playerId });
+      const inGame =!!playerGame && playerGame.gameId!== '';
+      socket.emit('playerInGame', { inGame });
+    } catch (error: any) {
+      socket.emit('error', { message: 'Error checking player in game', error });
+    }
+  })
+
   // Fetch all games
   socket.on('games/fetchAll', async () => {
     try {

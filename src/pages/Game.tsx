@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { io } from 'socket.io-client';
 import BoardUI from '../components/Board';
 import Button from '../components/Button';
 import HUD from '../components/HUD';
@@ -201,7 +200,6 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
             setShowRoadInfluence={setShowRoadInfluence}
           />
           <Button onClick={handleEndTurn}>End Turn</Button>
-          {/* <Button onClick={handleRefresh}>Refresh</Button> */}
           <Button onClick={handleLeaveGame}>Leave Game</Button>
         </div>
       </div>

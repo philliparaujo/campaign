@@ -10,6 +10,7 @@ import {
   Opinion,
   PlayerAction,
   PlayerColor,
+  PlayerId,
   PlayerInfo,
   Poll,
 } from './types';
@@ -77,6 +78,7 @@ type GameStateContextType = {
   setPublicOpinionHistory: (publicOpinionHistory: Opinion[]) => void;
   savePoll: (pollColor: PlayerColor, newPoll: Poll) => Poll[];
   incrementPhaseNumber: () => void;
+  playerIdFromColor: (color: PlayerColor) => PlayerId;
 };
 
 const GameStateContext = createContext<GameStateContextType | undefined>(
@@ -355,6 +357,17 @@ export const GameStateProvider = ({
     setPublicOpinionHistory(newPublicOpinionHistory);
   };
 
+  const playerIdFromColor = (color: PlayerColor): PlayerId => {
+    switch (color) {
+      case 'red':
+        return gameState.players.red.id;
+      case 'blue':
+        return gameState.players.blue.id;
+      default:
+        throw new Error('Invalid color');
+    }
+  };
+
   return (
     <GameStateContext.Provider
       value={{
@@ -370,6 +383,7 @@ export const GameStateProvider = ({
         setPublicOpinionHistory,
         savePoll,
         incrementPhaseNumber,
+        playerIdFromColor,
       }}
     >
       {children}

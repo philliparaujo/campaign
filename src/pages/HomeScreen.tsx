@@ -199,7 +199,7 @@ function HomeScreen() {
             value={inputGameId}
             size={4}
             maxLength={4}
-            onChange={e => setInputGameId(e.target.value)}
+            onChange={e => setInputGameId(e.target.value.toUpperCase())}
             style={{
               padding: '8px',
               borderRadius: '8px',

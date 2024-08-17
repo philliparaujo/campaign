@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameState } from '../GameState';
-import { Floor, Influence, PlayerColor } from '../types';
+import { useGlobalState } from '../GlobalState';
+import { Floor, PlayerColor } from '../types';
 import FloorUI from './Floor';
 
 interface BuildingUIProps {
@@ -18,16 +19,50 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   baseCost,
   playerColor,
 }) => {
-  const { gameState, setFloorInfluence, setCoins } = useGameState();
+  const { updateGame, fetchPlayer } = useGlobalState();
+  const { gameState, playerIdFromColor, setFloorInfluence, setCoins } =
+    useGameState();
   const { board, players } = gameState;
   const height = floors.length;
 
-  // calculates the cost of a floor given its index in a building's Floor[]
+  const [playerId, setPlayerId] = useState<string | null>(null);
+  const [gameId, setGameId] = useState<string | null>(null);
+  const [pendingUpdate, setPendingUpdate] = useState(false);
+
+  useEffect(() => {
+    const playerId = playerIdFromColor(playerColor);
+    setPlayerId(playerId);
+
+    fetchPlayer(playerId)
+      .then(player => {
+        setGameId(player.gameId);
+      })
+      .catch(error => {
+        console.error('Error fetching player:', error);
+      });
+  }, [fetchPlayer, playerColor, playerIdFromColor]);
+
+  useEffect(() => {
+    if (pendingUpdate && gameId) {
+      updateGame(gameId, { ...gameState })
+        .then(() => {
+          console.log('Game state updated successfully');
+        })
+        .catch(error => {
+          console.error('Error updating the game state:', error);
+        })
+        .finally(() => {
+          setPendingUpdate(false);
+        });
+    }
+  }, [pendingUpdate, gameId, gameState, updateGame]);
+
+  // Calculates the cost of a floor given its index in a building's Floor[]
   const floorCost = (floorIndex: number) => {
     return baseCost + height - floorIndex - 1;
   };
 
-  // update game state when toggling ownership of a floor
+  // Update game state when toggling ownership of a floor
   const updateFloorInfluence = async (
     rowIndex: number,
     colIndex: number,
@@ -35,7 +70,7 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
     playerColor: PlayerColor
   ) => {
     const cell = board[rowIndex][colIndex];
-    if (cell.type !== 'building') return;
+    if (cell.type !== 'building' || !gameId) return;
 
     const influenceCost = floorCost(floorIndex);
     const currentInfluence = cell.floors[floorIndex].influence;
@@ -51,9 +86,12 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
       players[playerColor].coins +
       (currentInfluence === '' ? -influenceCost : influenceCost);
 
-    // Update game state
+    // Update local state
     setFloorInfluence(rowIndex, colIndex, floorIndex, newInfluence);
     setCoins(playerColor, newCoins);
+
+    // Set flag to trigger global state update
+    setPendingUpdate(true);
   };
 
   return (

@@ -41,6 +41,8 @@ type GlobalStateContextType = {
   fetchOpponentOf: (playerId: PlayerId) => Promise<any>;
 
   gameExists: (gameId: GameId) => Promise<boolean>;
+  playerInGame: (playerId: PlayerId) => Promise<boolean>;
+
   updateGame: (gameId: GameId, gameState: GameState) => Promise<void>;
   setupListener: (event: string, callback: (data: any) => void) => () => void;
 };
@@ -285,17 +287,20 @@ export const GlobalStateProvider = ({
     });
   }, []);
 
-  const emitSocketEvent = useCallback(
-    async (event: string, data: any): Promise<void> => {
-      return new Promise<void>((resolve, reject) => {
-        socket.emit(event, data);
+  const playerInGame = useCallback(
+    async (playerId: PlayerId): Promise<boolean> => {
+      return new Promise<boolean>((resolve, reject) => {
+        socket.emit('players/inGame', { playerId });
 
-        socket.once('success', () => {
-          resolve();
+        socket.on('playerInGame', ({ inGame }) => {
+          resolve(inGame);
         });
 
-        socket.once('error', errorData => {
-          console.error(`Error during ${event}:`, errorData.message);
+        socket.on('error', errorData => {
+          console.error(
+            'Error during player in game check:',
+            errorData.message
+          );
           reject(new Error(errorData.message));
         });
       });
@@ -305,9 +310,20 @@ export const GlobalStateProvider = ({
 
   const updateGame = useCallback(
     async (gameId: GameId, gameState: GameState): Promise<void> => {
-      return emitSocketEvent('game/update', { gameId, gameState });
+      return new Promise<void>((resolve, reject) => {
+        socket.emit('game/update', { gameId, gameState });
+
+        socket.on('gameUpdated', () => {
+          resolve();
+        });
+
+        socket.on('error', errorData => {
+          console.error('Error during game update:', errorData.message);
+          reject(new Error(errorData.message));
+        });
+      });
     },
-    [emitSocketEvent]
+    []
   );
 
   const setupListener = useCallback(
@@ -334,6 +350,7 @@ export const GlobalStateProvider = ({
         fetchPlayer,
         fetchOpponentOf,
         gameExists,
+        playerInGame,
         updateGame,
         setupListener,
       }}
