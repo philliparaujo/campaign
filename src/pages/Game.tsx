@@ -6,7 +6,7 @@ import HUD from '../components/HUD';
 import PublicOpinion from '../components/PublicOpinion';
 import Scoreboard from '../components/Scoreboard';
 import { size, useGameState } from '../GameState';
-import { useGlobalState } from '../GlobalState';
+import { socket, useGlobalState } from '../GlobalState';
 import {
   GameId,
   GameState,
@@ -63,6 +63,12 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   const tryToLeaveGame = async () => {
     try {
       await leaveGame(gameId, playerId);
+
+      localStorage.removeItem('gameId');
+      localStorage.removeItem('playerId');
+      localStorage.removeItem('playerColor');
+      localStorage.removeItem('displayName');
+
       navigate('/');
     } catch (error) {
       console.error('Error leaving the game:', error);
@@ -164,6 +170,32 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
         setOpponentDisplayName(opponentGame.displayName);
       }
     });
+  }, []);
+
+  // Keep game/player information stored locally
+  useEffect(() => {
+    if (playerGame) {
+      localStorage.setItem('gameId', gameId);
+      localStorage.setItem('playerId', playerId);
+      localStorage.setItem('playerColor', playerGame.playerColor);
+      localStorage.setItem('displayName', playerGame.displayName);
+    }
+  }, [gameId, playerId, playerGame]);
+
+  useEffect(() => {
+    const savedGameId = localStorage.getItem('gameId');
+    const savedPlayerId = localStorage.getItem('playerId');
+    const savedPlayerColor = localStorage.getItem('playerColor');
+    const savedDisplayName = localStorage.getItem('displayName');
+
+    if (savedGameId && savedPlayerId && savedPlayerColor && savedDisplayName) {
+      socket.emit('game/reconnect', {
+        gameId: savedGameId,
+        playerId: savedPlayerId,
+        playerColor: savedPlayerColor,
+        displayName: savedDisplayName,
+      });
+    }
   }, []);
 
   return (

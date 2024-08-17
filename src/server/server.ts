@@ -137,6 +137,35 @@ io.on('connection', socket => {
     )
   });
 
+  // Reconnect
+  socket.on('game/reconnect', ({ gameId, playerId, playerColor, displayName }) => {
+    handleSocketEvent(
+      socket,
+      async () => {
+        // Check if game exists and player is in game
+        let activeGame = await ActiveGameModel.findOne({ gameId });
+        let playerGame = await PlayerGameModel.findOne({ playerId, gameId });
+        if (!activeGame || !playerGame) return null;
+
+        // Ensure that color matches
+        if (playerId !== activeGame.gameState.players[playerColor as PlayerColor].id) {
+          return null;
+        }
+
+        // Ensure that display name matches
+        if (displayName !== playerGame.displayName) {
+          return null;
+        }
+
+        return activeGame.gameState;
+      },
+      (gameState) => {
+        socket.join(gameId);
+      },
+      'Error reconnecting to game'
+    )
+  });
+
   // Leave a game
   socket.on('game/leave', ({ gameId, playerId }) => {
     handleSocketEvent(

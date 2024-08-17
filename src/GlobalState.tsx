@@ -31,6 +31,12 @@ type GlobalStateContextType = {
     playerColor: PlayerColor,
     displayName: string
   ) => Promise<void>;
+  reconnectGame: (
+    gameId: GameId,
+    playerId: PlayerId,
+    playerColor: PlayerColor,
+    displayName: string
+  ) => Promise<void>;
   leaveGame: (gameId: GameId, playerId: PlayerId) => Promise<PlayerId>;
   deleteAllGames: () => Promise<void>;
 
@@ -51,7 +57,7 @@ const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
   undefined
 );
 
-const socket = io('http://localhost:5000');
+export const socket = io('http://localhost:5000');
 
 export const GlobalStateProvider = ({
   children,
@@ -153,6 +159,30 @@ export const GlobalStateProvider = ({
             resolve();
           }
         );
+
+        socket.on('error', errorData => {
+          console.error('Error during game joining:', errorData.message);
+          reject(new Error(errorData.message));
+        });
+      });
+    },
+    []
+  );
+
+  const reconnectGame = useCallback(
+    async (
+      gameId: GameId,
+      playerId: PlayerId,
+      playerColor: PlayerColor,
+      displayName: string
+    ): Promise<void> => {
+      return new Promise<void>((resolve, reject) => {
+        socket.emit('game/reconnect', {
+          gameId,
+          playerId,
+          playerColor,
+          displayName,
+        });
 
         socket.on('error', errorData => {
           console.error('Error during game joining:', errorData.message);
@@ -345,6 +375,7 @@ export const GlobalStateProvider = ({
         activeGames,
         createGame,
         joinGame,
+        reconnectGame,
         leaveGame,
         deleteAllGames,
         fetchGame,
