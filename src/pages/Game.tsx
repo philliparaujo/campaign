@@ -9,6 +9,7 @@ import { size, useGameState } from '../GameState';
 import { useGlobalState } from '../GlobalState';
 import {
   GameId,
+  GameState,
   PlayerColor,
   PlayerGame,
   PlayerId,
@@ -51,11 +52,20 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   );
 
   /* Event handlers */
-  const handleEndTurn = async () => {
+  const syncStateToGlobal = async () => {
     try {
       await updateGame(gameId, gameState);
     } catch (error) {
       console.error('Error updating the game state:', error);
+    }
+  };
+
+  const tryToLeaveGame = async () => {
+    try {
+      await leaveGame(gameId, playerId);
+      navigate('/');
+    } catch (error) {
+      console.error('Error leaving the game:', error);
     }
   };
 
@@ -84,29 +94,29 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
     }
   }, [fetchOpponentOf, playerId, setOpponentDisplayName]);
 
-  const handleOpponentLeft = useCallback(async () => {
-    try {
-      const opponentGame = await fetchOpponentOf(playerId);
-      if (!opponentGame) {
+  const handlePlayerLeft = useCallback(
+    ({
+      gameState,
+      playerId: leftPlayerId,
+    }: {
+      gameState: GameState;
+      playerId: PlayerId;
+    }) => {
+      console.log(leftPlayerId, playerId);
+      if (leftPlayerId === playerId) {
+        console.log('You have left the game');
+        navigate('/');
+      } else {
+        console.log('Your opponent has left the game');
         setOpponentDisplayName(null);
       }
-    } catch (error) {
-      console.error('Error fetching opponent:', error);
-    }
-  }, [fetchOpponentOf, playerId, setOpponentDisplayName]);
+    },
+    [playerId, navigate]
+  );
 
   const handleGameDeleted = useCallback(async () => {
     navigate('/');
   }, [navigate]);
-
-  const handleLeaveGame = async () => {
-    try {
-      await leaveGame(gameId, playerId);
-    } catch (error) {
-      console.error('Error leaving the game:', error);
-    }
-    navigate('/');
-  };
 
   // Listen and react to game events
   useEffect(() => {
@@ -114,10 +124,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
       'gameJoined',
       handleOpponentJoin
     );
-    const removeGameLeftListener = setupListener(
-      'gameLeft',
-      handleOpponentLeft
-    );
+    const removeGameLeftListener = setupListener('gameLeft', handlePlayerLeft);
     const removeGameUpdatedListener = setupListener(
       'gameUpdated',
       handleRefresh
@@ -142,7 +149,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   }, [
     setupListener,
     handleRefresh,
-    handleOpponentLeft,
+    handlePlayerLeft,
     handleOpponentJoin,
     handleGameDeleted,
   ]);
@@ -207,8 +214,8 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
             showRoadInfluence={showRoadInfluence}
             setShowRoadInfluence={setShowRoadInfluence}
           />
-          <Button onClick={handleEndTurn}>End Turn</Button>
-          <Button onClick={handleLeaveGame}>Leave Game</Button>
+          <Button onClick={syncStateToGlobal}>End Turn</Button>
+          <Button onClick={tryToLeaveGame}>Leave Game</Button>
         </div>
       </div>
     </div>

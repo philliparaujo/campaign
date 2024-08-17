@@ -5,7 +5,7 @@ import mongoose, { Error } from 'mongoose';
 import { createNewGameState } from '../GameState';
 import ActiveGameModel from './models/ActiveGame';
 import PlayerGameModel from './models/PlayerGame';
-import { PlayerColor } from '../types';
+import { GameState, PlayerColor, PlayerId } from '../types';
 import { opponentOf } from '../utils';
 import http from 'http';
 import {Server as SocketIOServer} from 'socket.io';
@@ -158,18 +158,20 @@ io.on('connection', socket => {
 
         // Save new game models
         await activeGame.save();
-        await playerGame.deleteOne();
+        await PlayerGameModel.findOneAndDelete({ playerId, gameId });
 
         return activeGame.gameState;
       },
       (gameState) => {
+        const gameData = { gameState, playerId };
+        io.to(gameId).emit('gameLeft', gameData);
         socket.leave(gameId);
-        io.to(gameId).emit('gameLeft', gameState);
       },
       'Error leaving game'
     )
   });
 
+  // Delete a game
   socket.on('game/delete', ({gameId}) => {
     handleSocketEvent(
       socket,
@@ -292,15 +294,6 @@ io.on('connection', socket => {
       'Error checking game existence'
     )
   });
-  // socket.on('games/exists', async ({ gameId }) => {
-  //   try {
-  //     const activeGame = await ActiveGameModel.findOne({ gameId });
-  //     const exists = !!activeGame;
-  //     socket.emit('gameExists', { exists });
-  //   } catch (error: any) {
-  //     socket.emit('error', { message: 'Error checking game existence', error });
-  //   }
-  // });
 
   // Return whether a player is in a game
   socket.on('players/inGame', ({ playerId }) => {

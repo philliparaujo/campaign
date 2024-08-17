@@ -31,7 +31,7 @@ type GlobalStateContextType = {
     playerColor: PlayerColor,
     displayName: string
   ) => Promise<void>;
-  leaveGame: (gameId: GameId, playerId: PlayerId) => Promise<void>;
+  leaveGame: (gameId: GameId, playerId: PlayerId) => Promise<PlayerId>;
   deleteAllGames: () => Promise<void>;
 
   fetchGame: (gameId: GameId) => Promise<any>; // Returns GameState
@@ -164,11 +164,12 @@ export const GlobalStateProvider = ({
   );
 
   const leaveGame = useCallback(
-    async (gameId: GameId, playerId: PlayerId): Promise<void> => {
-      return new Promise<void>((resolve, reject) => {
+    async (gameId: GameId, playerId: PlayerId): Promise<PlayerId> => {
+      return new Promise<PlayerId>((resolve, reject) => {
         socket.emit('game/leave', { gameId, playerId });
 
-        socket.on('gameLeft', gameState => {
+        socket.on('gameLeft', ({ gameState, playerId }) => {
+          console.log('uh is this a gameState', gameState);
           if (!gameState.players.red.id && !gameState.players.blue.id) {
             socket.emit('game/delete', { gameId });
 
@@ -190,7 +191,7 @@ export const GlobalStateProvider = ({
             return updatedRecord;
           });
 
-          resolve();
+          resolve(playerId);
         });
 
         socket.on('error', errorData => {
