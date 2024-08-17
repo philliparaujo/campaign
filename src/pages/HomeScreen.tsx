@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import Switch from 'react-switch';
 import Button from '../components/Button';
+import RulesModal from '../components/RulesModal';
 import { useGlobalState } from '../GlobalState';
 import { GameId, PlayerColor, PlayerId } from '../types';
 import { newGameId, newPlayerId } from '../utils';
-import Switch from 'react-switch';
+import SettingsModal from '../components/SettingsModal';
 
 function HomeScreen() {
   const [playerId, setPlayerId] = useState<PlayerId>('');
@@ -12,6 +14,11 @@ function HomeScreen() {
   const [inputPlayerColor, setInputPlayerColor] = useState<PlayerColor>('red');
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [openModal, setOpenModal] = useState<'rules' | 'settings' | null>(null);
+  const handleCloseModal = () => {
+    setOpenModal(null);
+  };
 
   const {
     activeGames,
@@ -36,7 +43,6 @@ function HomeScreen() {
   }, [location.search, navigate]);
 
   useEffect(() => {
-    // Fetch the list of active games and players
     console.log('Active games:', activeGames);
     console.log('Player games:', playerGames);
   }, [activeGames, playerGames]);
@@ -77,31 +83,134 @@ function HomeScreen() {
   };
 
   return (
-    <div>
-      <h1>CAMPAIGN</h1>
-      <p style={{ color: inputPlayerColor }}>{`Player ID: ${playerId}`}</p>
-      <Switch
-        checked={inputPlayerColor === 'blue'}
-        onChange={() =>
-          setInputPlayerColor(inputPlayerColor === 'red' ? 'blue' : 'red')
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '40px',
+        boxSizing: 'border-box',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          width: '100%',
+          marginBottom: '20px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              color: inputPlayerColor,
+              marginBottom: '10px',
+              padding: '8px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              textAlign: 'center',
+              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            {`Player ID: ${playerId}`}
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'row',
+              gap: '10px',
+              alignItems: 'center',
+            }}
+          >
+            <div style={{ color: 'red' }}>Join as red</div>
+            <Switch
+              checked={inputPlayerColor === 'blue'}
+              onChange={() =>
+                setInputPlayerColor(inputPlayerColor === 'red' ? 'blue' : 'red')
+              }
+              offColor="#CC0000"
+              onColor="#0059b3"
+              uncheckedIcon={false}
+              checkedIcon={false}
+            />
+            <div style={{ color: 'blue' }}>Join as blue</div>
+          </div>
+        </div>
+        <div>
+          <Button onClick={() => setOpenModal('settings')}>Settings</Button>
+        </div>
+      </div>
+
+      <h1 style={{ marginBottom: '40px', fontSize: '96px' }}>CAMPAIGN</h1>
+
+      {/* Modal will be shown when isModalOpen is true */}
+      <RulesModal show={openModal === 'rules'} onClose={handleCloseModal} />
+      <SettingsModal
+        show={openModal === 'settings'}
+        onClose={handleCloseModal}
+        buttons={
+          <>
+            <Button onClick={handleDeleteAllGames}>Delete All Games</Button>
+          </>
         }
-        offColor="#CC0000"
-        onColor="#0059b3"
-        uncheckedIcon={false}
-        checkedIcon={false}
       />
-      <div>
-        <Button onClick={handleCreateGame}>Create Game</Button>
+
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          marginBottom: '20px',
+        }}
+      >
+        <div style={{ marginRight: '10px' }}>
+          <Button size={'large'} onClick={handleCreateGame}>
+            Create Game
+          </Button>
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            marginLeft: '10px',
+          }}
+        >
+          <div style={{ marginBottom: '10px' }}>
+            <Button
+              size={'large'}
+              disabled={inputGameId.length !== 4}
+              onClick={() => handleJoinGame(inputGameId)}
+            >
+              Join Game
+            </Button>
+          </div>
+          <input
+            type="text"
+            value={inputGameId}
+            size={4}
+            maxLength={4}
+            onChange={e => setInputGameId(e.target.value)}
+            style={{
+              padding: '8px',
+              borderRadius: '8px',
+              border: '2px solid #888',
+              textAlign: 'center',
+            }}
+          />
+        </div>
       </div>
-      <div>
-        <Button onClick={() => handleJoinGame(inputGameId)}>Join Game</Button>
-        <input
-          type="text"
-          value={inputGameId}
-          onChange={e => setInputGameId(e.target.value)}
-        />
+
+      <div style={{ marginBottom: '20px' }}>
+        <Button size={'large'} onClick={() => setOpenModal('rules')}>
+          Rules
+        </Button>
       </div>
-      <Button onClick={handleDeleteAllGames}>Delete All Games</Button>
     </div>
   );
 }
