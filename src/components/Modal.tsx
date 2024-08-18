@@ -2,7 +2,7 @@ import React from 'react';
 
 interface ModalProps {
   show: boolean;
-  onClose: () => void;
+  onClose?: () => void;
   children: React.ReactNode;
 }
 
@@ -37,20 +37,22 @@ const Modal: React.FC<ModalProps> = ({ show, onClose, children }) => {
           boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
         }}
       >
-        <button
-          onClick={onClose}
-          style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            background: 'transparent',
-            border: 'none',
-            fontSize: '1.5rem',
-            cursor: 'pointer',
-          }}
-        >
-          &times; {/* 'X' button */}
-        </button>
+        {onClose && (
+          <button
+            onClick={onClose}
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: 'transparent',
+              border: 'none',
+              fontSize: '1.5rem',
+              cursor: 'pointer',
+            }}
+          >
+            &times; {/* 'X' button */}
+          </button>
+        )}
         {children}
       </div>
     </div>

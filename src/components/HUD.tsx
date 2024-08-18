@@ -86,6 +86,13 @@ const HUD: React.FC<HUDProps> = ({
     }
   }, [phaseActionTriggered, nextPhaseTriggered, syncStateToGlobal]);
 
+  const phaseDescriptions: Record<number, string> = {
+    1: 'Rent out building floors for advertising using your coins.',
+    2: 'Select a region of the city to poll.',
+    3: "Select how accurate your opponent's poll is.",
+    4: 'Unbiased polling has now been released.',
+  };
+
   return (
     <div style={{ width: '100%', marginBottom: '20px' }}>
       {/* Game state */}
@@ -126,6 +133,8 @@ const HUD: React.FC<HUDProps> = ({
         </div>
       </div>
 
+      <h2 style={{ textAlign: 'center' }}>{phaseDescriptions[phaseNumber]}</h2>
+
       {(phaseNumber === 1 || phaseNumber === 4) && (
         <div>
           <Button
@@ -137,8 +146,6 @@ const HUD: React.FC<HUDProps> = ({
           </Button>
         </div>
       )}
-
-      {phaseNumber === 2 && <h2>Select a region of the city to poll.</h2>}
 
       {/* Turn actions */}
       {(phaseNumber === 2 || phaseNumber === 3) && (
@@ -258,8 +265,7 @@ const HUD: React.FC<HUDProps> = ({
                     display: 'flex',
                     flexDirection: 'row',
                     justifyContent: 'center',
-                    gap: '10px',
-                    width: '100%',
+                    gap: '25px',
                   }}
                 >
                   <div>

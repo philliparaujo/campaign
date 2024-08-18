@@ -20,6 +20,7 @@ import {
   PollRegion,
 } from '../types';
 import { gameOver, opponentOf } from '../utils';
+import GameOverModal from '../components/GameOverModal';
 
 type GameProps = {
   gameId: GameId;
@@ -33,6 +34,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   const { gameState, setGameState, regenerateBoard } = useGameState();
   const navigate = useNavigate();
 
+  const { publicOpinionHistory, turnNumber, phaseNumber } = gameState;
   const { playerColor, displayName } = playerGame;
 
   const defaultPollRegion: PollRegion = {
@@ -345,6 +347,17 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
                 setShowRoadInfluence={setShowRoadInfluence}
               />
             </div>
+
+            <GameOverModal
+              show={gameOver(gameState)}
+              finalRedPercent={
+                publicOpinionHistory[turnNumber]?.redPublicOpinion[
+                  phaseNumber - 1
+                ]
+              }
+              gameId={gameId}
+              playerId={playerId}
+            />
           </div>
         }
       </div>
