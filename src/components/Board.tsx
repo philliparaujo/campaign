@@ -46,6 +46,10 @@ const BoardUI: React.FC<BoardUIProps> = ({
       border: `2px solid ${playerColor}`,
       boxSizing: 'border-box',
       pointerEvents: 'none',
+      backgroundColor:
+        playerColor === 'red'
+          ? 'rgba(255, 0, 0, 0.05)'
+          : 'rgba(0, 0, 255, 0.05)',
     };
   };
 
