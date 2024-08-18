@@ -98,7 +98,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
     } catch (error) {
       console.error('Error fetching opponent:', error);
     }
-  }, [fetchOpponentOf, playerId, setOpponentDisplayName]);
+  }, [fetchGame, fetchOpponentOf, gameId, playerId, setGameState]);
 
   const handlePlayerLeft = useCallback(
     ({
@@ -170,7 +170,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
         setOpponentDisplayName(opponentGame.displayName);
       }
     });
-  }, []);
+  }, [fetchGame, fetchOpponentOf, gameId, playerId, setGameState]);
 
   // Keep game/player information stored locally
   useEffect(() => {
@@ -251,7 +251,6 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
             showRoadInfluence={showRoadInfluence}
             setShowRoadInfluence={setShowRoadInfluence}
           />
-          <Button onClick={syncStateToGlobal}>End Turn</Button>
           <Button onClick={tryToLeaveGame}>Leave Game</Button>
         </div>
       </div>

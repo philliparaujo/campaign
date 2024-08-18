@@ -74,6 +74,7 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   ) => {
     const cell = board[rowIndex][colIndex];
     if (cell.type !== 'building' || !gameId) return;
+    if (gameState.players[playerColor].phaseAction === 'done') return;
 
     const influenceCost = floorCost(floorIndex);
     const currentInfluence = cell.floors[floorIndex].influence;

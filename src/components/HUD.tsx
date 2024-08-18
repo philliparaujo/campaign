@@ -79,6 +79,8 @@ const HUD: React.FC<HUDProps> = ({
   const handleDoubt = () => handlePhaseAction('doubt');
   const handleAccuse = () => handlePhaseAction('accuse');
 
+  const handleDone = () => handlePhaseAction('done');
+
   const phaseDescriptions: { [key: number]: string } = {
     1: 'Advertising',
     2: 'Polling',
@@ -209,6 +211,18 @@ const HUD: React.FC<HUDProps> = ({
       >
         <b>Phase {phaseNumber}:</b> {phaseDescriptions[phaseNumber]}
       </div>
+
+      {(phaseNumber === 1 || phaseNumber === 4) && (
+        <div>
+          <Button
+            onClick={handleDone}
+            disabled={gameState.players[playerColor].coins < 0}
+            clicked={gameState.players[playerColor].phaseAction === 'done'}
+          >
+            {phaseNumber === 1 ? 'Done advertising' : 'End turn'}
+          </Button>
+        </div>
+      )}
 
       {phaseNumber === 2 && <h2>Select a region of the city to poll.</h2>}
 

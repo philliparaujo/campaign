@@ -384,22 +384,30 @@ export const canEndPhase = (gameState: GameState): boolean => {
 
   switch (phaseNumber) {
     case 1:
-      return coinCheck;
+      return (
+        coinCheck &&
+        gameState.players.red.phaseAction === 'done' &&
+        gameState.players.blue.phaseAction === 'done'
+      );
     case 2:
       return (
+        coinCheck &&
         players.red.phaseAction === 'conductPoll' &&
-        players.blue.phaseAction === 'conductPoll' &&
-        coinCheck
+        players.blue.phaseAction === 'conductPoll'
       );
     case 3:
       const factCheckOptions: PlayerAction[] = ['trust', 'doubt', 'accuse'];
       return (
+        coinCheck &&
         factCheckOptions.includes(players.red.phaseAction) &&
-        factCheckOptions.includes(players.blue.phaseAction) &&
-        coinCheck
+        factCheckOptions.includes(players.blue.phaseAction)
       );
     case 4:
-      return coinCheck;
+      return (
+        coinCheck &&
+        gameState.players.red.phaseAction === 'done' &&
+        gameState.players.blue.phaseAction === 'done'
+      );
     default:
       return false;
   }
