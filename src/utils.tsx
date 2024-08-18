@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { maxRoadsAllowed, size } from './GameState';
+import { maxRoadsAllowed, maxTurns, size } from './GameState';
 import {
   Board,
   Floor,
@@ -501,4 +501,8 @@ export const newPlayerId = (): string => {
 
 export const opponentOf = (playerColor: PlayerColor): PlayerColor => {
   return playerColor === 'red' ? 'blue' : 'red';
+};
+
+export const gameOver = (gameState: GameState): boolean => {
+  return gameState.turnNumber > maxTurns;
 };

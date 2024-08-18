@@ -15,7 +15,7 @@ import {
   PlayerId,
   PollRegion,
 } from '../types';
-import { opponentOf } from '../utils';
+import { gameOver, opponentOf } from '../utils';
 
 type GameProps = {
   gameId: GameId;
@@ -236,23 +236,35 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
         </div>
 
         {/* Right Side */}
-        <div style={{ width: '650px' }}>
-          <PublicOpinion />
-          <HUD
-            playerColor={playerColor}
-            pollInputs={pollInputs}
-            setPollInputs={setPollInputs}
-            settingPollRegion={settingPollRegion}
-            setSettingPollRegion={setSettingPollRegion}
-            syncStateToGlobal={syncStateToGlobal}
-          />
-          <Scoreboard
-            playerColor={playerColor}
-            showRoadInfluence={showRoadInfluence}
-            setShowRoadInfluence={setShowRoadInfluence}
-          />
-          <Button onClick={tryToLeaveGame}>Leave Game</Button>
-        </div>
+        {
+          <div
+            style={{
+              width: '650px',
+            }}
+          >
+            <PublicOpinion />
+            <div
+              style={{
+                visibility: gameOver(gameState) ? 'hidden' : 'visible',
+              }}
+            >
+              <HUD
+                playerColor={playerColor}
+                pollInputs={pollInputs}
+                setPollInputs={setPollInputs}
+                settingPollRegion={settingPollRegion}
+                setSettingPollRegion={setSettingPollRegion}
+                syncStateToGlobal={syncStateToGlobal}
+              />
+              <Scoreboard
+                playerColor={playerColor}
+                showRoadInfluence={showRoadInfluence}
+                setShowRoadInfluence={setShowRoadInfluence}
+              />
+            </div>
+            <Button onClick={tryToLeaveGame}>Leave Game</Button>
+          </div>
+        }
       </div>
     </div>
   );
