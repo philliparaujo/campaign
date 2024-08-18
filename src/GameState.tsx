@@ -33,7 +33,6 @@ export const size = 5;
 export const maxRoadsAllowed = 15; // ~ 3*size is best
 
 export const startingCoins = 10;
-export const debugMode = false;
 export const maxTurns = 3;
 
 const initialPlayer: PlayerInfo = {
@@ -59,7 +58,6 @@ export const createNewGameState = (): GameState => ({
     { redPublicOpinion: [0.5, 0.5, 0.5, 0.5], trueRedPercent: 0.5 },
     { redPublicOpinion: [0.5, 0.5, 0.5, 0.5], trueRedPercent: null },
   ],
-  debugMode,
   players: {
     red: { ...initialPlayer },
     blue: { ...initialPlayer },

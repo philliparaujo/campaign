@@ -1,13 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useGameState } from '../GameState';
-import {
-  calculateTotalInfluence,
-  formatPoll,
-  getRedSample,
-  opponentOf,
-} from '../utils';
-import Button from './Button';
 import { PlayerColor } from '../types';
+import { getRedSample, opponentOf } from '../utils';
 import PollResults from './PollResults';
 
 interface ScoreboardProps {
@@ -24,14 +18,8 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
   playerColor,
 }) => {
   const { gameState } = useGameState();
-  const {
-    board,
-    players,
-    publicOpinionHistory,
-    turnNumber,
-    phaseNumber,
-    debugMode,
-  } = gameState;
+  const { board, players, publicOpinionHistory, turnNumber, phaseNumber } =
+    gameState;
   const opponentColor = opponentOf(playerColor);
 
   const trueRedPercent = getRedSample(board, undefined, true);

@@ -3,8 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import BoardUI from '../components/Board';
 import Button from '../components/Button';
 import HUD from '../components/HUD';
+import PhaseIndicator from '../components/PhaseIndicator';
 import PublicOpinion from '../components/PublicOpinion';
+import RulesModal from '../components/RulesModal';
 import Scoreboard from '../components/Scoreboard';
+import SettingsModal from '../components/SettingsModal';
+import TurnIndicator from '../components/TurnIndicator';
 import { size, useGameState } from '../GameState';
 import { socket, useGlobalState } from '../GlobalState';
 import {
@@ -16,11 +20,6 @@ import {
   PollRegion,
 } from '../types';
 import { gameOver, opponentOf } from '../utils';
-import RulesModal from '../components/RulesModal';
-import SettingsModal from '../components/SettingsModal';
-import TurnIndicator from '../components/TurnIndicator';
-import PhaseIndicator from '../components/PhaseIndicator';
-import PollResults from '../components/PollResults';
 
 type GameProps = {
   gameId: GameId;

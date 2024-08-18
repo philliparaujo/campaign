@@ -25,15 +25,9 @@ const HUD: React.FC<HUDProps> = ({
   playerColor,
   syncStateToGlobal,
 }) => {
-  const {
-    gameState,
-    setCoins,
-    setTurnNumber,
-    setPhaseAction,
-    savePoll,
-    incrementPhaseNumber,
-  } = useGameState();
-  const { players, turnNumber, board, phaseNumber, debugMode } = gameState;
+  const { gameState, setPhaseAction, savePoll, incrementPhaseNumber } =
+    useGameState();
+  const { players, turnNumber, board, phaseNumber } = gameState;
 
   const [phaseActionTriggered, setPhaseActionTriggered] =
     useState<boolean>(false);
@@ -110,46 +104,14 @@ const HUD: React.FC<HUDProps> = ({
         <div style={{ textAlign: 'center', marginRight: '20px' }}>
           <h3 style={{ color: '#ff6666', margin: '5px' }}>Red Coins</h3>
           <div>
-            {debugMode && (
-              <Button
-                onClick={() => setCoins('red', players.red.coins + 1)}
-                size={'small'}
-              >
-                +
-              </Button>
-            )}
             <span style={{ margin: '0 10px' }}>{players.red.coins}</span>
-            {debugMode && (
-              <Button
-                onClick={() => setCoins('red', players.red.coins - 1)}
-                size={'small'}
-              >
-                -
-              </Button>
-            )}
           </div>
         </div>
 
         <div style={{ textAlign: 'center', marginRight: '20px' }}>
           <h3 style={{ color: '#6666ff', margin: '5px' }}>Blue Coins</h3>
           <div>
-            {debugMode && (
-              <Button
-                onClick={() => setCoins('blue', players.blue.coins + 1)}
-                size={'small'}
-              >
-                +
-              </Button>
-            )}
             <span style={{ margin: '0 10px' }}>{players.blue.coins}</span>
-            {debugMode && (
-              <Button
-                onClick={() => setCoins('blue', players.blue.coins - 1)}
-                size={'small'}
-              >
-                -
-              </Button>
-            )}
           </div>
         </div>
 

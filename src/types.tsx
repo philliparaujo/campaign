@@ -31,7 +31,6 @@ export type GameState = {
   turnNumber: number;
   phaseNumber: number;
   publicOpinionHistory: Opinion[];
-  debugMode: boolean;
   players: Record<PlayerColor, PlayerInfo>;
 };
 

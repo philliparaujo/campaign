@@ -1,5 +1,5 @@
 import mongoose, { Schema } from 'mongoose';
-import { debugMode, startingCoins } from '../../GameState';
+import { startingCoins } from '../../GameState';
 
 // Define schemas for nested structures
 const playerSchema = new Schema({
@@ -20,7 +20,6 @@ const gameStateSchema = new Schema({
   turnNumber: { type: Number, default: 1 },
   phaseNumber: { type: Number, default: 1 },
   publicOpinionHistory: { type: Array, default: [] },
-  debugMode: { type: Boolean, default: debugMode },
   players: {
     type: playersSchema, required: true
   }

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGameState } from '../GameState';
-import { formatPoll, formatPublicOpinion } from '../utils';
+import { formatPublicOpinion } from '../utils';
 
 interface PublicOpinionProps {}
 
