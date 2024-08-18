@@ -1,14 +1,14 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
+import http from 'http';
 import mongoose, { Error } from 'mongoose';
-import { createNewGameState } from '../GameState';
+import { Server as SocketIOServer } from 'socket.io';
 import ActiveGameModel from './models/ActiveGame';
 import PlayerGameModel from './models/PlayerGame';
-import { GameState, PlayerColor, PlayerId } from '../types';
-import { opponentOf } from '../utils';
-import http from 'http';
-import {Server as SocketIOServer} from 'socket.io';
+import { createNewGameState } from './shared/GameState';
+import { PlayerColor } from './shared/types';
+import { opponentOf } from './shared/utils';
 
 dotenv.config();
 
