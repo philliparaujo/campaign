@@ -39,7 +39,7 @@ function HomeScreen() {
     }
 
     setPlayerId(playerId);
-    setInputDisplayName(playerId);
+    setInputDisplayName('Guest'.concat(playerId.substring(0, 8)));
   }, [location.search, navigate]);
 
   // On page load/refresh, print global states to console

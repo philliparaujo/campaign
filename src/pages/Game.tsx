@@ -21,6 +21,7 @@ import {
 } from '../types';
 import { gameOver, opponentOf } from '../utils';
 import GameOverModal from '../components/GameOverModal';
+import NameDisplays from '../components/NameDisplays';
 
 type GameProps = {
   gameId: GameId;
@@ -238,28 +239,6 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
         boxSizing: 'border-box',
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          width: '100%',
-          marginBottom: '20px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <Button onClick={tryToLeaveGame}>Leave Game</Button>
-        </div>
-        <div>
-          <Button onClick={() => setOpenModal('settings')}>Settings</Button>
-        </div>
-      </div>
-
       {/* Modal will be shown when isModalOpen is true */}
       <RulesModal show={openModal === 'rules'} onClose={handleCloseModal} />
       <SettingsModal
@@ -286,6 +265,30 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
           </>
         }
       />
+
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          width: '100%',
+          marginBottom: '20px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <Button onClick={tryToLeaveGame}>Leave Game</Button>
+        </div>
+        <NameDisplays />
+        <TurnIndicator />
+        <div>
+          <Button onClick={() => setOpenModal('settings')}>Settings</Button>
+        </div>
+      </div>
 
       <hr style={{ width: '100%', marginBottom: '20px' }} />
       <div
@@ -330,7 +333,6 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
                 visibility: gameOver(gameState) ? 'hidden' : 'visible',
               }}
             >
-              <TurnIndicator />
               <PhaseIndicator />
               <HUD
                 playerColor={playerColor}
