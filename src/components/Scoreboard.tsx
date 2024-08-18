@@ -8,15 +8,18 @@ import {
 } from '../utils';
 import Button from './Button';
 import { PlayerColor } from '../types';
+import PollResults from './PollResults';
 
 interface ScoreboardProps {
   showRoadInfluence: boolean;
+  showTruePolling: boolean;
   setShowRoadInfluence: React.Dispatch<React.SetStateAction<boolean>>;
   playerColor: PlayerColor;
 }
 
 const Scoreboard: React.FC<ScoreboardProps> = ({
   showRoadInfluence,
+  showTruePolling,
   setShowRoadInfluence,
   playerColor,
 }) => {
@@ -29,217 +32,48 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
     phaseNumber,
     debugMode,
   } = gameState;
-  const [showStats, setShowStats] = useState<boolean>(false);
   const opponentColor = opponentOf(playerColor);
 
-  let redInfluence = calculateTotalInfluence('red', board);
-  let blueInfluence = calculateTotalInfluence('blue', board);
-
   const trueRedPercent = getRedSample(board, undefined, true);
-  const trueBluePercent = 1 - trueRedPercent;
-
   const redPercentResult =
     publicOpinionHistory[turnNumber]['trueRedPercent'] || 0.5;
-  const bluePercentResult = 1 - redPercentResult;
 
   const redPercent = phaseNumber === 4 ? redPercentResult : trueRedPercent;
-  const bluePercent = phaseNumber === 4 ? bluePercentResult : trueBluePercent;
-
-  const bufferPercent = (playerColor: PlayerColor) => {
-    return players[playerColor].phaseAction === 'doubt'
-      ? 0.025
-      : players[playerColor].phaseAction === 'accuse'
-        ? 0.05
-        : 0;
-  };
 
   return (
-    <div
-      style={{
-        padding: debugMode || phaseNumber >= 2 ? '2.5%' : '0px',
-        border: debugMode || phaseNumber >= 2 ? '1px solid #ccc' : 'none',
-        borderRadius: '10px',
-        width: '95%',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          gap: '10px',
-        }}
-      >
-        {/* True polling button */}
-        {debugMode && phaseNumber !== 4 && (
-          <Button onClick={() => setShowStats(!showStats)} size={'small'}>
-            {showStats ? 'Hide True Polling' : 'Show True Polling'}
-          </Button>
-        )}
-        {/* True road influence button */}
-        {(debugMode || phaseNumber === 2) && (
-          <Button
-            onClick={() => setShowRoadInfluence(!showRoadInfluence)}
-            size={'small'}
-          >
-            {showRoadInfluence ? 'Hide Road Influence' : 'Show Road Influence'}
-          </Button>
-        )}
-      </div>
-
+    <div>
       {/* Reported poll results */}
       {phaseNumber === 3 &&
         (players.red.pollHistory.length > turnNumber &&
         players.blue.pollHistory.length > turnNumber ? (
           <div
-            style={{
-              marginTop: '10px',
-              padding: '10px',
-              border: '1px solid #333',
-              borderRadius: '10px',
-              backgroundColor: '#e0e0e0',
-            }}
+            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
           >
-            <div style={{ color: playerColor, marginBottom: '15px' }}>
-              <h3>Your Poll:</h3>
-              {formatPoll(
+            <PollResults
+              redPercent={
                 players[playerColor].pollHistory[turnNumber]['redPercent']
-              )}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  height: '20px',
-                  backgroundColor: '#f0f0f0',
-                  borderRadius: '5px',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${(players[playerColor].pollHistory[turnNumber]['redPercent'] - bufferPercent(opponentColor)) * 100}%`,
-                    backgroundColor: 'red',
-                  }}
-                />
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${bufferPercent(opponentColor) * 100}%`,
-                    backgroundColor: '#ff8888',
-                  }}
-                />
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${bufferPercent(opponentColor) * 100}%`,
-                    backgroundColor: '#8888ff',
-                  }}
-                />
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${(1 - players[playerColor].pollHistory[turnNumber]['redPercent'] - bufferPercent(opponentColor)) * 100}%`,
-                    backgroundColor: 'blue',
-                  }}
-                />
-              </div>
-            </div>
-            <div style={{ color: opponentColor }}>
-              <h3>Opponent Poll:</h3>
-              {formatPoll(
+              }
+              title={'Your Poll'}
+            />
+            <PollResults
+              redPercent={
                 players[opponentColor].pollHistory[turnNumber]['redPercent']
-              )}
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  height: '20px',
-                  backgroundColor: '#f0f0f0',
-                  borderRadius: '5px',
-                  overflow: 'hidden',
-                }}
-              >
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${(players[opponentColor].pollHistory[turnNumber]['redPercent'] - bufferPercent(playerColor)) * 100}%`,
-                    backgroundColor: 'red',
-                  }}
-                />
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${bufferPercent(playerColor) * 100}%`,
-                    backgroundColor: '#ff8888',
-                  }}
-                />
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${bufferPercent(playerColor) * 100}%`,
-                    backgroundColor: '#8888ff',
-                  }}
-                />
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${(1 - players[opponentColor].pollHistory[turnNumber]['redPercent'] - bufferPercent(playerColor)) * 100}%`,
-                    backgroundColor: 'blue',
-                  }}
-                />
-              </div>
-            </div>
+              }
+              title={'Opponent Poll'}
+            />
           </div>
         ) : (
           'Polls not reported properly'
         ))}
 
       {/* True poll results */}
-      {(showStats || phaseNumber === 4) && (
+      {(showTruePolling || phaseNumber === 4) && (
         <>
-          <h3>Poll Results: {formatPoll(redPercent)}</h3>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              marginBottom: '10px',
-            }}
-          >
-            <div style={{ color: 'red' }}>
-              {phaseNumber !== 4 && <h3>Red Influence: {redInfluence}</h3>}
-              <p>Vote Percent: {(redPercent * 100).toFixed(2)}%</p>
-            </div>
-            <div style={{ color: 'blue' }}>
-              {phaseNumber !== 4 && <h3>Blue Influence: {blueInfluence}</h3>}
-              <p>Vote Percent: {(bluePercent * 100).toFixed(2)}%</p>
-            </div>
-          </div>
-          <div
-            style={{
-              backgroundColor: '#f0f0f0',
-              borderRadius: '5px',
-              padding: '10px',
-              display: 'flex',
-            }}
-          >
-            <div
-              style={{
-                height: '20px',
-                backgroundColor: 'red',
-                borderRadius: '0px',
-                transition: 'width 0.5s',
-                width: `${redPercent * 100}%`,
-              }}
-            ></div>
-            <div
-              style={{
-                height: '20px',
-                backgroundColor: 'blue',
-                borderRadius: '0px',
-                transition: 'width 0.5s',
-                width: `${bluePercent * 100}%`,
-              }}
-            ></div>
-          </div>
+          <PollResults
+            redPercent={redPercent}
+            title={'Poll Results'}
+            truePoll={true}
+          />
         </>
       )}
     </div>

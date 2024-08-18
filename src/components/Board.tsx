@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { size, useGameState } from '../GameState';
 import { Cell, PlayerColor, PollRegion } from '../types';
 import BuildingUI from './Building';
-import Button from './Button';
 import RoadUI from './Road';
 
 interface BoardUIProps {
@@ -26,7 +25,7 @@ const BoardUI: React.FC<BoardUIProps> = ({
   setSettingPollRegion,
   playerColor,
 }) => {
-  const { gameState, regenerateBoard } = useGameState();
+  const { gameState } = useGameState();
   const { board, phaseNumber } = gameState;
 
   const cellSize = 100;
@@ -163,8 +162,6 @@ const BoardUI: React.FC<BoardUIProps> = ({
       {phaseNumber === 2 && playerColor && (
         <div style={getBoundaryStyle()}></div>
       )}
-
-      <Button onClick={regenerateBoard}>Regenerate board</Button>
     </div>
   );
 };

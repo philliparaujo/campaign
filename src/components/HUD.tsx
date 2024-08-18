@@ -81,13 +81,6 @@ const HUD: React.FC<HUDProps> = ({
 
   const handleDone = () => handlePhaseAction('done');
 
-  const phaseDescriptions: { [key: number]: string } = {
-    1: 'Advertising',
-    2: 'Polling',
-    3: 'Fact-Checking',
-    4: 'Funding',
-  };
-
   // Effect to sync the state globally after any phase action
   useEffect(() => {
     if (phaseActionTriggered || nextPhaseTriggered) {
@@ -110,6 +103,7 @@ const HUD: React.FC<HUDProps> = ({
           backgroundColor: '#282c34',
           display: 'flex',
           justifyContent: 'space-around',
+          alignItems: 'center',
           color: '#fff',
         }}
       >
@@ -159,57 +153,15 @@ const HUD: React.FC<HUDProps> = ({
           </div>
         </div>
 
-        <div style={{ textAlign: 'center', marginRight: '20px' }}>
-          <h3 style={{ margin: '5px' }}>Turn Number</h3>
-          <div>
-            {debugMode && (
-              <Button
-                onClick={() => setTurnNumber(turnNumber + 1)}
-                size={'small'}
-              >
-                +
-              </Button>
-            )}
-            <span style={{ margin: '0 10px' }}>{turnNumber}</span>
-            {debugMode && (
-              <Button
-                onClick={() => setTurnNumber(turnNumber - 1)}
-                size={'small'}
-              >
-                -
-              </Button>
-            )}
-          </div>
-        </div>
-
         <div style={{ textAlign: 'center' }}>
-          <h3 style={{ margin: '5px' }}>Phase Number</h3>
-          <div>
-            <span style={{ margin: '0 10px' }}>{phaseNumber}</span>
-            <Button
-              onClick={handleNextPhase}
-              size={'small'}
-              disabled={!canEndPhase(gameState)}
-            >
-              Next
-            </Button>
-          </div>
+          <Button
+            onClick={handleNextPhase}
+            size={'small'}
+            disabled={!canEndPhase(gameState)}
+          >
+            Next phase
+          </Button>
         </div>
-      </div>
-
-      {/* Phase description */}
-      <div
-        style={{
-          textAlign: 'center',
-          marginTop: '10px',
-          fontSize: '18px',
-          color: '#fff',
-          padding: '10px',
-          backgroundColor: '#282c34',
-          borderRadius: '8px',
-        }}
-      >
-        <b>Phase {phaseNumber}:</b> {phaseDescriptions[phaseNumber]}
       </div>
 
       {(phaseNumber === 1 || phaseNumber === 4) && (

@@ -16,6 +16,11 @@ import {
   PollRegion,
 } from '../types';
 import { gameOver, opponentOf } from '../utils';
+import RulesModal from '../components/RulesModal';
+import SettingsModal from '../components/SettingsModal';
+import TurnIndicator from '../components/TurnIndicator';
+import PhaseIndicator from '../components/PhaseIndicator';
+import PollResults from '../components/PollResults';
 
 type GameProps = {
   gameId: GameId;
@@ -26,7 +31,7 @@ type GameProps = {
 const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   const { leaveGame, updateGame, fetchGame, setupListener, fetchOpponentOf } =
     useGlobalState();
-  const { gameState, setGameState } = useGameState();
+  const { gameState, setGameState, regenerateBoard } = useGameState();
   const navigate = useNavigate();
 
   const { playerColor, displayName } = playerGame;
@@ -50,6 +55,9 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   const [opponentDisplayName, setOpponentDisplayName] = useState<string | null>(
     null
   );
+  const [openModal, setOpenModal] = useState<'rules' | 'settings' | null>(null);
+  const [pendingUpdate, setPendingUpdate] = useState(false);
+  const [showStats, setShowStats] = useState<boolean>(false);
 
   /* Event handlers */
   const syncStateToGlobal = useCallback(async () => {
@@ -123,6 +131,10 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   const handleGameDeleted = useCallback(async () => {
     navigate('/');
   }, [navigate]);
+
+  const handleCloseModal = () => {
+    setOpenModal(null);
+  };
 
   // Listen and react to game events
   useEffect(() => {
@@ -199,12 +211,82 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
     }
   }, []);
 
+  useEffect(() => {
+    if (pendingUpdate && gameId) {
+      updateGame(gameId, { ...gameState })
+        .then(() => {
+          console.log('Game state updated successfully');
+        })
+        .catch(error => {
+          console.error('Error updating the game state:', error);
+        })
+        .finally(() => {
+          setPendingUpdate(false);
+        });
+    }
+  }, [pendingUpdate, gameId, gameState, updateGame]);
+
   return (
     <div
       style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
         padding: '40px',
+        boxSizing: 'border-box',
       }}
     >
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          width: '100%',
+          marginBottom: '20px',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <Button onClick={tryToLeaveGame}>Leave Game</Button>
+        </div>
+        <div>
+          <Button onClick={() => setOpenModal('settings')}>Settings</Button>
+        </div>
+      </div>
+
+      {/* Modal will be shown when isModalOpen is true */}
+      <RulesModal show={openModal === 'rules'} onClose={handleCloseModal} />
+      <SettingsModal
+        show={openModal === 'settings'}
+        onClose={handleCloseModal}
+        buttons={
+          <>
+            <Button
+              onClick={() => {
+                regenerateBoard();
+                setPendingUpdate(true);
+              }}
+            >
+              Regenerate board
+            </Button>
+            <Button onClick={() => setShowStats(!showStats)}>
+              {showStats ? 'Hide True Polling' : 'Show True Polling'}
+            </Button>
+            <Button onClick={() => setShowRoadInfluence(!showRoadInfluence)}>
+              {showRoadInfluence
+                ? 'Hide Road Influence'
+                : 'Show Road Influence'}
+            </Button>
+          </>
+        }
+      />
+
+      <hr style={{ width: '100%', marginBottom: '20px' }} />
       <div
         style={{
           display: 'flex',
@@ -214,7 +296,6 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
       >
         {/* Left Side */}
         <div>
-          <h1 style={{ paddingBottom: '35px' }}>Campaign</h1>
           <p style={{ color: playerColor }}>
             {displayName} {gameState.players[playerColor].phaseAction}
           </p>
@@ -225,6 +306,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
             </p>
           )}
           <p>{`Game ID: ${gameId}`}</p>
+          <PublicOpinion />
           <BoardUI
             playerColor={playerColor}
             pollInputs={pollInputs}
@@ -242,12 +324,13 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
               width: '650px',
             }}
           >
-            <PublicOpinion />
             <div
               style={{
                 visibility: gameOver(gameState) ? 'hidden' : 'visible',
               }}
             >
+              <TurnIndicator />
+              <PhaseIndicator />
               <HUD
                 playerColor={playerColor}
                 pollInputs={pollInputs}
@@ -258,11 +341,11 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
               />
               <Scoreboard
                 playerColor={playerColor}
+                showTruePolling={showStats}
                 showRoadInfluence={showRoadInfluence}
                 setShowRoadInfluence={setShowRoadInfluence}
               />
             </div>
-            <Button onClick={tryToLeaveGame}>Leave Game</Button>
           </div>
         }
       </div>

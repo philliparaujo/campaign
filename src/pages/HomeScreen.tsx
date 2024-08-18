@@ -173,7 +173,7 @@ function HomeScreen() {
         style={{
           display: 'flex',
           flexDirection: 'row',
-          marginBottom: '20px',
+          marginBottom: '40px',
         }}
       >
         <div style={{ marginRight: '10px' }}>

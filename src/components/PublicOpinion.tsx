@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGameState } from '../GameState';
-import { formatPoll } from '../utils';
+import { formatPoll, formatPublicOpinion } from '../utils';
 
 interface PublicOpinionProps {}
 
@@ -15,28 +15,25 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
   return (
     <div
       style={{
-        paddingLeft: '5%',
-        paddingRight: '5%',
-        border: '1px solid #ccc',
-        borderRadius: '10px',
-        width: '90%',
+        width: '100%',
       }}
     >
-      <h4>Public Opinion:</h4>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
+        <h3 style={{ paddingRight: '22.5%' }}>Public Opinion:</h3>
+        {formatPublicOpinion(redPublicOpinion)}
+      </div>
       {redPublicOpinion !== undefined && (
         <>
-          {formatPoll(redPublicOpinion)}
           <div
             style={{
-              backgroundColor: '#f0f0f0',
               borderRadius: '5px',
-              padding: '5px',
               display: 'flex',
+              marginBottom: '10px',
             }}
           >
             <div
               style={{
-                height: '10px',
+                height: '20px',
                 backgroundColor: 'red',
                 borderRadius: '0px',
                 transition: 'width 0.5s',
@@ -45,7 +42,7 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
             ></div>
             <div
               style={{
-                height: '10px',
+                height: '20px',
                 backgroundColor: 'blue',
                 borderRadius: '0px',
                 transition: 'width 0.5s',

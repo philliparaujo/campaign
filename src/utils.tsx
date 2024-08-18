@@ -159,6 +159,13 @@ export const calculatePublicOpinion = (
   return (prevRedPoll + prevBluePoll + currentRedPoll + currentBluePoll) / 4;
 };
 
+export const calculatePollResult = (redPercent: number) => {
+  const colorWinner = redPercent >= 0.5 ? 'Red' : 'Blue';
+  const percentResult = Math.abs(redPercent - (1 - redPercent)) * 100;
+
+  return `${colorWinner} +${percentResult.toFixed(1)}%`;
+};
+
 // Turns polling percentage into color-coded final result
 export const formatPoll = (redPercent: number) => {
   return (
@@ -168,9 +175,22 @@ export const formatPoll = (redPercent: number) => {
         marginBottom: '10px',
       }}
     >
-      {redPercent >= 0.5 ? 'Red +' : 'Blue +'}
-      {(Math.abs(redPercent - (1 - redPercent)) * 100).toFixed(1)}%
+      {calculatePollResult(redPercent)}
     </p>
+  );
+};
+
+// Turn public opinion percentage into color-coded final result
+export const formatPublicOpinion = (publicOpinion: number) => {
+  return (
+    <h3
+      style={{
+        color: publicOpinion >= 0.5 ? 'red' : 'blue',
+        marginBottom: '10px',
+      }}
+    >
+      {calculatePollResult(publicOpinion)}
+    </h3>
   );
 };
 

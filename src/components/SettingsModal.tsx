@@ -21,6 +21,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           flexDirection: 'column',
           width: '100%',
           alignItems: 'center',
+          gap: '10px',
         }}
       >
         {buttons}
