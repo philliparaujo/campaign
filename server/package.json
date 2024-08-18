@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "dev": "node esbuild.config.js --dev",
     "build": "node esbuild.config.js"
   },
   "keywords": [],
