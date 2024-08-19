@@ -398,11 +398,11 @@ io.on("connection", (socket) => {
   });
 });
 
-app.get("/api/v1/test", (req, res) => {
-  res.send("Hello World!");
+app.get("/api/v1/version", (req, res) => {
+  res.send({ version: process.env.BUILD_TIME || "Unknown" });
   console.log("i received a request");
 });
 
 server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server running on port ${port}, build time: ${process.env.BUILD_TIME || "Unknown"}.`);
 });

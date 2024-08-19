@@ -6,18 +6,18 @@ const http = require("http");
 const apiPort = 5000;
 const buildTime = new Date().toUTCString();
 
-const copyStaticFiles = {
-  name: "copy-static-files",
+const generateIndexHtmlPlugin = {
+  name: 'generate-html-plugin',
   setup(build) {
     build.onEnd(() => {
-      const source = path.join(__dirname, "index.html");
-      const destination = path.join(__dirname, "dist/index.html");
-
-      fs.copyFileSync(source, destination);
-      console.log("index.html copied to dist/");
-    });
-  },
-};
+      console.log('Generating index.html')
+      const indexHtml = fs.readFileSync('index.html')
+        .toString()
+        .replaceAll('{{NOW}}', Date.now())
+      fs.writeFileSync(path.join('dist', 'index.html'), indexHtml)
+    })
+  }
+}
 
 const ctx = context({
   entryPoints: ["./src/index.tsx"], // Entry point of your React app
@@ -32,7 +32,7 @@ const ctx = context({
     "process.env.NODE_ENV": '"production"', // Set environment variable for production
     "process.env.BUILD_TIME": `"${buildTime}"`,
   },
-  plugins: [copyStaticFiles],
+  plugins: [generateIndexHtmlPlugin],
   minify: true, // Minify the output for smaller file size
   sourcemap: true, // Generate source maps for easier debugging
   target: ["es2020"], // Set the target to modern JavaScript
