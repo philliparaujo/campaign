@@ -42,11 +42,16 @@ if (process.argv[2] === '--dev') {
 
     ctx.serve({
       host: '127.0.0.1',
-      port: 3000,
+      port: 3001,
       servedir: './dist',
       fallback: path.join('./dist', 'index.html'),
+      onRequest: (args) => {
+        console.log('received request for ', args.path);
+      }
     }).then(({ host, port: serverPort }) => {
       http.createServer((req, res) => {
+        console.log('received request for req ', req.url);
+
         let options = {
           hostname: host,
           port: serverPort,

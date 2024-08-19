@@ -1,4 +1,3 @@
-import cors from 'cors';
 import dotenv from 'dotenv';
 import express from 'express';
 import http from 'http';
@@ -9,27 +8,17 @@ import PlayerGameModel from './models/PlayerGame';
 import { createNewGameState } from './shared/GameState';
 import { PlayerColor } from './shared/types';
 import { opponentOf } from './shared/utils';
-import exp from 'constants';
 
 dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
 
-app.use(cors({
-  origin: "http://localhost:3000",
-  methods: ["GET", "POST"],
-  credentials: true
-}));
 app.use(express.json());
 
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-    credentials: true
-  }
+  path: "/api/v1/socket"  
 });
 
 // Connect to MongoDB Atlas
@@ -383,6 +372,7 @@ io.on('connection', socket => {
 
 app.get('/api/v1/test', (req, res) => {
   res.send('Hello World!');
+  console.log('i received a request');
 });
 
 

@@ -57,7 +57,10 @@ const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
   undefined
 );
 
-export const socket = io('http://localhost:5000');
+
+export const socket = io('', {
+  path: '/api/v1/socket',
+});
 
 export const GlobalStateProvider = ({
   children,
