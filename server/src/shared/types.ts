@@ -3,10 +3,10 @@ export type Board = Cell[][];
 export type Cell = Road | BuildingCell;
 
 interface Road {
-  type: 'road';
+  type: "road";
 }
 interface BuildingCell {
-  type: 'building';
+  type: "building";
   floors: Floor[];
   baseCost: number;
 }
@@ -14,16 +14,16 @@ interface BuildingCell {
 export interface Floor {
   influence: Influence;
 }
-export type Influence = '' | PlayerColor;
-export type PlayerColor = 'red' | 'blue';
+export type Influence = "" | PlayerColor;
+export type PlayerColor = "red" | "blue";
 
 export type PlayerAction =
-  | ''
-  | 'done'
-  | 'conductPoll'
-  | 'trust'
-  | 'doubt'
-  | 'accuse';
+  | ""
+  | "done"
+  | "conductPoll"
+  | "trust"
+  | "doubt"
+  | "accuse";
 
 /* Game state types */
 export type GameState = {
@@ -58,8 +58,8 @@ export type Opinion = {
 };
 
 /* Multiplayer types */
-export type GameId = string | '';
-export type PlayerId = string | '';
+export type GameId = string | "";
+export type PlayerId = string | "";
 
 export type PlayerGame = {
   gameId: GameId;

@@ -1,13 +1,13 @@
-import dotenv from 'dotenv';
-import express from 'express';
-import http from 'http';
-import mongoose, { Error } from 'mongoose';
-import { Server as SocketIOServer } from 'socket.io';
-import ActiveGameModel from './models/ActiveGame';
-import PlayerGameModel from './models/PlayerGame';
-import { createNewGameState } from './shared/GameState';
-import { PlayerColor } from './shared/types';
-import { opponentOf } from './shared/utils';
+import dotenv from "dotenv";
+import express from "express";
+import http from "http";
+import mongoose, { Error } from "mongoose";
+import { Server as SocketIOServer } from "socket.io";
+import ActiveGameModel from "./models/ActiveGame";
+import PlayerGameModel from "./models/PlayerGame";
+import { createNewGameState } from "./shared/GameState";
+import { PlayerColor } from "./shared/types";
+import { opponentOf } from "./shared/utils";
 
 dotenv.config();
 
@@ -18,41 +18,49 @@ app.use(express.json());
 
 const server = http.createServer(app);
 const io = new SocketIOServer(server, {
-  path: "/api/v1/socket"  
+  path: "/api/v1/socket",
 });
+
+const buildTime = new Date().toUTCString();
+process.env.BUILD_TIME = buildTime;
 
 // Connect to MongoDB Atlas
 const URI = process.env.MONGODB_URI;
 if (!URI) {
-  throw new Error('MONGODB_URI is not defined in the environment variables.');
+  throw new Error("MONGODB_URI is not defined in the environment variables.");
 }
 
-mongoose.connect(URI)
-  .then(() => console.log('MongoDB connected'))
-  .catch(err => console.error(err));
+mongoose
+  .connect(URI)
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.error(err));
 
 async function handleSocketEvent<T>(
   socket: any,
   query: () => Promise<T | null>,
   successCallback: (result: T | null) => void,
-  errorMessage: string
+  errorMessage: string,
 ) {
   try {
     const result = await query();
     if (result === null) {
-      return socket.emit('error', { message: errorMessage });
+      return socket.emit("error", { message: errorMessage });
     }
     successCallback(result);
   } catch (error: any) {
-    socket.emit('error', { message: errorMessage, error });
+    socket.emit("error", { message: errorMessage, error });
   }
 }
 
-io.on('connection', socket => {
-  console.log('A user connected');
+io.on("connection", (socket) => {
+  console.log("A user connected");
+
+  socket.on("get-server-build-time", () => {
+    socket.emit("server-build-time", process.env.BUILD_TIME || "Unknown");
+  });
 
   // Create a game and join it
-  socket.on('game/create', ({ gameId, playerId, playerColor, displayName}) => {
+  socket.on("game/create", ({ gameId, playerId, playerColor, displayName }) => {
     handleSocketEvent(
       socket,
       async () => {
@@ -84,14 +92,19 @@ io.on('connection', socket => {
       },
       (gameState) => {
         socket.join(gameId);
-        io.to(gameId).emit('gameCreated', {gameState, gameId, playerColor, displayName});
+        io.to(gameId).emit("gameCreated", {
+          gameState,
+          gameId,
+          playerColor,
+          displayName,
+        });
       },
-      'Error creating game'
-    )
+      "Error creating game",
+    );
   });
 
   // Join a game
-  socket.on('game/join', ({ gameId, playerId, playerColor, displayName }) => {
+  socket.on("game/join", ({ gameId, playerId, playerColor, displayName }) => {
     handleSocketEvent(
       socket,
       async () => {
@@ -121,14 +134,54 @@ io.on('connection', socket => {
       },
       (gameState) => {
         socket.join(gameId);
-        io.to(gameId).emit('gameJoined', {gameState, gameId, playerColor, displayName});
+        io.to(gameId).emit("gameJoined", {
+          gameState,
+          gameId,
+          playerColor,
+          displayName,
+        });
       },
-      'Error joining game'
-    )
+      "Error joining game",
+    );
   });
 
   // Reconnect
-  socket.on('game/reconnect', ({ gameId, playerId, playerColor, displayName }) => {
+  socket.on(
+    "game/reconnect",
+    ({ gameId, playerId, playerColor, displayName }) => {
+      handleSocketEvent(
+        socket,
+        async () => {
+          // Check if game exists and player is in game
+          let activeGame = await ActiveGameModel.findOne({ gameId });
+          let playerGame = await PlayerGameModel.findOne({ playerId, gameId });
+          if (!activeGame || !playerGame) return null;
+
+          // Ensure that color matches
+          if (
+            playerId !==
+            activeGame.gameState.players[playerColor as PlayerColor].id
+          ) {
+            return null;
+          }
+
+          // Ensure that display name matches
+          if (displayName !== playerGame.displayName) {
+            return null;
+          }
+
+          return activeGame.gameState;
+        },
+        (gameState) => {
+          socket.join(gameId);
+        },
+        "Error reconnecting to game",
+      );
+    },
+  );
+
+  // Leave a game
+  socket.on("game/leave", ({ gameId, playerId }) => {
     handleSocketEvent(
       socket,
       async () => {
@@ -137,40 +190,11 @@ io.on('connection', socket => {
         let playerGame = await PlayerGameModel.findOne({ playerId, gameId });
         if (!activeGame || !playerGame) return null;
 
-        // Ensure that color matches
-        if (playerId !== activeGame.gameState.players[playerColor as PlayerColor].id) {
-          return null;
-        }
-
-        // Ensure that display name matches
-        if (displayName !== playerGame.displayName) {
-          return null;
-        }
-
-        return activeGame.gameState;
-      },
-      (gameState) => {
-        socket.join(gameId);
-      },
-      'Error reconnecting to game'
-    )
-  });
-
-  // Leave a game
-  socket.on('game/leave', ({ gameId, playerId }) => {
-    handleSocketEvent(
-      socket,
-      async () => {
-        // Check if game exists and player is in game
-        let activeGame = await ActiveGameModel.findOne({ gameId });
-        let playerGame = await PlayerGameModel.findOne({ playerId, gameId });
-        if (!activeGame ||!playerGame) return null;
-
         // Remove playerId from game state
         if (playerId === activeGame.gameState.players.red.id) {
-          activeGame.gameState.players.red.id = '';
+          activeGame.gameState.players.red.id = "";
         } else if (playerId === activeGame.gameState.players.blue.id) {
-          activeGame.gameState.players.blue.id = '';
+          activeGame.gameState.players.blue.id = "";
         } else {
           return null;
         }
@@ -183,15 +207,15 @@ io.on('connection', socket => {
       },
       (gameState) => {
         const gameData = { gameState, playerId };
-        io.to(gameId).emit('gameLeft', gameData);
+        io.to(gameId).emit("gameLeft", gameData);
         socket.leave(gameId);
       },
-      'Error leaving game'
-    )
+      "Error leaving game",
+    );
   });
 
   // Delete a game
-  socket.on('game/delete', ({gameId}) => {
+  socket.on("game/delete", ({ gameId }) => {
     handleSocketEvent(
       socket,
       async () => {
@@ -206,14 +230,16 @@ io.on('connection', socket => {
         return;
       },
       () => {
-        io.to(gameId).emit('gameDeleted', { message: 'Game deleted successfully' });
+        io.to(gameId).emit("gameDeleted", {
+          message: "Game deleted successfully",
+        });
       },
-      'Error deleting game'
-    )
+      "Error deleting game",
+    );
   });
 
   // Update a game's state
-  socket.on('game/update', ({ gameId, gameState }) => {
+  socket.on("game/update", ({ gameId, gameState }) => {
     handleSocketEvent(
       socket,
       async () => {
@@ -228,14 +254,14 @@ io.on('connection', socket => {
         return activeGame.gameState;
       },
       (gameState) => {
-        io.to(gameId).emit('gameUpdated', gameState);
+        io.to(gameId).emit("gameUpdated", gameState);
       },
-      'Error updating game'
-    )
+      "Error updating game",
+    );
   });
 
   // Fetch a game by gameId
-  socket.on('games/fetch', ({ gameId }) => {
+  socket.on("games/fetch", ({ gameId }) => {
     handleSocketEvent(
       socket,
       async () => {
@@ -246,14 +272,14 @@ io.on('connection', socket => {
         return activeGame.gameState;
       },
       (gameState) => {
-        socket.emit('gameFetched', gameState);
+        socket.emit("gameFetched", gameState);
       },
-      'Error fetching game'
-    )
+      "Error fetching game",
+    );
   });
 
   // Fetch a player by playerId
-  socket.on('players/fetch', ({ playerId }) => {
+  socket.on("players/fetch", ({ playerId }) => {
     handleSocketEvent(
       socket,
       async () => {
@@ -264,14 +290,14 @@ io.on('connection', socket => {
         return playerGame;
       },
       (playerGame) => {
-        socket.emit('playerFetched', playerGame);
+        socket.emit("playerFetched", playerGame);
       },
-      'Error fetching player'
-    )
+      "Error fetching player",
+    );
   });
 
   // Fetch an opponent of playerId
-  socket.on('players/fetchOpponent', ({ playerId }) => {
+  socket.on("players/fetchOpponent", ({ playerId }) => {
     handleSocketEvent(
       socket,
       async () => {
@@ -284,23 +310,23 @@ io.on('connection', socket => {
           gameId: playerGame.gameId,
           playerColor: opponentOf(playerGame.playerColor as PlayerColor),
         });
-        if (!opponentGame) return {opponentGame: null};
+        if (!opponentGame) return { opponentGame: null };
 
-        return {opponentGame: opponentGame};
+        return { opponentGame: opponentGame };
       },
       (opponentGameData) => {
         if (opponentGameData?.opponentGame) {
-          socket.emit('opponentFetched', opponentGameData.opponentGame);
+          socket.emit("opponentFetched", opponentGameData.opponentGame);
         } else {
-          socket.emit('opponentNotFound');
+          socket.emit("opponentNotFound");
         }
       },
-      'Error fetching opponent'
-    )
+      "Error fetching opponent",
+    );
   });
 
   // Return whether a game exists
-  socket.on('games/exists', ({ gameId }) => {
+  socket.on("games/exists", ({ gameId }) => {
     handleSocketEvent(
       socket,
       async () => {
@@ -308,29 +334,29 @@ io.on('connection', socket => {
         return !!activeGame;
       },
       (exists) => {
-        socket.emit('gameExists', {exists});
+        socket.emit("gameExists", { exists });
       },
-      'Error checking game existence'
-    )
+      "Error checking game existence",
+    );
   });
 
   // Return whether a player is in a game
-  socket.on('players/inGame', ({ playerId }) => {
+  socket.on("players/inGame", ({ playerId }) => {
     handleSocketEvent(
       socket,
       async () => {
         const playerGame = await PlayerGameModel.findOne({ playerId });
-        return !!playerGame && playerGame.gameId !== '';
+        return !!playerGame && playerGame.gameId !== "";
       },
       (inGame) => {
-        socket.emit('playerInGame', {inGame});
+        socket.emit("playerInGame", { inGame });
       },
-      'Error checking player in game'
-    )
+      "Error checking player in game",
+    );
   });
 
   // Fetch all games
-  socket.on('games/fetchAll', () => {
+  socket.on("games/fetchAll", () => {
     handleSocketEvent(
       socket,
       async () => {
@@ -343,14 +369,14 @@ io.on('connection', socket => {
         };
       },
       (gameData) => {
-        socket.emit('allGamesFetched', gameData);
+        socket.emit("allGamesFetched", gameData);
       },
-      'Error fetching games and players'
-    )
+      "Error fetching games and players",
+    );
   });
 
   // Delete all games
-  socket.on('games/deleteAll', () => {
+  socket.on("games/deleteAll", () => {
     handleSocketEvent(
       socket,
       async () => {
@@ -359,22 +385,23 @@ io.on('connection', socket => {
         return;
       },
       () => {
-        io.emit('allGamesDeleted', { message: 'All games deleted successfully' });
+        io.emit("allGamesDeleted", {
+          message: "All games deleted successfully",
+        });
       },
-      'Error deleting games and players'
-    )
+      "Error deleting games and players",
+    );
   });
 
-  socket.on('disconnect', () => {
-    console.log('A user disconnected');
+  socket.on("disconnect", () => {
+    console.log("A user disconnected");
   });
 });
 
-app.get('/api/v1/test', (req, res) => {
-  res.send('Hello World!');
-  console.log('i received a request');
+app.get("/api/v1/test", (req, res) => {
+  res.send("Hello World!");
+  console.log("i received a request");
 });
-
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);

@@ -57,7 +57,6 @@ const GlobalStateContext = createContext<GlobalStateContextType | undefined>(
   undefined
 );
 
-
 export const socket = io('', {
   path: '/api/v1/socket',
 });

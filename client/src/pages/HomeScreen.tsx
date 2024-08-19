@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Switch from 'react-switch';
 import Button from '../components/Button';
 import RulesModal from '../components/RulesModal';
-import { useGlobalState } from '../GlobalState';
+import { socket, useGlobalState } from '../GlobalState';
 import { GameId, PlayerColor, PlayerId } from '../types';
 import { newGameId, newPlayerId } from '../utils';
 import SettingsModal from '../components/SettingsModal';
@@ -24,8 +24,25 @@ function HomeScreen() {
   const [inputDisplayName, setInputDisplayName] = useState<string>('');
   const [openModal, setOpenModal] = useState<'rules' | 'settings' | null>(null);
 
+  const [clientBuildTime, setClientBuildTime] = useState<string>(
+    process.env.BUILD_TIME ?? ''
+  );
+  const [serverBuildTime, setServerBuildTime] = useState<string>('foo');
+
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Fetch the server build time via Socket.IO
+    socket.emit('get-server-build-time');
+    socket.on('server-build-time', (time: string) => {
+      setServerBuildTime(time);
+    });
+
+    return () => {
+      socket.off('serverBuildTime');
+    };
+  }, []);
 
   // On page load/URL change, set playerId or use URL player ID if it exists
   useEffect(() => {
@@ -217,6 +234,19 @@ function HomeScreen() {
         <Button size={'large'} onClick={() => setOpenModal('rules')}>
           Rules
         </Button>
+      </div>
+
+      <div
+        style={{
+          position: 'absolute',
+          bottom: '10px',
+          right: '10px',
+          fontSize: '12px',
+          color: '#888',
+        }}
+      >
+        <p>Client built: {clientBuildTime}</p>
+        <p>Server built: {serverBuildTime}</p>
       </div>
     </div>
   );

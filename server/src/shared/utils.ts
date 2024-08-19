@@ -1,5 +1,5 @@
-import { v4 as uuidv4 } from 'uuid';
-import { maxRoadsAllowed, maxTurns, size } from './GameState';
+import { v4 as uuidv4 } from "uuid";
+import { maxRoadsAllowed, maxTurns, size } from "./GameState";
 import {
   Board,
   Floor,
@@ -9,13 +9,13 @@ import {
   PlayerColor,
   Poll,
   PollRegion,
-} from './types';
+} from "./types";
 
 // Generate a random number of building floors
 const maxFloorHeight = 3;
 const randomFloors = (): Floor[] => {
   const height = Math.floor(Math.random() * maxFloorHeight) + 1;
-  return Array(height).fill({ influence: '' });
+  return Array(height).fill({ influence: "" });
 };
 
 // Helper function to check if a 2x2 group forms a square road
@@ -23,15 +23,15 @@ const isSquareRoad = (
   board: Board,
   size: number,
   row: number,
-  col: number
+  col: number,
 ): boolean => {
   return (
     row < size - 1 &&
     col < size - 1 && // Ensure within bounds
-    board[row][col].type === 'road' &&
-    board[row][col + 1].type === 'road' &&
-    board[row + 1][col].type === 'road' &&
-    board[row + 1][col + 1].type === 'road'
+    board[row][col].type === "road" &&
+    board[row][col + 1].type === "road" &&
+    board[row + 1][col].type === "road" &&
+    board[row + 1][col + 1].type === "road"
   );
 };
 
@@ -51,8 +51,8 @@ export const initializeBoard = (size: number): Board => {
       Array(size)
         .fill(null)
         .map(() => ({
-          type: 'road',
-        }))
+          type: "road",
+        })),
     );
 
   let roadCount = size * size;
@@ -85,28 +85,28 @@ export const initializeBoard = (size: number): Board => {
       switch (cellToConvert) {
         case 0:
           board[row][col] = {
-            type: 'building',
+            type: "building",
             floors: randomFloors(),
             baseCost: calculateBaseCost(row, col),
           };
           break;
         case 1:
           board[row][col + 1] = {
-            type: 'building',
+            type: "building",
             floors: randomFloors(),
             baseCost: calculateBaseCost(row, col + 1),
           };
           break;
         case 2:
           board[row + 1][col] = {
-            type: 'building',
+            type: "building",
             floors: randomFloors(),
             baseCost: calculateBaseCost(row + 1, col),
           };
           break;
         case 3:
           board[row + 1][col + 1] = {
-            type: 'building',
+            type: "building",
             floors: randomFloors(),
             baseCost: calculateBaseCost(row + 1, col + 1),
           };
@@ -122,11 +122,11 @@ export const initializeBoard = (size: number): Board => {
 
     for (let row = 0; row < size; row++) {
       for (let col = 0; col < size; col++) {
-        if (board[row][col].type === 'road') {
+        if (board[row][col].type === "road") {
           if (currentRoadCount === randomRoadIndex) {
             // Turn the selected road into a building
             board[row][col] = {
-              type: 'building',
+              type: "building",
               floors: randomFloors(),
               baseCost: calculateBaseCost(row, col),
             };
@@ -147,20 +147,20 @@ export const initializeBoard = (size: number): Board => {
 export const calculatePublicOpinion = (
   redPolls: Poll[],
   bluePolls: Poll[],
-  currentTurn: number
+  currentTurn: number,
 ): number => {
   const previousTurn = Math.max(currentTurn - 1, 0);
 
-  const prevRedPoll = redPolls[previousTurn]['redPercent'];
-  const prevBluePoll = bluePolls[previousTurn]['redPercent'];
-  const currentRedPoll = redPolls[currentTurn]['redPercent'];
-  const currentBluePoll = bluePolls[currentTurn]['redPercent'];
+  const prevRedPoll = redPolls[previousTurn]["redPercent"];
+  const prevBluePoll = bluePolls[previousTurn]["redPercent"];
+  const currentRedPoll = redPolls[currentTurn]["redPercent"];
+  const currentBluePoll = bluePolls[currentTurn]["redPercent"];
 
   return (prevRedPoll + prevBluePoll + currentRedPoll + currentBluePoll) / 4;
 };
 
 export const calculatePollResult = (redPercent: number) => {
-  const colorWinner = redPercent >= 0.5 ? 'Red' : 'Blue';
+  const colorWinner = redPercent >= 0.5 ? "Red" : "Blue";
   const percentResult = Math.abs(redPercent - (1 - redPercent)) * 100;
 
   return `${colorWinner} +${percentResult.toFixed(1)}%`;
@@ -173,7 +173,7 @@ const calculateDirectionalInfluence = (
   startCol: number,
   rowDelta: number,
   colDelta: number,
-  influenceType: PlayerColor
+  influenceType: PlayerColor,
 ): number => {
   let influence = 0;
   let distance = 1;
@@ -186,7 +186,7 @@ const calculateDirectionalInfluence = (
   while (row >= 0 && row < size && col >= 0 && col < size) {
     const cell = board[row][col];
 
-    if (cell.type === 'building') {
+    if (cell.type === "building") {
       const buildingHeight = cell.floors.length;
 
       // Iterate over the floors of the building from the ground up
@@ -220,10 +220,10 @@ export const calculateRoadInfluence = (
   influenceType: PlayerColor,
   board: Board,
   row: number,
-  col: number
+  col: number,
 ): number => {
   const cell = board[row][col];
-  if (cell.type !== 'road') return 0;
+  if (cell.type !== "road") return 0;
 
   const straightDirections = [
     [0, 1],
@@ -239,7 +239,7 @@ export const calculateRoadInfluence = (
       col,
       rowDelta,
       colDelta,
-      influenceType
+      influenceType,
     );
   }
 
@@ -257,7 +257,7 @@ export const calculateRoadInfluence = (
       col,
       rowDelta,
       colDelta,
-      influenceType
+      influenceType,
     );
   }
 
@@ -271,7 +271,7 @@ export const calculateRoadInfluence = (
 // Helper function to calculate the total influence for all cells
 export const calculateTotalInfluence = (
   influenceType: PlayerColor,
-  board: Board
+  board: Board,
 ): number => {
   let totalInfluence = 0;
   const size = board.length;
@@ -287,7 +287,7 @@ export const calculateTotalInfluence = (
 
 export const calculatePercentInfluence = (
   redInfluence: number,
-  blueInfluence: number
+  blueInfluence: number,
 ): number => {
   const totalInfluence = redInfluence + blueInfluence;
   if (totalInfluence <= 0) {
@@ -305,12 +305,12 @@ const createPercentArray = (board: Board): (number | null)[][] => {
 
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) {
-      if (board[row][col].type === 'road') {
-        const redInfluence = calculateRoadInfluence('red', board, row, col);
-        const blueInfluence = calculateRoadInfluence('blue', board, row, col);
+      if (board[row][col].type === "road") {
+        const redInfluence = calculateRoadInfluence("red", board, row, col);
+        const blueInfluence = calculateRoadInfluence("blue", board, row, col);
         const percentInfluence = calculatePercentInfluence(
           redInfluence,
-          blueInfluence
+          blueInfluence,
         );
 
         if (percentInfluence > 0) {
@@ -345,7 +345,7 @@ export const getRedSample = (
     startCol: 0,
     endCol: size - 1,
   },
-  trueSample: boolean = false
+  trueSample: boolean = false,
 ): number => {
   const { startRow, endRow, startCol, endCol } = pollRegion;
 
@@ -378,17 +378,17 @@ export const canEndPhase = (gameState: GameState): boolean => {
     case 1:
       return (
         coinCheck &&
-        gameState.players.red.phaseAction === 'done' &&
-        gameState.players.blue.phaseAction === 'done'
+        gameState.players.red.phaseAction === "done" &&
+        gameState.players.blue.phaseAction === "done"
       );
     case 2:
       return (
         coinCheck &&
-        players.red.phaseAction === 'conductPoll' &&
-        players.blue.phaseAction === 'conductPoll'
+        players.red.phaseAction === "conductPoll" &&
+        players.blue.phaseAction === "conductPoll"
       );
     case 3:
-      const factCheckOptions: PlayerAction[] = ['trust', 'doubt', 'accuse'];
+      const factCheckOptions: PlayerAction[] = ["trust", "doubt", "accuse"];
       return (
         coinCheck &&
         factCheckOptions.includes(players.red.phaseAction) &&
@@ -397,8 +397,8 @@ export const canEndPhase = (gameState: GameState): boolean => {
     case 4:
       return (
         coinCheck &&
-        gameState.players.red.phaseAction === 'done' &&
-        gameState.players.blue.phaseAction === 'done'
+        gameState.players.red.phaseAction === "done" &&
+        gameState.players.blue.phaseAction === "done"
       );
     default:
       return false;
@@ -411,21 +411,21 @@ const doubtPercent = 0.025;
 const doubtPenalty = 0.025;
 export const handleDoubtPoll = (
   playerColor: PlayerColor,
-  gameState: GameState
+  gameState: GameState,
 ): number => {
   const { board, turnNumber, players } = gameState;
 
   let truePercent = getRedSample(board, undefined, true);
   let poll =
-    playerColor === 'red'
+    playerColor === "red"
       ? players.blue.pollHistory[turnNumber]
       : players.red.pollHistory[turnNumber];
-  let pollPercent = poll['redPercent'];
+  let pollPercent = poll["redPercent"];
 
   if (Math.abs(pollPercent - truePercent) < doubtPercent) {
-    return playerColor === 'red' ? -doubtPenalty : doubtPenalty;
+    return playerColor === "red" ? -doubtPenalty : doubtPenalty;
   } else {
-    return playerColor === 'red' ? doubtPenalty : -doubtPenalty;
+    return playerColor === "red" ? doubtPenalty : -doubtPenalty;
   }
 };
 
@@ -435,41 +435,41 @@ const accusePercent = 0.05;
 const accusePenalty = 0.05;
 export const handleAccusePoll = (
   playerColor: PlayerColor,
-  gameState: GameState
+  gameState: GameState,
 ): number => {
   const { board, turnNumber, players } = gameState;
 
   let truePercent = getRedSample(board, undefined, true);
   let poll =
-    playerColor === 'red'
+    playerColor === "red"
       ? players.blue.pollHistory[turnNumber]
       : players.red.pollHistory[turnNumber];
-  let pollPercent = poll['redPercent'];
+  let pollPercent = poll["redPercent"];
 
   if (Math.abs(pollPercent - truePercent) < accusePercent) {
-    return playerColor === 'red' ? -accusePenalty : accusePenalty;
+    return playerColor === "red" ? -accusePenalty : accusePenalty;
   } else {
-    return playerColor === 'red' ? accusePenalty : -accusePenalty;
+    return playerColor === "red" ? accusePenalty : -accusePenalty;
   }
 };
 
 // Generate unique 4 length game ID
 export const newGameId = async (
-  gameExists: (gameId: GameId) => Promise<boolean>
+  gameExists: (gameId: GameId) => Promise<boolean>,
 ): Promise<GameId> => {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const idLength = 4;
   const generateRandomCode = (): GameId => {
-    let result = '';
+    let result = "";
     for (let i = 0; i < idLength; i++) {
       result += characters.charAt(
-        Math.floor(Math.random() * characters.length)
+        Math.floor(Math.random() * characters.length),
       );
     }
     return result;
   };
 
-  let gameId = '';
+  let gameId = "";
   let attempts = 0;
   while (attempts < 10) {
     gameId = generateRandomCode();
@@ -477,7 +477,7 @@ export const newGameId = async (
       if (!(await gameExists(gameId))) return gameId;
       attempts++;
     } catch (error) {
-      console.error('error happened');
+      console.error("error happened");
       throw error;
     }
   }
@@ -492,7 +492,7 @@ export const newPlayerId = (): string => {
 };
 
 export const opponentOf = (playerColor: PlayerColor): PlayerColor => {
-  return playerColor === 'red' ? 'blue' : 'red';
+  return playerColor === "red" ? "blue" : "red";
 };
 
 export const gameOver = (gameState: GameState): boolean => {

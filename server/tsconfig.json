@@ -1,14 +1,13 @@
 {
-    "compilerOptions": {
-      "target": "ES6", // or "ES2020" or another version depending on your needs
-      "module": "commonjs", // Node.js uses CommonJS module system
-      "strict": true,
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true,
-      "outDir": "./dist", // Optional: If you also use tsc separately
-    },
-    "include": ["src/**/*"],
-    "exclude": ["node_modules"]
-  }
-  
+  "compilerOptions": {
+    "target": "ES6", // or "ES2020" or another version depending on your needs
+    "module": "commonjs", // Node.js uses CommonJS module system
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist" // Optional: If you also use tsc separately
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules"]
+}

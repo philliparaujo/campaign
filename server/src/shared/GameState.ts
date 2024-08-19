@@ -8,9 +8,9 @@ export const startingCoins = 10;
 export const maxTurns = 3;
 
 const initialPlayer: PlayerInfo = {
-  id: '',
+  id: "",
   coins: startingCoins,
-  phaseAction: '',
+  phaseAction: "",
   pollHistory: [
     {
       startRow: 0,
@@ -35,4 +35,3 @@ export const createNewGameState = (): GameState => ({
     blue: { ...initialPlayer },
   },
 });
-
