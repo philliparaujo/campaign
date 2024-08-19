@@ -283,7 +283,11 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
         >
           <Button onClick={tryToLeaveGame}>Leave Game</Button>
         </div>
-        <NameDisplays />
+        <NameDisplays
+          displayName={displayName}
+          opponentDisplayName={opponentDisplayName}
+          playerColor={playerColor}
+        />
         <TurnIndicator />
         <div>
           <Button onClick={() => setOpenModal('settings')}>Settings</Button>
@@ -300,15 +304,6 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
       >
         {/* Left Side */}
         <div>
-          <p style={{ color: playerColor }}>
-            {displayName} {gameState.players[playerColor].phaseAction}
-          </p>
-          {opponentDisplayName && (
-            <p style={{ color: opponentOf(playerColor) }}>
-              {opponentDisplayName}{' '}
-              {gameState.players[opponentOf(playerColor)].phaseAction}
-            </p>
-          )}
           <p>{`Game ID: ${gameId}`}</p>
           <PublicOpinion />
           <BoardUI

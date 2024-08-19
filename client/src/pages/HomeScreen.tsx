@@ -133,6 +133,8 @@ function HomeScreen() {
           <input
             type="text"
             value={inputDisplayName}
+            size={15}
+            maxLength={15}
             onChange={e => setInputDisplayName(e.target.value)}
             style={{
               color: inputPlayerColor,
