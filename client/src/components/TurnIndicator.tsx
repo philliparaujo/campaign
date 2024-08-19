@@ -8,8 +8,18 @@ const TurnIndicator: React.FC<TurnIndicatorProps> = () => {
   const { turnNumber } = gameState;
 
   return (
-    <div>
-      <h1>{turnNumber === maxTurns ? 'FINAL TURN' : `TURN ${turnNumber}`}</h1>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100%',
+        fontSize: '3rem',
+        fontWeight: 'bold',
+        color: 'black',
+      }}
+    >
+      {turnNumber === maxTurns ? 'FINAL TURN' : `TURN ${turnNumber}`}
     </div>
   );
 };

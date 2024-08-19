@@ -9,6 +9,7 @@ import { useGlobalState } from './GlobalState';
 import {
   Board,
   Cell,
+  FactCheck,
   Floor,
   GameId,
   GameState,
@@ -38,6 +39,7 @@ export const maxTurns = 3;
 const initialPlayer: PlayerInfo = {
   id: '',
   coins: startingCoins,
+  factCheck: '',
   phaseAction: '',
   pollHistory: [
     {
@@ -79,6 +81,7 @@ type GameStateContextType = {
   setTurnNumber: (turnNumber: number) => void;
   setPhaseNumber: (phaseNumber: number) => void;
   setPhaseAction: (color: PlayerColor, action: PlayerAction) => void;
+  setFactCheck: (color: PlayerColor, factCheck: FactCheck) => void;
   regenerateBoard: () => void;
   setPublicOpinionHistory: (publicOpinionHistory: Opinion[]) => void;
   savePoll: (pollColor: PlayerColor, newPoll: Poll) => Poll[];
@@ -198,6 +201,19 @@ export const GameStateProvider = ({
     }));
   };
 
+  const setFactCheck = (color: PlayerColor, factCheck: FactCheck) => {
+    setGameState(prev => ({
+      ...prev,
+      players: {
+        ...prev.players,
+        [color]: {
+          ...prev.players[color],
+          factCheck: factCheck,
+        },
+      },
+    }));
+  };
+
   const resetPhaseActions = () => {
     setGameState(prev => ({
       ...prev,
@@ -311,7 +327,7 @@ export const GameStateProvider = ({
             gameState.phaseNumber - 1
           ];
 
-        switch (gameState.players.red.phaseAction) {
+        switch (gameState.players.red.factCheck) {
           case 'doubt':
             newOpinion += handleDoubtPoll('red', gameState);
             break;
@@ -321,7 +337,7 @@ export const GameStateProvider = ({
           default:
         }
 
-        switch (gameState.players.blue.phaseAction) {
+        switch (gameState.players.blue.factCheck) {
           case 'doubt':
             newOpinion += handleDoubtPoll('blue', gameState);
             break;
@@ -342,6 +358,9 @@ export const GameStateProvider = ({
         /* End phase 4: update phases/turns, opinion storage for next turn */
         newPhaseNumber = 1;
         newTurnNumber++;
+
+        setFactCheck('red', '');
+        setFactCheck('blue', '');
 
         newPublicOpinionHistory.push({
           trueRedPercent: null,
@@ -386,6 +405,7 @@ export const GameStateProvider = ({
         setCoins,
         setTurnNumber,
         setPhaseNumber,
+        setFactCheck,
         setPhaseAction,
         regenerateBoard,
         setPublicOpinionHistory,

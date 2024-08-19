@@ -402,35 +402,11 @@ export const canEndPhase = (gameState: GameState): boolean => {
 
   const coinCheck = players.red.coins >= 0 && players.blue.coins >= 0;
 
-  switch (phaseNumber) {
-    case 1:
-      return (
-        coinCheck &&
-        gameState.players.red.phaseAction === 'done' &&
-        gameState.players.blue.phaseAction === 'done'
-      );
-    case 2:
-      return (
-        coinCheck &&
-        players.red.phaseAction === 'conductPoll' &&
-        players.blue.phaseAction === 'conductPoll'
-      );
-    case 3:
-      const factCheckOptions: PlayerAction[] = ['trust', 'doubt', 'accuse'];
-      return (
-        coinCheck &&
-        factCheckOptions.includes(players.red.phaseAction) &&
-        factCheckOptions.includes(players.blue.phaseAction)
-      );
-    case 4:
-      return (
-        coinCheck &&
-        gameState.players.red.phaseAction === 'done' &&
-        gameState.players.blue.phaseAction === 'done'
-      );
-    default:
-      return false;
-  }
+  return (
+    coinCheck &&
+    gameState.players.red.phaseAction === 'done' &&
+    gameState.players.blue.phaseAction === 'done'
+  );
 };
 
 /* If poll within 5% of true value, lose 5% public opinion;

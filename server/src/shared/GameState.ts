@@ -10,6 +10,7 @@ export const maxTurns = 3;
 const initialPlayer: PlayerInfo = {
   id: "",
   coins: startingCoins,
+  factCheck: "",
   phaseAction: "",
   pollHistory: [
     {

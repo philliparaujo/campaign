@@ -17,13 +17,8 @@ export interface Floor {
 export type Influence = "" | PlayerColor;
 export type PlayerColor = "red" | "blue";
 
-export type PlayerAction =
-  | ""
-  | "done"
-  | "conductPoll"
-  | "trust"
-  | "doubt"
-  | "accuse";
+export type FactCheck = "" | "trust" | "doubt" | "accuse";
+export type PlayerAction = "" | "done";
 
 /* Game state types */
 export type GameState = {
@@ -37,6 +32,7 @@ export type GameState = {
 export type PlayerInfo = {
   id: PlayerId;
   coins: number;
+  factCheck: FactCheck;
   phaseAction: PlayerAction;
   pollHistory: Poll[];
 };

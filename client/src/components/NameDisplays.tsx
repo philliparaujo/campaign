@@ -1,5 +1,5 @@
 import React from 'react';
-import { PlayerAction, PlayerColor } from '../types';
+import { FactCheck, PlayerAction, PlayerColor } from '../types';
 import { opponentOf } from '../utils';
 import { useGameState } from '../GameState';
 
@@ -16,21 +16,21 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
 }) => {
   const { gameState } = useGameState();
   const { players, phaseNumber } = gameState;
+  const me = players[playerColor];
+  const opponent = players[opponentOf(playerColor)];
 
   const renderAction = (action: PlayerAction) => {
+    return action === 'done' ? '✔' : '…';
+  };
+
+  const renderFactCheck = (factCheck: FactCheck) => {
     switch (phaseNumber) {
-      case 1:
-        return action === 'done' ? '✔' : '…';
-      case 2:
-        return action === 'conductPoll' ? '✔' : '…';
       case 3:
-        return action === 'accuse' || action === 'doubt' || action === 'trust'
-          ? '❓'
-          : '…';
+        return '❓';
       case 4:
-        return action === 'done' ? '✔' : '…';
+        return factCheck;
       default:
-        return '…';
+        return '';
     }
   };
 
@@ -40,11 +40,11 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
         display: 'flex',
         gap: '10px',
         flexDirection: 'column',
-        border: '1px solid black',
         padding: '10px',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={circleStyle}>{renderAction(me.phaseAction)}</div>
         <div
           style={{
             ...nameStyle,
@@ -53,12 +53,13 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
         >
           {displayName}
         </div>
-        <div style={circleStyle}>
-          {renderAction(players[playerColor].phaseAction)}
-        </div>
+        {me.factCheck && (
+          <div style={factCheckStyle}>{renderFactCheck(me.factCheck)}</div>
+        )}
       </div>
       {opponentDisplayName && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={circleStyle}>{renderAction(opponent.phaseAction)}</div>
           <div
             style={{
               ...nameStyle,
@@ -68,9 +69,11 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
           >
             {opponentDisplayName}
           </div>
-          <div style={circleStyle}>
-            {renderAction(players[opponentOf(playerColor)].phaseAction)}
-          </div>
+          {opponent.factCheck && (
+            <div style={factCheckStyle}>
+              {renderFactCheck(opponent.factCheck)}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -97,6 +100,17 @@ const circleStyle: React.CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   fontSize: '14px', // Increased font size for better visibility
+};
+
+const factCheckStyle: React.CSSProperties = {
+  backgroundColor: '#CCCCCC', // Light gray background
+  color: '#333333', // Darker gray text color
+  padding: '5px 10px',
+  borderRadius: '12px',
+  fontWeight: 'bold',
+  textAlign: 'center',
+  minWidth: '60px',
+  fontSize: '12px',
 };
 
 export default NameDisplays;

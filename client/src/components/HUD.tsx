@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { size, useGameState } from '../GameState';
-import { PlayerAction, PlayerColor, Poll, PollRegion } from '../types';
+import {
+  FactCheck,
+  PlayerAction,
+  PlayerColor,
+  Poll,
+  PollRegion,
+} from '../types';
 import { canEndPhase, formatPoll, getRedSample, opponentOf } from '../utils';
 import Button from './Button';
 
@@ -25,8 +31,13 @@ const HUD: React.FC<HUDProps> = ({
   playerColor,
   syncStateToGlobal,
 }) => {
-  const { gameState, setPhaseAction, savePoll, incrementPhaseNumber } =
-    useGameState();
+  const {
+    gameState,
+    setPhaseAction,
+    setFactCheck,
+    savePoll,
+    incrementPhaseNumber,
+  } = useGameState();
   const { players, turnNumber, board, phaseNumber } = gameState;
 
   const [phaseActionTriggered, setPhaseActionTriggered] =
@@ -51,9 +62,16 @@ const HUD: React.FC<HUDProps> = ({
     setNextPhaseTriggered(true);
   };
 
-  const handlePhaseAction = (action: PlayerAction, poll?: Poll) => {
+  const handlePhaseAction = (
+    action: PlayerAction,
+    poll?: Poll,
+    factCheck?: FactCheck
+  ) => {
     if (poll) {
       savePoll(playerColor, poll);
+    }
+    if (factCheck) {
+      setFactCheck(playerColor, factCheck);
     }
     setPhaseAction(playerColor, action);
     setPhaseActionTriggered(true);
@@ -65,13 +83,13 @@ const HUD: React.FC<HUDProps> = ({
     const redPercent = getRedSample(board, pollRegion);
 
     const poll: Poll = { ...pollRegion, redPercent };
-    handlePhaseAction('conductPoll', poll);
+    handlePhaseAction('done', poll);
   };
 
   // Trust, doubt, accuse handlers
-  const handleTrust = () => handlePhaseAction('trust');
-  const handleDoubt = () => handlePhaseAction('doubt');
-  const handleAccuse = () => handlePhaseAction('accuse');
+  const handleTrust = () => handlePhaseAction('done', undefined, 'trust');
+  const handleDoubt = () => handlePhaseAction('done', undefined, 'doubt');
+  const handleAccuse = () => handlePhaseAction('done', undefined, 'accuse');
 
   const handleDone = () => handlePhaseAction('done');
 
@@ -243,7 +261,7 @@ const HUD: React.FC<HUDProps> = ({
                   <Button
                     onClick={() => handleConductPoll()}
                     color={playerColor}
-                    clicked={players[playerColor].phaseAction === 'conductPoll'}
+                    clicked={players[playerColor].phaseAction === 'done'}
                   >
                     Conduct Poll
                   </Button>
@@ -272,7 +290,7 @@ const HUD: React.FC<HUDProps> = ({
                     <Button
                       onClick={handleTrust}
                       color={'green'}
-                      clicked={players[playerColor].phaseAction === 'trust'}
+                      clicked={players[playerColor].factCheck === 'trust'}
                     >
                       Trust
                     </Button>
@@ -282,7 +300,7 @@ const HUD: React.FC<HUDProps> = ({
                     <Button
                       onClick={handleDoubt}
                       color={'orange'}
-                      clicked={players[playerColor].phaseAction === 'doubt'}
+                      clicked={players[playerColor].factCheck === 'doubt'}
                     >
                       Doubt
                     </Button>
@@ -292,7 +310,7 @@ const HUD: React.FC<HUDProps> = ({
                     <Button
                       onClick={handleAccuse}
                       color={'red'}
-                      clicked={players[playerColor].phaseAction === 'accuse'}
+                      clicked={players[playerColor].factCheck === 'accuse'}
                     >
                       Accuse
                     </Button>

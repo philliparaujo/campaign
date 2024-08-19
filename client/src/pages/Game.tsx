@@ -22,6 +22,7 @@ import {
 import { gameOver, opponentOf } from '../utils';
 import GameOverModal from '../components/GameOverModal';
 import NameDisplays from '../components/NameDisplays';
+import GameIdDisplay from '../components/GameIdDisplay';
 
 type GameProps = {
   gameId: GameId;
@@ -288,6 +289,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
           opponentDisplayName={opponentDisplayName}
           playerColor={playerColor}
         />
+        <GameIdDisplay gameId={gameId} />
         <TurnIndicator />
         <div>
           <Button onClick={() => setOpenModal('settings')}>Settings</Button>
@@ -304,7 +306,6 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
       >
         {/* Left Side */}
         <div>
-          <p>{`Game ID: ${gameId}`}</p>
           <PublicOpinion />
           <BoardUI
             playerColor={playerColor}

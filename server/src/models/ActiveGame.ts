@@ -6,6 +6,7 @@ const playerSchema = new Schema({
   // id/phaseAction are not required because mongoose treats '' as not provided
   id: { type: String, default: "" },
   coins: { type: Number, default: startingCoins, required: true },
+  factCheck: { type: String, default: "" },
   phaseAction: { type: String, default: "" },
   pollHistory: { type: Array, default: [], required: true },
 });
