@@ -1,4 +1,4 @@
-const { build, context } = require('esbuild');
+const { context } = require('esbuild');
 const path = require('path');
 const { exec } = require('child_process');
 
@@ -33,7 +33,6 @@ if (process.argv[2] === '--dev') {
   ctx.then(ctx => {
     ctx.rebuild().then(() => {
       startNode();
-
     });
   })
 } else {
