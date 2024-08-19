@@ -9,6 +9,7 @@ import PlayerGameModel from './models/PlayerGame';
 import { createNewGameState } from './shared/GameState';
 import { PlayerColor } from './shared/types';
 import { opponentOf } from './shared/utils';
+import exp from 'constants';
 
 dotenv.config();
 
@@ -379,6 +380,11 @@ io.on('connection', socket => {
     console.log('A user disconnected');
   });
 });
+
+app.get('/api/v1/test', (req, res) => {
+  res.send('Hello World!');
+});
+
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
