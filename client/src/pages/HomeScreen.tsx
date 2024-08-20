@@ -9,6 +9,10 @@ import { GameId, PlayerColor, PlayerId } from '../types';
 import { newGameId, newPlayerId } from '../utils';
 
 import './HomeScreen.css'; // Import the CSS file
+import CreateGameModal from '../components/CreateGameModal';
+import BoardUI from '../components/Board';
+import { size } from '../GameState';
+import JoinGameModal from '../components/JoinGameModal';
 
 function HomeScreen() {
   const {
@@ -24,7 +28,9 @@ function HomeScreen() {
   const [inputGameId, setInputGameId] = useState<GameId>('');
   const [inputPlayerColor, setInputPlayerColor] = useState<PlayerColor>('red');
   const [inputDisplayName, setInputDisplayName] = useState<string>('');
-  const [openModal, setOpenModal] = useState<'rules' | 'settings' | null>(null);
+  const [openModal, setOpenModal] = useState<
+    'rules' | 'settings' | 'create-game' | 'join-game' | null
+  >(null);
 
   const [clientBuildTime, setClientBuildTime] = useState<string>(
     process.env.BUILD_TIME ?? ''
@@ -106,6 +112,54 @@ function HomeScreen() {
     setOpenModal(null);
   };
 
+  const colorSelectSwitch = (
+    <div>
+      <label className="label">Select Color:</label>
+      <div className="switch-container">
+        <div style={{ color: 'red' }}>Join as red</div>
+        <Switch
+          checked={inputPlayerColor === 'blue'}
+          onChange={() =>
+            setInputPlayerColor(inputPlayerColor === 'red' ? 'blue' : 'red')
+          }
+          offColor="#CC0000"
+          onColor="#0059b3"
+          uncheckedIcon={false}
+          checkedIcon={false}
+        />
+        <div style={{ color: 'blue' }}>Join as blue</div>
+      </div>
+    </div>
+  );
+
+  const displayNameSelect = (
+    <div>
+      <label className="label" htmlFor="display-name">
+        Display Name:
+      </label>
+      <input
+        type="text"
+        value={inputDisplayName}
+        size={15}
+        maxLength={15}
+        onChange={e => setInputDisplayName(e.target.value)}
+        className="input-field"
+      />
+    </div>
+  );
+
+  const gameIdSelect = (
+    <input
+      type="text"
+      value={inputGameId}
+      size={4}
+      maxLength={4}
+      placeholder={'Enter Game ID'}
+      onChange={e => setInputGameId(e.target.value.toUpperCase())}
+      className="input-field"
+    />
+  );
+
   return (
     <div className="home-container">
       <div
@@ -116,38 +170,6 @@ function HomeScreen() {
       />
       <div className="overlay" />
       <div className="gradient-overlay" />
-
-      <div className="top-bar">
-        <div className="user-info">
-          <input
-            type="text"
-            value={inputDisplayName}
-            size={15}
-            maxLength={15}
-            onChange={e => setInputDisplayName(e.target.value)}
-            className="input-field"
-          />
-          <div className="switch-container">
-            <div className="switch-container-red">Join as red</div>
-            <Switch
-              checked={inputPlayerColor === 'blue'}
-              onChange={() =>
-                setInputPlayerColor(inputPlayerColor === 'red' ? 'blue' : 'red')
-              }
-              offColor="#CC0000"
-              onColor="#0059b3"
-              uncheckedIcon={false}
-              checkedIcon={false}
-            />
-            <div>Join as blue</div>
-          </div>
-        </div>
-        <div>
-          <Button onClick={() => setOpenModal('settings')}>Settings</Button>
-        </div>
-      </div>
-
-      <h1 className="title">CAMPAIGN</h1>
 
       <RulesModal show={openModal === 'rules'} onClose={handleCloseModal} />
       <SettingsModal
@@ -161,45 +183,68 @@ function HomeScreen() {
           </>
         }
       />
-
-      <div className="buttons">
-        <div className="button-group">
-          <div className="create-game-container">
-            <Button size={'large'} onClick={handleCreateGame} color={'green'}>
-              Create Game
+      <CreateGameModal
+        show={openModal === 'create-game'}
+        onClose={handleCloseModal}
+        content={
+          <>
+            {displayNameSelect}
+            {colorSelectSwitch}
+            <Button color={'green'} onClick={handleCreateGame}>
+              Confirm
             </Button>
-          </div>
-          <div className="join-game-container">
+          </>
+        }
+      />
+      <JoinGameModal
+        show={openModal === 'join-game'}
+        onClose={handleCloseModal}
+        content={
+          <>
+            {displayNameSelect}
+            {colorSelectSwitch}
+            {gameIdSelect}
             <Button
-              size={'large'}
               disabled={inputGameId.length !== 4}
-              onClick={() => handleJoinGame(inputGameId)}
               color={'blue'}
+              onClick={() => handleJoinGame(inputGameId)}
             >
-              Join Game
+              Confirm
             </Button>
-            <input
-              type="text"
-              value={inputGameId}
-              size={4}
-              maxLength={4}
-              placeholder={'Enter Game ID'}
-              onChange={e => setInputGameId(e.target.value.toUpperCase())}
-              style={{
-                padding: '8px',
-                borderRadius: '8px',
-                border: '2px solid #888',
-                textAlign: 'center',
-                width: '60%',
-                marginTop: '10px',
-              }}
-            />
-          </div>
+          </>
+        }
+      />
+
+      <h1 className="title">CAMPAIGN</h1>
+      <div className="buttons">
+        <div>
+          <Button
+            size={'large'}
+            onClick={() => setOpenModal('create-game')}
+            color={'green'}
+          >
+            Create Game
+          </Button>
+        </div>
+        <div>
+          <Button
+            size={'large'}
+            onClick={() => setOpenModal('join-game')}
+            color={'blue'}
+          >
+            Join Game
+          </Button>
         </div>
 
         <div>
           <Button size={'large'} onClick={() => setOpenModal('rules')}>
             Rules
+          </Button>
+        </div>
+
+        <div>
+          <Button size={'large'} onClick={() => setOpenModal('settings')}>
+            Settings
           </Button>
         </div>
       </div>

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './Button.css';
 
 interface ButtonProps {
   onClick: () => void;
@@ -7,6 +8,7 @@ interface ButtonProps {
   size?: 'small' | 'large';
   disabled?: boolean;
   clicked?: boolean;
+  width?: string;
 }
 
 // Color mappings for different button states
@@ -28,6 +30,7 @@ const Button: React.FC<ButtonProps> = ({
   size,
   disabled,
   clicked,
+  width,
 }) => {
   // Lightens the button on hover
   const [isHovered, setIsHovered] = useState(false);
@@ -64,7 +67,7 @@ const Button: React.FC<ButtonProps> = ({
     size === 'small'
       ? '5px 10px'
       : size === 'large'
-        ? '15px 20px'
+        ? '20px 25px'
         : '10px 20px';
 
   const buttonStyle: React.CSSProperties = {
@@ -76,11 +79,12 @@ const Button: React.FC<ButtonProps> = ({
     cursor: disabled || clicked ? 'not-allowed' : 'pointer',
     transition: 'background-color 0.3s ease, transform 0.2s ease',
     transform: isActive ? 'scale(0.98)' : 'scale(1)',
-    fontSize: size === 'large' ? '20px' : '16px',
+    fontSize: size === 'large' ? '24px' : '16px',
   };
 
   return (
     <button
+      className={size === 'large' ? 'large-button' : 'button'}
       style={buttonStyle}
       onClick={onClick}
       onMouseEnter={handleMouseEnter}
