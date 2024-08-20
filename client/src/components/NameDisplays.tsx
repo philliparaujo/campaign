@@ -2,6 +2,7 @@ import React from 'react';
 import { FactCheck, PlayerAction, PlayerColor } from '../types';
 import { accusationSucceeded, opponentOf } from '../utils';
 import { useGameState } from '../GameState';
+import './NameDisplays.css';
 
 interface NameDisplaysProps {
   displayName: string;
@@ -21,16 +22,15 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
   const opponent = players[opponentOf(playerColor)];
 
   const renderAction = (action: PlayerAction) => {
-    return <div style={circleStyle}>{action === 'done' ? '✔' : '…'}</div>;
+    return <div className="circle">{action === 'done' ? '✔' : '…'}</div>;
   };
 
   const renderDisplayName = (displayName: string, color: PlayerColor) => {
     return (
       <div
-        style={{
-          ...nameStyle,
-          backgroundColor: color === 'red' ? '#FF3B3B' : '#3B82FF',
-        }}
+        className={`name-display ${
+          color === 'red' ? 'name-display-red' : 'name-display-blue'
+        }`}
       >
         {displayName}
       </div>
@@ -57,18 +57,12 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
         text = '';
     }
 
-    return factCheck && <div style={factCheckStyle}>{text}</div>;
+    return factCheck && <div className="fact-check">{text}</div>;
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: '10px',
-        flexDirection: 'column',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+    <div className="name-displays-container">
+      <div className="name-display-row">
         {renderAction(me.phaseAction)}
         {renderDisplayName(displayName, playerColor)}
         {renderFactCheck(
@@ -77,7 +71,7 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
         )}
       </div>
       {opponentDisplayName && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div className="name-display-row">
           {renderAction(opponent.phaseAction)}
           {renderDisplayName(opponentDisplayName, opponentOf(playerColor))}
           {renderFactCheck(
@@ -88,39 +82,6 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
       )}
     </div>
   );
-};
-
-// Styles
-const nameStyle: React.CSSProperties = {
-  color: 'white',
-  padding: '10px 20px',
-  borderRadius: '20px',
-  fontWeight: 'bold',
-  textAlign: 'center',
-  minWidth: '80px',
-};
-
-const circleStyle: React.CSSProperties = {
-  backgroundColor: 'black',
-  color: 'white',
-  borderRadius: '50%',
-  width: '30px',
-  height: '30px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  fontSize: '14px',
-};
-
-const factCheckStyle: React.CSSProperties = {
-  backgroundColor: '#CCCCCC',
-  color: '#333333',
-  padding: '5px 10px',
-  borderRadius: '12px',
-  fontWeight: 'bold',
-  textAlign: 'center',
-  minWidth: '60px',
-  fontSize: '12px',
 };
 
 export default NameDisplays;

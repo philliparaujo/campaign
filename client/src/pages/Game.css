@@ -11,6 +11,7 @@
 /* Top Bar Styles */
 .game-top-bar {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
   width: 100%;
   margin-bottom: 20px;
@@ -20,13 +21,21 @@
   display: flex;
   gap: 60px;
   flex-direction: row;
+  margin-bottom: 10px;
+  justify-content: space-around;
 }
 
 .game-leftmost-section {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  flex-direction: row;
+  align-items: flex-start;
   gap: 10px;
+}
+
+.game-leftmost-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 /* Divider Styles */
@@ -38,13 +47,9 @@
 /* Content Section Styles */
 .game-content {
   display: flex;
+  flex-direction: column;
   width: 100%;
-  gap: 80px;
-}
-
-/* Right Side Styles */
-.game-right-side {
-  width: 650px;
+  gap: 20px;
 }
 
 .game-visibility {
@@ -53,4 +58,10 @@
 
 .game-hidden {
   visibility: hidden;
+}
+
+@media only screen and (max-width: 1023px) and (orientation: portrait) {
+  .game-top-bar {
+    margin-bottom: 0;
+  }
 }

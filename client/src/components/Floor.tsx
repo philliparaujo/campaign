@@ -1,6 +1,7 @@
 import React from 'react';
 import { Influence } from '../types';
 import { useGameState } from '../GameState';
+import './Board.css';
 
 interface FloorUIProps {
   influence: Influence;
@@ -12,31 +13,18 @@ const FloorUI: React.FC<FloorUIProps> = ({ influence, cost, onClick }) => {
   const { gameState } = useGameState();
   const { phaseNumber } = gameState;
 
+  const clickableClass =
+    phaseNumber === 1 ? 'floor-ui-clickable' : 'floor-ui-not-allowed';
+
   return (
     <div
+      className={`floor-ui ${clickableClass}`}
       style={{
-        width: `60px`,
-        height: `20px`,
         backgroundColor: influence === '' ? '#aaa' : influence,
-        border: '1px solid #000',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
-        userSelect: 'none',
-        cursor: phaseNumber === 1 ? 'default' : 'not-allowed',
       }}
       onClick={() => (phaseNumber === 1 ? onClick() : undefined)}
     >
-      <p
-        style={{
-          margin: 0,
-          fontSize: '14px',
-          textAlign: 'right',
-          color: 'black',
-        }}
-      >
-        {cost}
-      </p>
+      <p className="floor-ui-cost">{cost}</p>
     </div>
   );
 };

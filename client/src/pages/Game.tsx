@@ -236,42 +236,33 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
       <div className="game-top-bar">
         <div className="game-top-left-section">
           <div className="game-leftmost-section">
-            <Button
-              onClick={() =>
-                tryToLeaveGame(gameId, playerId, navigate, leaveGame)
-              }
-            >
-              Leave Game
-            </Button>
-            <GameIdDisplay gameId={gameId} />
+            <NameDisplays
+              displayName={displayName}
+              opponentDisplayName={opponentDisplayName}
+              playerColor={playerColor}
+            />
+            <div>
+              <div className="game-leftmost-buttons">
+                <Button
+                  onClick={() =>
+                    tryToLeaveGame(gameId, playerId, navigate, leaveGame)
+                  }
+                >
+                  Leave Game
+                </Button>
+                <Button onClick={() => setOpenModal('settings')}>
+                  Settings
+                </Button>
+              </div>
+              <GameIdDisplay gameId={gameId} />
+            </div>
           </div>
-          <NameDisplays
-            displayName={displayName}
-            opponentDisplayName={opponentDisplayName}
-            playerColor={playerColor}
-          />
         </div>
         <TurnIndicator />
-        <div>
-          <Button onClick={() => setOpenModal('settings')}>Settings</Button>
-        </div>
       </div>
 
       <hr className="game-divider" />
       <div className="game-content">
-        {/* Left Side */}
-        <div>
-          <PublicOpinion />
-          <BoardUI
-            playerColor={playerColor}
-            pollInputs={pollInputs}
-            setPollInputs={setPollInputs}
-            showRoadInfluence={showRoadInfluence}
-            settingPollRegion={settingPollRegion}
-            setSettingPollRegion={setSettingPollRegion}
-          />
-        </div>
-
         {/* Right Side */}
         <div className="game-right-side">
           <div
@@ -298,6 +289,25 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
             }
             gameId={gameId}
             playerId={playerId}
+          />
+        </div>
+
+        {/* Left Side */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <PublicOpinion />
+          <BoardUI
+            playerColor={playerColor}
+            pollInputs={pollInputs}
+            setPollInputs={setPollInputs}
+            showRoadInfluence={showRoadInfluence}
+            settingPollRegion={settingPollRegion}
+            setSettingPollRegion={setSettingPollRegion}
           />
         </div>
       </div>

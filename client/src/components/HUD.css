@@ -1,0 +1,113 @@
+.hud-container {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.hud-game-state {
+  padding: 10px;
+  border: 2px solid #333;
+  border-radius: 8px;
+  background-color: #282c34;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  color: #fff;
+}
+
+.hud-section {
+  text-align: center;
+  margin-right: 20px;
+}
+
+.hud-section h3 {
+  margin: 5px;
+}
+
+.hud-section-red h3 {
+  color: #ff6666;
+}
+
+.hud-section-blue h3 {
+  color: #6666ff;
+}
+
+.hud-phase-description {
+  text-align: center;
+}
+
+.hud-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.hud-polling {
+  width: 100%;
+  padding: 20px;
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box; /* Ensures padding is included within the width */
+}
+
+.hud-polling.red {
+  border: 2px solid #ff6666;
+  background-color: #ffe5e5;
+}
+
+.hud-polling.blue {
+  border: 2px solid #6666ff;
+  background-color: #e5e5ff;
+}
+
+.hud-polling-inputs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 10px;
+}
+
+.hud-polling-inputs > div:not(:last-child) {
+  margin-right: 10px; /* Add some space between the two input containers */
+}
+
+.hud-polling-inputs label {
+  margin-bottom: 5px; /* Add some space below the label */
+}
+
+.hud-polling-inputs input {
+  width: 100%; /* Make the input take up the full width of its container */
+  padding: 5px;
+  box-sizing: border-box; /* Ensure padding is included in the width */
+}
+
+.hud-polling-buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  align-items: center;
+  gap: 10px; /* Space between the buttons */
+}
+
+.hud-polling-buttons button {
+  flex: 1; /* Make each button take up half of the container */
+  padding: 10px; /* Add some padding inside the buttons */
+  box-sizing: border-box; /* Ensure padding is included in the width */
+}
+
+.hud-fact-checking {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: 25px;
+}
+
+.hud-fact-checking-title {
+  color: inherit;
+  text-align: center;
+}
+
+.hud-fact-checking p {
+  margin: 5px 0 0;
+  text-align: center;
+}

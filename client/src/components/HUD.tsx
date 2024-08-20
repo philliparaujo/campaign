@@ -11,6 +11,7 @@ import {
 import { canEndPhase, formatPoll, getRedSample, opponentOf } from '../utils';
 import Button from './Button';
 import { useGlobalState } from '../GlobalState';
+import './HUD.css';
 
 const phaseDescriptions: Record<number, string> = {
   1: 'Rent out building floors for advertising using your coins.',
@@ -54,7 +55,6 @@ const HUD: React.FC<HUDProps> = ({
     useState<boolean>(false);
   const [nextPhaseTriggered, setNextPhaseTriggered] = useState<boolean>(false);
 
-  // Update poll boundary variables when any input's value changes
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     const key = name.split('.')[1];
@@ -72,7 +72,6 @@ const HUD: React.FC<HUDProps> = ({
     setNextPhaseTriggered(true);
   };
 
-  // Sample a population within your boundary and save your poll result
   const handleConductPoll = () => {
     const pollRegion = pollInputs[playerColor];
     const redPercent = getRedSample(board, pollRegion);
@@ -81,7 +80,6 @@ const HUD: React.FC<HUDProps> = ({
     handlePhaseAction('done', poll);
   };
 
-  // Update game state with action, then trigger global sync
   const handlePhaseAction = (
     action: PlayerAction,
     poll?: Poll,
@@ -99,12 +97,10 @@ const HUD: React.FC<HUDProps> = ({
 
   const handleDone = () => handlePhaseAction('done');
 
-  // Different fact-checking handlers
   const handleTrust = () => handlePhaseAction('done', undefined, 'trust');
   const handleDoubt = () => handlePhaseAction('done', undefined, 'doubt');
   const handleAccuse = () => handlePhaseAction('done', undefined, 'accuse');
 
-  // Effect to sync the state globally after any phase action
   useEffect(() => {
     if (phaseActionTriggered || nextPhaseTriggered) {
       updateGame(gameId, gameState)
@@ -119,35 +115,24 @@ const HUD: React.FC<HUDProps> = ({
   }, [phaseActionTriggered, nextPhaseTriggered]);
 
   return (
-    <div style={{ width: '100%', marginBottom: '20px' }}>
+    <div className="hud-container">
       {/* Game state */}
-      <div
-        style={{
-          padding: '10px',
-          border: '2px solid #333',
-          borderRadius: '8px',
-          backgroundColor: '#282c34',
-          display: 'flex',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          color: '#fff',
-        }}
-      >
-        <div style={{ textAlign: 'center', marginRight: '20px' }}>
-          <h3 style={{ color: '#ff6666', margin: '5px' }}>Red Coins</h3>
+      <div className="hud-game-state">
+        <div className="hud-section hud-section-red">
+          <h3>Red Coins</h3>
           <div>
-            <span style={{ margin: '0 10px' }}>{players.red.coins}</span>
+            <span>{players.red.coins}</span>
           </div>
         </div>
 
-        <div style={{ textAlign: 'center', marginRight: '20px' }}>
-          <h3 style={{ color: '#6666ff', margin: '5px' }}>Blue Coins</h3>
+        <div className="hud-section hud-section-blue">
+          <h3>Blue Coins</h3>
           <div>
-            <span style={{ margin: '0 10px' }}>{players.blue.coins}</span>
+            <span>{players.blue.coins}</span>
           </div>
         </div>
 
-        <div style={{ textAlign: 'center' }}>
+        <div className="hud-section">
           <Button
             onClick={handleNextPhase}
             size={'small'}
@@ -159,11 +144,19 @@ const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* Phase description */}
-      <h2 style={{ textAlign: 'center' }}>{phaseDescriptions[phaseNumber]}</h2>
+      <h2 className="hud-phase-description">
+        {phaseDescriptions[phaseNumber]}
+      </h2>
 
       {/* Done button */}
       {(phaseNumber === 1 || phaseNumber === 4) && (
-        <div>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            flexDirection: 'column',
+          }}
+        >
           <Button
             onClick={handleDone}
             disabled={gameState.players[playerColor].coins < 0}
@@ -176,32 +169,14 @@ const HUD: React.FC<HUDProps> = ({
 
       {/* Turn actions */}
       {(phaseNumber === 2 || phaseNumber === 3) && (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginTop: '20px',
-          }}
-        >
+        <div className="hud-actions">
           <div
-            style={{
-              width: '100%',
-              padding: '20px',
-              border: `2px solid ${playerColor}`,
-              borderRadius: '10px',
-              backgroundColor: playerColor === 'red' ? '#ffe5e5' : '#e5e5ff',
-            }}
+            className={`hud-polling ${playerColor === 'red' ? 'red' : 'blue'}`}
           >
             {/* Set poll region and conduct poll */}
             {phaseNumber === 2 && (
               <>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-around',
-                    marginBottom: '10px',
-                  }}
-                >
+                <div className="hud-polling-inputs">
                   <div>
                     <label>Start Row: </label>
                     <input
@@ -209,7 +184,6 @@ const HUD: React.FC<HUDProps> = ({
                       name={`${playerColor}.startRow`}
                       value={pollInputs[playerColor]['startRow']}
                       onChange={handleInputChange}
-                      style={{ width: '50px', marginRight: '10px' }}
                     />
                   </div>
                   <div>
@@ -219,17 +193,10 @@ const HUD: React.FC<HUDProps> = ({
                       name={`${playerColor}.startCol`}
                       value={pollInputs[playerColor]['startCol']}
                       onChange={handleInputChange}
-                      style={{ width: '50px', marginRight: '10px' }}
                     />
                   </div>
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-around',
-                    marginBottom: '10px',
-                  }}
-                >
+                <div className="hud-polling-inputs">
                   <div>
                     <label>End Row: </label>
                     <input
@@ -237,7 +204,6 @@ const HUD: React.FC<HUDProps> = ({
                       name={`${playerColor}.endRow`}
                       value={pollInputs[playerColor]['endRow']}
                       onChange={handleInputChange}
-                      style={{ width: '50px', marginRight: '10px' }}
                     />
                   </div>
                   <div>
@@ -247,18 +213,10 @@ const HUD: React.FC<HUDProps> = ({
                       name={`${playerColor}.endCol`}
                       value={pollInputs[playerColor]['endCol']}
                       onChange={handleInputChange}
-                      style={{ width: '50px', marginRight: '10px' }}
                     />
                   </div>
                 </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    width: '100%',
-                    alignItems: 'center',
-                  }}
-                >
+                <div className="hud-polling-buttons">
                   <Button
                     onClick={() => {
                       setSettingPollRegion(playerColor);
@@ -266,7 +224,7 @@ const HUD: React.FC<HUDProps> = ({
                     color={playerColor}
                     disabled={settingPollRegion === playerColor}
                   >
-                    Select poll region
+                    Select region
                   </Button>
                   <Button
                     onClick={() => handleConductPoll()}
@@ -282,21 +240,14 @@ const HUD: React.FC<HUDProps> = ({
             {/* Fact-check opponent's poll */}
             {phaseNumber === 3 && (
               <>
-                <h3 style={{ color: playerColor, textAlign: 'center' }}>
+                <h3 className="hud-fact-checking-title">
                   {formatPoll(
                     players[opponentOf(playerColor)].pollHistory[turnNumber][
                       'redPercent'
                     ]
                   )}
                 </h3>
-                <div
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    justifyContent: 'center',
-                    gap: '25px',
-                  }}
-                >
+                <div className="hud-fact-checking">
                   <div>
                     <Button
                       onClick={handleTrust}

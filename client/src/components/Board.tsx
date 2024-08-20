@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { size, useGameState } from '../GameState';
 import { Cell, PlayerColor, PollRegion } from '../types';
 import BuildingUI from './Building';
 import RoadUI from './Road';
+import './Board.css';
 
 interface BoardUIProps {
   pollInputs: Record<PlayerColor, PollRegion>;
@@ -28,21 +29,22 @@ const BoardUI: React.FC<BoardUIProps> = ({
   const { gameState } = useGameState();
   const { board, phaseNumber } = gameState;
 
-  const cellSize = 100;
-
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const myPollInputs = pollInputs[playerColor];
 
-  // return a CSS style used for formatting poll boundaries
+  useEffect(() => {
+    document.documentElement.style.setProperty('--board-size', `${size}`);
+  }, []);
+
   const getBoundaryStyle = (): React.CSSProperties => {
     const { startRow, startCol, endRow, endCol } = myPollInputs;
 
     return {
       position: 'absolute',
-      top: startRow * cellSize,
-      left: startCol * cellSize,
-      width: (endCol - startCol + 1) * cellSize,
-      height: (endRow - startRow + 1) * cellSize,
+      top: `calc(${startRow} * var(--cell-size))`,
+      left: `calc(${startCol} * var(--cell-size))`,
+      width: `calc((${endCol} - ${startCol} + 1) * var(--cell-size))`,
+      height: `calc((${endRow} - ${startRow} + 1) * var(--cell-size))`,
       border: `2px solid ${playerColor}`,
       boxSizing: 'border-box',
       pointerEvents: 'none',
@@ -53,7 +55,6 @@ const BoardUI: React.FC<BoardUIProps> = ({
     };
   };
 
-  /* For poll region setting */
   const handleMouseDown = (rowIndex: number, colIndex: number) => {
     if (settingPollRegion !== null) {
       setIsDragging(true);
@@ -109,37 +110,13 @@ const BoardUI: React.FC<BoardUIProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: 'relative',
-        width: size * cellSize,
-        height: size * cellSize,
-        paddingBottom: '10px',
-      }}
-      onMouseUp={handleMouseUp}
-    >
-      <div
-        style={{
-          display: 'grid',
-          width: size * cellSize,
-          height: size * cellSize,
-          gridTemplateColumns: `repeat(${size}, 1fr)`,
-          gridGap: '0px',
-        }}
-      >
+    <div className="board-container" onMouseUp={handleMouseUp}>
+      <div className="board-grid">
         {board.map((row: Cell[], rowIndex) =>
           row.map((cell, colIndex) => (
             <div
               key={`${rowIndex}-${colIndex}`}
-              style={{
-                width: cellSize,
-                height: cellSize,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: '1px solid #000',
-                boxSizing: 'border-box',
-              }}
+              className="board-cell"
               onMouseDown={() => handleMouseDown(rowIndex, colIndex)}
               onMouseEnter={() => handleMouseEnter(rowIndex, colIndex)}
             >

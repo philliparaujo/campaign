@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameState } from '../GameState';
 import { formatPublicOpinion } from '../utils';
+import './PublicOpinion.css';
 
 interface PublicOpinionProps {}
 
@@ -18,10 +19,10 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
     publicOpinionHistory[prevTurnNumber]?.redPublicOpinion[prevPhaseNumber - 1];
 
   return (
-    <div>
+    <div className="public-opinion-container">
       {/* Public opinion header and result */}
-      <div style={{ display: 'flex', flexDirection: 'row' }}>
-        <h3 style={{ paddingRight: '22.5%' }}>Public Opinion:</h3>
+      <div className="public-opinion-header">
+        <h2>Public Opinion:</h2>
         {formatPublicOpinion(
           redPublicOpinion,
           prevRedPublicOpinion,
@@ -31,34 +32,16 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
 
       {/* Shows visual bars for public opinion */}
       {redPublicOpinion !== undefined && (
-        <>
+        <div className="public-opinion-bars">
           <div
-            style={{
-              borderRadius: '5px',
-              display: 'flex',
-              marginBottom: '10px',
-            }}
-          >
-            <div
-              style={{
-                height: '20px',
-                backgroundColor: 'red',
-                borderRadius: '0px',
-                transition: 'width 2.0s',
-                width: `${redPublicOpinion * 100}%`,
-              }}
-            ></div>
-            <div
-              style={{
-                height: '20px',
-                backgroundColor: 'blue',
-                borderRadius: '0px',
-                transition: 'width 2.0s',
-                width: `${bluePublicOpinion * 100}%`,
-              }}
-            ></div>
-          </div>
-        </>
+            className="public-opinion-bar-red"
+            style={{ width: `${redPublicOpinion * 100}%` }}
+          ></div>
+          <div
+            className="public-opinion-bar-blue"
+            style={{ width: `${bluePublicOpinion * 100}%` }}
+          ></div>
+        </div>
       )}
     </div>
   );

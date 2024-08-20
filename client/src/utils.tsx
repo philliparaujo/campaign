@@ -202,11 +202,12 @@ export const formatPublicOpinion = (
   return (
     <div
       style={{
-        width: '50%',
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'flex-end',
         gap: '10px',
+        textAlign: 'right',
+        alignSelf: 'right',
       }}
     >
       <h3

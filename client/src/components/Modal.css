@@ -1,6 +1,6 @@
 /* Default Modal Styles */
 .modal-overlay {
-  position: fixed;
+  position: absolute;
   top: 0;
   left: 0;
   width: 100%;
@@ -37,7 +37,7 @@
 
 /* Mobile Styles - Landscape and Portrait */
 @media only screen and (max-width: 1023px) and (orientation: landscape),
-  only screen and (max-width: 767px) and (orientation: portrait) {
+  only screen and (max-width: 1023px) and (orientation: portrait) {
   .modal-content {
     max-width: 90%; /* Adjust width for smaller screens */
     max-height: 90%; /* Adjust height for smaller screens */

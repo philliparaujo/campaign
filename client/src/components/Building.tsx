@@ -100,13 +100,9 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   return (
     <div
       style={{
-        width: `60px`,
-        height: `${height * 20}px`,
-        border: '1px solid #000',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'flex-end',
+        height: `${height} * var(--floor-height)}px`,
       }}
+      className="building-ui"
     >
       {floors.map((floor, floorIndex) => (
         <FloorUI

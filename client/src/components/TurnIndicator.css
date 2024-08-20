@@ -1,0 +1,13 @@
+.turn-indicator {
+  font-size: 3rem;
+  font-weight: bold;
+  color: black;
+  text-align: center;
+}
+
+@media only screen and (max-width: 1023px) and (orientation: portrait) {
+  .turn-indicator {
+    font-size: 1.5rem;
+    margin-bottom: 0;
+  }
+}
