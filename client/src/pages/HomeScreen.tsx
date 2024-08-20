@@ -128,7 +128,7 @@ function HomeScreen() {
             className="input-field"
           />
           <div className="switch-container">
-            <div>Join as red</div>
+            <div className="switch-container-red">Join as red</div>
             <Switch
               checked={inputPlayerColor === 'blue'}
               onChange={() =>
@@ -164,28 +164,20 @@ function HomeScreen() {
 
       <div className="buttons">
         <div className="button-group">
-          <div>
+          <div className="create-game-container">
             <Button size={'large'} onClick={handleCreateGame} color={'green'}>
               Create Game
             </Button>
           </div>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              marginLeft: '10px',
-            }}
-          >
-            <div style={{ marginBottom: '10px' }}>
-              <Button
-                size={'large'}
-                disabled={inputGameId.length !== 4}
-                onClick={() => handleJoinGame(inputGameId)}
-                color={'blue'}
-              >
-                Join Game
-              </Button>
-            </div>
+          <div className="join-game-container">
+            <Button
+              size={'large'}
+              disabled={inputGameId.length !== 4}
+              onClick={() => handleJoinGame(inputGameId)}
+              color={'blue'}
+            >
+              Join Game
+            </Button>
             <input
               type="text"
               value={inputGameId}
@@ -198,6 +190,8 @@ function HomeScreen() {
                 borderRadius: '8px',
                 border: '2px solid #888',
                 textAlign: 'center',
+                width: '60%',
+                marginTop: '10px',
               }}
             />
           </div>

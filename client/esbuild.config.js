@@ -7,17 +7,18 @@ const apiPort = 5000;
 const buildTime = new Date().toUTCString();
 
 const generateIndexHtmlPlugin = {
-  name: 'generate-html-plugin',
+  name: "generate-html-plugin",
   setup(build) {
     build.onEnd(() => {
-      console.log('Generating index.html')
-      const indexHtml = fs.readFileSync('index.html')
+      console.log("Generating index.html");
+      const indexHtml = fs
+        .readFileSync("index.html")
         .toString()
-        .replaceAll('{{NOW}}', Date.now())
-      fs.writeFileSync(path.join('dist', 'index.html'), indexHtml)
-    })
-  }
-}
+        .replaceAll("{{NOW}}", Date.now());
+      fs.writeFileSync(path.join("dist", "index.html"), indexHtml);
+    });
+  },
+};
 
 const ctx = context({
   entryPoints: ["./src/index.tsx"], // Entry point of your React app
