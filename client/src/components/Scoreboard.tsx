@@ -71,6 +71,7 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
       {phaseNumber === 4 && (
         <>
           {truePollResults}
+          <hr />
           {reportedPollResults}
         </>
       )}

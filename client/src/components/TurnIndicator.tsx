@@ -10,10 +10,6 @@ const TurnIndicator: React.FC<TurnIndicatorProps> = () => {
   return (
     <div
       style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100%',
         fontSize: '3rem',
         fontWeight: 'bold',
         color: 'black',

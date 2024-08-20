@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { maxRoadsAllowed, maxTurns, size } from './GameState';
 import {
   Board,
+  FactCheck,
   Floor,
   GameId,
   GameState,
@@ -185,7 +186,8 @@ export const formatPoll = (redPercent: number) => {
 // Turn public opinion percentage into color-coded final result
 export const formatPublicOpinion = (
   publicOpinion: number,
-  prevPublicOpinion: number
+  prevPublicOpinion: number,
+  phaseNumber: number
 ) => {
   const winningColor = publicOpinion >= 0.5 ? 'Red' : 'Blue';
   const percentChange = (publicOpinion - prevPublicOpinion) * 200;
@@ -214,9 +216,11 @@ export const formatPublicOpinion = (
       >
         {calculatePollResult(publicOpinion)}
       </h3>
-      <h5
-        style={{ color: winningColor }}
-      >{`(${sign}${Math.abs(percentChange).toFixed(1)}% change)`}</h5>
+      {phaseNumber >= 3 && (
+        <h5
+          style={{ color: winningColor }}
+        >{`(${sign}${Math.abs(percentChange).toFixed(1)}% change)`}</h5>
+      )}
     </div>
   );
 };
@@ -436,10 +440,28 @@ export const canEndPhase = (gameState: GameState): boolean => {
   );
 };
 
-/* If poll within 5% of true value, lose 5% public opinion;
-   otherwise, gain 5% public opinion. */
+/* Handling fact checking */
 const doubtPercent = 0.025;
 const doubtPenalty = 0.025;
+const accusePercent = 0.05;
+const accusePenalty = 0.05;
+
+export const accusationSucceeded = (
+  factCheck: FactCheck,
+  truePercent: number,
+  pollPercent: number
+): boolean => {
+  let succeeded = true;
+  if (factCheck === 'doubt') {
+    succeeded = Math.abs(pollPercent - truePercent) >= doubtPercent;
+  } else if (factCheck === 'accuse') {
+    succeeded = Math.abs(pollPercent - truePercent) >= accusePercent;
+  }
+  return succeeded;
+};
+
+/* If poll within 5% of true value, lose 5% public opinion;
+   otherwise, gain 5% public opinion. */
 export const handleDoubtPoll = (
   playerColor: PlayerColor,
   gameState: GameState
@@ -453,17 +475,15 @@ export const handleDoubtPoll = (
       : players.red.pollHistory[turnNumber];
   let pollPercent = poll['redPercent'];
 
-  if (Math.abs(pollPercent - truePercent) < doubtPercent) {
-    return playerColor === 'red' ? -doubtPenalty : doubtPenalty;
-  } else {
+  if (accusationSucceeded('doubt', truePercent, pollPercent)) {
     return playerColor === 'red' ? doubtPenalty : -doubtPenalty;
+  } else {
+    return playerColor === 'red' ? -doubtPenalty : doubtPenalty;
   }
 };
 
 /* If poll within 10% of true value, lose 10% public opinion;
    otherwise, their poll gets thrown out (or gain 10% public opinion). */
-const accusePercent = 0.05;
-const accusePenalty = 0.05;
 export const handleAccusePoll = (
   playerColor: PlayerColor,
   gameState: GameState
@@ -477,10 +497,10 @@ export const handleAccusePoll = (
       : players.red.pollHistory[turnNumber];
   let pollPercent = poll['redPercent'];
 
-  if (Math.abs(pollPercent - truePercent) < accusePercent) {
-    return playerColor === 'red' ? -accusePenalty : accusePenalty;
-  } else {
+  if (accusationSucceeded('accuse', truePercent, pollPercent)) {
     return playerColor === 'red' ? accusePenalty : -accusePenalty;
+  } else {
+    return playerColor === 'red' ? -accusePenalty : accusePenalty;
   }
 };
 

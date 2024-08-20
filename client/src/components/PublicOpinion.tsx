@@ -22,7 +22,11 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
       {/* Public opinion header and result */}
       <div style={{ display: 'flex', flexDirection: 'row' }}>
         <h3 style={{ paddingRight: '22.5%' }}>Public Opinion:</h3>
-        {formatPublicOpinion(redPublicOpinion, prevRedPublicOpinion)}
+        {formatPublicOpinion(
+          redPublicOpinion,
+          prevRedPublicOpinion,
+          phaseNumber
+        )}
       </div>
 
       {/* Shows visual bars for public opinion */}

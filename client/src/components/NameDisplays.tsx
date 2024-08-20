@@ -1,6 +1,6 @@
 import React from 'react';
 import { FactCheck, PlayerAction, PlayerColor } from '../types';
-import { opponentOf } from '../utils';
+import { accusationSucceeded, opponentOf } from '../utils';
 import { useGameState } from '../GameState';
 
 interface NameDisplaysProps {
@@ -15,7 +15,7 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
   playerColor,
 }) => {
   const { gameState } = useGameState();
-  const { players, phaseNumber } = gameState;
+  const { players, phaseNumber, turnNumber, publicOpinionHistory } = gameState;
 
   const me = players[playerColor];
   const opponent = players[opponentOf(playerColor)];
@@ -37,14 +37,21 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
     );
   };
 
-  const renderFactCheck = (factCheck: FactCheck) => {
+  const renderFactCheck = (factCheck: FactCheck, opponentPercent: number) => {
     let text;
     switch (phaseNumber) {
       case 3:
         text = '❓';
         break;
       case 4:
-        text = factCheck.toUpperCase();
+        const truePercent =
+          publicOpinionHistory[turnNumber]['trueRedPercent'] ?? 0.5;
+        let succeeded = accusationSucceeded(
+          factCheck,
+          truePercent,
+          opponentPercent
+        );
+        text = `${succeeded ? '✔️' : '❌'} ${factCheck.toUpperCase()}`;
         break;
       default:
         text = '';
@@ -59,19 +66,24 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
         display: 'flex',
         gap: '10px',
         flexDirection: 'column',
-        padding: '10px',
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
         {renderAction(me.phaseAction)}
         {renderDisplayName(displayName, playerColor)}
-        {renderFactCheck(me.factCheck)}
+        {renderFactCheck(
+          me.factCheck,
+          opponent.pollHistory[turnNumber]?.['redPercent'] ?? 0.5
+        )}
       </div>
       {opponentDisplayName && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {renderAction(opponent.phaseAction)}
           {renderDisplayName(opponentDisplayName, opponentOf(playerColor))}
-          {renderFactCheck(opponent.factCheck)}
+          {renderFactCheck(
+            opponent.factCheck,
+            me.pollHistory[turnNumber]?.['redPercent'] ?? 0.5
+          )}
         </div>
       )}
     </div>

@@ -14,13 +14,12 @@ const GameIdDisplay: React.FC<GameIdDisplayProps> = ({ gameId }) => {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100%',
-        fontSize: '1.5rem',
+        fontSize: '1rem',
         fontWeight: 'bold',
         color: '#555',
       }}
     >
-      <span>Game ID:</span>
-      <span>{gameId}</span>
+      <span>Game ID: {gameId}</span>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BoardUI from '../components/Board';
 import Button from '../components/Button';
@@ -23,6 +23,7 @@ import {
   PollRegion,
 } from '../types';
 import { gameOver, saveGameInfo, tryToLeaveGame } from '../utils';
+import './Game.css'; // Import the CSS file
 
 const defaultPollRegion: PollRegion = {
   startRow: 0,
@@ -204,16 +205,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   }, [pendingUpdate, gameId, gameState, updateGame]);
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px',
-        boxSizing: 'border-box',
-      }}
-    >
+    <div className="game-container">
       {/* Modal will be shown when isModalOpen is true */}
       <RulesModal show={openModal === 'rules'} onClose={handleCloseModal} />
       <SettingsModal
@@ -241,49 +233,32 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
         }
       />
 
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          width: '100%',
-          marginBottom: '20px',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <Button
-            onClick={() =>
-              tryToLeaveGame(gameId, playerId, navigate, leaveGame)
-            }
-          >
-            Leave Game
-          </Button>
+      <div className="game-top-bar">
+        <div className="game-top-left-section">
+          <div className="game-leftmost-section">
+            <Button
+              onClick={() =>
+                tryToLeaveGame(gameId, playerId, navigate, leaveGame)
+              }
+            >
+              Leave Game
+            </Button>
+            <GameIdDisplay gameId={gameId} />
+          </div>
+          <NameDisplays
+            displayName={displayName}
+            opponentDisplayName={opponentDisplayName}
+            playerColor={playerColor}
+          />
         </div>
-        <NameDisplays
-          displayName={displayName}
-          opponentDisplayName={opponentDisplayName}
-          playerColor={playerColor}
-        />
-        <GameIdDisplay gameId={gameId} />
         <TurnIndicator />
         <div>
           <Button onClick={() => setOpenModal('settings')}>Settings</Button>
         </div>
       </div>
 
-      <hr style={{ width: '100%', marginBottom: '20px' }} />
-      <div
-        style={{
-          display: 'flex',
-          width: '100%',
-          gap: '80px',
-        }}
-      >
+      <hr className="game-divider" />
+      <div className="game-content">
         {/* Left Side */}
         <div>
           <PublicOpinion />
@@ -298,44 +273,33 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
         </div>
 
         {/* Right Side */}
-        {
+        <div className="game-right-side">
           <div
-            style={{
-              width: '650px',
-            }}
+            className={gameOver(gameState) ? 'game-hidden' : 'game-visibility'}
           >
-            <div
-              style={{
-                visibility: gameOver(gameState) ? 'hidden' : 'visible',
-              }}
-            >
-              <PhaseIndicator />
-              <HUD
-                playerColor={playerColor}
-                gameId={gameId}
-                pollInputs={pollInputs}
-                setPollInputs={setPollInputs}
-                settingPollRegion={settingPollRegion}
-                setSettingPollRegion={setSettingPollRegion}
-              />
-              <Scoreboard
-                playerColor={playerColor}
-                showTruePolling={showStats}
-              />
-            </div>
-
-            <GameOverModal
-              show={gameOver(gameState)}
-              finalRedPercent={
-                publicOpinionHistory[turnNumber]?.redPublicOpinion[
-                  phaseNumber - 1
-                ]
-              }
+            <PhaseIndicator />
+            <HUD
+              playerColor={playerColor}
               gameId={gameId}
-              playerId={playerId}
+              pollInputs={pollInputs}
+              setPollInputs={setPollInputs}
+              settingPollRegion={settingPollRegion}
+              setSettingPollRegion={setSettingPollRegion}
             />
+            <Scoreboard playerColor={playerColor} showTruePolling={showStats} />
           </div>
-        }
+
+          <GameOverModal
+            show={gameOver(gameState)}
+            finalRedPercent={
+              publicOpinionHistory[turnNumber]?.redPublicOpinion[
+                phaseNumber - 1
+              ]
+            }
+            gameId={gameId}
+            playerId={playerId}
+          />
+        </div>
       </div>
     </div>
   );

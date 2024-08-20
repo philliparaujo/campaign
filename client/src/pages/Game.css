@@ -1,0 +1,58 @@
+/* Game.css */
+
+/* Container Styles */
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+/* Top Bar Styles */
+.game-top-bar {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.game-top-left-section {
+  display: flex;
+  gap: 60px;
+  flex-direction: row;
+}
+
+.game-leftmost-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Divider Styles */
+.game-divider {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Content Section Styles */
+.game-content {
+  display: flex;
+  width: 100%;
+  gap: 80px;
+}
+
+/* Right Side Styles */
+.game-right-side {
+  width: 650px;
+}
+
+.game-visibility {
+  visibility: visible;
+}
+
+.game-hidden {
+  visibility: hidden;
+}
