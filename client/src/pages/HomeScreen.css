@@ -139,6 +139,11 @@
 }
 
 @media only screen and (max-width: 1023px) and (orientation: portrait) {
+  .home-container {
+    overflow: hidden;
+    max-height: 100vh;
+  }
+
   .title {
     margin-top: 100px;
     font-size: 60px;

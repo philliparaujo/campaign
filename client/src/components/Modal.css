@@ -1,0 +1,53 @@
+/* Default Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  position: relative;
+  min-width: 300px;
+  max-width: 60%;
+  max-height: 80%; /* Ensure content does not overflow */
+  overflow-y: auto; /* Make modal content scrollable if it overflows */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+/* Mobile Styles - Landscape and Portrait */
+@media only screen and (max-width: 1023px) and (orientation: landscape),
+  only screen and (max-width: 767px) and (orientation: portrait) {
+  .modal-content {
+    max-width: 90%; /* Adjust width for smaller screens */
+    max-height: 90%; /* Adjust height for smaller screens */
+    padding: 15px; /* Reduce padding to fit content better */
+    border-radius: 4px; /* Adjust border radius for smaller screens */
+  }
+
+  /* Ensure the close button is always accessible */
+  .modal-close-button {
+    top: 10px;
+    right: 10px;
+    font-size: 2.5rem; /* Smaller close button for mobile */
+  }
+}

@@ -1,0 +1,43 @@
+.rules-modal-container {
+  padding: 20px;
+  text-align: center;
+}
+
+.rules-modal-title {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.rules-modal-columns {
+  display: flex;
+  justify-content: space-between;
+}
+
+.rules-modal-column {
+  flex: 1;
+  padding: 0 20px;
+}
+
+.rules-modal-section {
+  border: 1px solid #000;
+  border-radius: 8px;
+  padding: 10px;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+}
+
+.rules-modal-text {
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+/* Mobile Portrait: One Column Layout */
+@media only screen and (max-width: 1023px) and (orientation: portrait) {
+  .rules-modal-columns {
+    flex-direction: column;
+  }
+
+  .rules-modal-column {
+    padding: 0;
+  }
+}
