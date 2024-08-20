@@ -27,6 +27,7 @@ const ctx = context({
     ".js": "jsx", // Use 'jsx' loader for JavaScript files
     ".tsx": "tsx", // Use 'tsx' loader for TypeScript files
     ".ts": "ts", // Use 'ts' loader for TypeScript files
+    ".jpg": "file", // Use 'file' loader for image files
   },
   define: {
     "process.env.NODE_ENV": '"production"', // Set environment variable for production

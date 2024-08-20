@@ -3,10 +3,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Switch from 'react-switch';
 import Button from '../components/Button';
 import RulesModal from '../components/RulesModal';
+import SettingsModal from '../components/SettingsModal';
 import { socket, useGlobalState } from '../GlobalState';
 import { GameId, PlayerColor, PlayerId } from '../types';
 import { newGameId, newPlayerId } from '../utils';
-import SettingsModal from '../components/SettingsModal';
+
+import './HomeScreen.css'; // Import the CSS file
 
 function HomeScreen() {
   const {
@@ -105,55 +107,28 @@ function HomeScreen() {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px',
-        boxSizing: 'border-box',
-      }}
-    >
+    <div className="home-container">
       <div
+        className="background-image"
         style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          width: '100%',
-          marginBottom: '20px',
+          backgroundImage: `url(${require('../assets/cover.jpg')})`,
         }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
+      />
+      <div className="overlay" />
+      <div className="gradient-overlay" />
+
+      <div className="top-bar">
+        <div className="user-info">
           <input
             type="text"
             value={inputDisplayName}
             size={15}
             maxLength={15}
             onChange={e => setInputDisplayName(e.target.value)}
-            style={{
-              color: inputPlayerColor,
-              marginBottom: '10px',
-              padding: '8px',
-              borderRadius: '16px',
-              textAlign: 'center',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-            }}
+            className="input-field"
           />
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'row',
-              gap: '10px',
-              alignItems: 'center',
-            }}
-          >
-            <div style={{ color: 'red' }}>Join as red</div>
+          <div className="switch-container">
+            <div>Join as red</div>
             <Switch
               checked={inputPlayerColor === 'blue'}
               onChange={() =>
@@ -164,7 +139,7 @@ function HomeScreen() {
               uncheckedIcon={false}
               checkedIcon={false}
             />
-            <div style={{ color: 'blue' }}>Join as blue</div>
+            <div>Join as blue</div>
           </div>
         </div>
         <div>
@@ -172,81 +147,70 @@ function HomeScreen() {
         </div>
       </div>
 
-      <h1 style={{ marginBottom: '40px', fontSize: '96px' }}>CAMPAIGN</h1>
+      <h1 className="title">CAMPAIGN</h1>
 
-      {/* Modal will be shown when isModalOpen is true */}
       <RulesModal show={openModal === 'rules'} onClose={handleCloseModal} />
       <SettingsModal
         show={openModal === 'settings'}
         onClose={handleCloseModal}
         buttons={
           <>
-            <Button
-              onClick={handleDeleteAllGames}
-            >{`Delete All Games (${activeGames.length ?? 0})`}</Button>
+            <Button onClick={handleDeleteAllGames}>
+              {`Delete All Games (${activeGames.length ?? 0})`}
+            </Button>
           </>
         }
       />
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'row',
-          marginBottom: '40px',
-        }}
-      >
-        <div style={{ marginRight: '10px' }}>
-          <Button size={'large'} onClick={handleCreateGame}>
-            Create Game
-          </Button>
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            marginLeft: '10px',
-          }}
-        >
-          <div style={{ marginBottom: '10px' }}>
-            <Button
-              size={'large'}
-              disabled={inputGameId.length !== 4}
-              onClick={() => handleJoinGame(inputGameId)}
-            >
-              Join Game
+      <div className="buttons">
+        <div className="button-group">
+          <div>
+            <Button size={'large'} onClick={handleCreateGame} color={'green'}>
+              Create Game
             </Button>
           </div>
-          <input
-            type="text"
-            value={inputGameId}
-            size={4}
-            maxLength={4}
-            onChange={e => setInputGameId(e.target.value.toUpperCase())}
+          <div
             style={{
-              padding: '8px',
-              borderRadius: '8px',
-              border: '2px solid #888',
-              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              marginLeft: '10px',
             }}
-          />
+          >
+            <div style={{ marginBottom: '10px' }}>
+              <Button
+                size={'large'}
+                disabled={inputGameId.length !== 4}
+                onClick={() => handleJoinGame(inputGameId)}
+                color={'blue'}
+              >
+                Join Game
+              </Button>
+            </div>
+            <input
+              type="text"
+              value={inputGameId}
+              size={4}
+              maxLength={4}
+              placeholder={'Enter Game ID'}
+              onChange={e => setInputGameId(e.target.value.toUpperCase())}
+              style={{
+                padding: '8px',
+                borderRadius: '8px',
+                border: '2px solid #888',
+                textAlign: 'center',
+              }}
+            />
+          </div>
+        </div>
+
+        <div>
+          <Button size={'large'} onClick={() => setOpenModal('rules')}>
+            Rules
+          </Button>
         </div>
       </div>
 
-      <div style={{ marginBottom: '20px' }}>
-        <Button size={'large'} onClick={() => setOpenModal('rules')}>
-          Rules
-        </Button>
-      </div>
-
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '10px',
-          right: '10px',
-          fontSize: '12px',
-          color: '#888',
-        }}
-      >
+      <div className="footer">
         <p>Client built: {clientBuildTime}</p>
         <p>Server built: {serverBuildTime}</p>
       </div>

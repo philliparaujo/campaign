@@ -1,0 +1,115 @@
+/* Background Styles */
+.background-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  filter: blur(1px);
+  z-index: -3;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: -2;
+}
+
+.gradient-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(
+    circle at center,
+    rgba(50, 50, 50, 0.4) 20%,
+    rgba(0, 0, 0, 0.1) 100%
+  );
+  z-index: -1;
+}
+
+/* General Layout */
+.home-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px;
+  box-sizing: border-box;
+  position: relative;
+  min-height: 100vh;
+  height: 100%;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+}
+
+.input-field {
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.switch-container {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: center;
+  color: white;
+}
+
+/* Title Styles */
+.title {
+  margin-bottom: 40px;
+  font-size: 96px;
+  color: white;
+  text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.8);
+}
+
+/* Button Layout */
+.buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.button-group {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 40px;
+}
+
+.button-group div {
+  margin-right: 10px;
+}
+
+/* Footer Styles */
+.footer {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  font-size: 12px;
+  color: #888;
+}
