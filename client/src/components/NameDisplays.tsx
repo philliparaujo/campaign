@@ -16,22 +16,41 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
 }) => {
   const { gameState } = useGameState();
   const { players, phaseNumber } = gameState;
+
   const me = players[playerColor];
   const opponent = players[opponentOf(playerColor)];
 
   const renderAction = (action: PlayerAction) => {
-    return action === 'done' ? '✔' : '…';
+    return <div style={circleStyle}>{action === 'done' ? '✔' : '…'}</div>;
+  };
+
+  const renderDisplayName = (displayName: string, color: PlayerColor) => {
+    return (
+      <div
+        style={{
+          ...nameStyle,
+          backgroundColor: color === 'red' ? '#FF3B3B' : '#3B82FF',
+        }}
+      >
+        {displayName}
+      </div>
+    );
   };
 
   const renderFactCheck = (factCheck: FactCheck) => {
+    let text;
     switch (phaseNumber) {
       case 3:
-        return '❓';
+        text = '❓';
+        break;
       case 4:
-        return factCheck;
+        text = factCheck.toUpperCase();
+        break;
       default:
-        return '';
+        text = '';
     }
+
+    return factCheck && <div style={factCheckStyle}>{text}</div>;
   };
 
   return (
@@ -44,36 +63,15 @@ const NameDisplays: React.FC<NameDisplaysProps> = ({
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-        <div style={circleStyle}>{renderAction(me.phaseAction)}</div>
-        <div
-          style={{
-            ...nameStyle,
-            backgroundColor: playerColor === 'red' ? '#FF3B3B' : '#3B82FF',
-          }}
-        >
-          {displayName}
-        </div>
-        {me.factCheck && (
-          <div style={factCheckStyle}>{renderFactCheck(me.factCheck)}</div>
-        )}
+        {renderAction(me.phaseAction)}
+        {renderDisplayName(displayName, playerColor)}
+        {renderFactCheck(me.factCheck)}
       </div>
       {opponentDisplayName && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={circleStyle}>{renderAction(opponent.phaseAction)}</div>
-          <div
-            style={{
-              ...nameStyle,
-              backgroundColor:
-                opponentOf(playerColor) === 'red' ? '#FF3B3B' : '#3B82FF',
-            }}
-          >
-            {opponentDisplayName}
-          </div>
-          {opponent.factCheck && (
-            <div style={factCheckStyle}>
-              {renderFactCheck(opponent.factCheck)}
-            </div>
-          )}
+          {renderAction(opponent.phaseAction)}
+          {renderDisplayName(opponentDisplayName, opponentOf(playerColor))}
+          {renderFactCheck(opponent.factCheck)}
         </div>
       )}
     </div>
@@ -99,12 +97,12 @@ const circleStyle: React.CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  fontSize: '14px', // Increased font size for better visibility
+  fontSize: '14px',
 };
 
 const factCheckStyle: React.CSSProperties = {
-  backgroundColor: '#CCCCCC', // Light gray background
-  color: '#333333', // Darker gray text color
+  backgroundColor: '#CCCCCC',
+  color: '#333333',
   padding: '5px 10px',
   borderRadius: '12px',
   fontWeight: 'bold',

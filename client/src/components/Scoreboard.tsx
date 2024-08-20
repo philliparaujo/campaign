@@ -5,16 +5,12 @@ import { getRedSample, opponentOf } from '../utils';
 import PollResults from './PollResults';
 
 interface ScoreboardProps {
-  showRoadInfluence: boolean;
   showTruePolling: boolean;
-  setShowRoadInfluence: React.Dispatch<React.SetStateAction<boolean>>;
   playerColor: PlayerColor;
 }
 
 const Scoreboard: React.FC<ScoreboardProps> = ({
-  showRoadInfluence,
   showTruePolling,
-  setShowRoadInfluence,
   playerColor,
 }) => {
   const { gameState } = useGameState();
@@ -25,43 +21,57 @@ const Scoreboard: React.FC<ScoreboardProps> = ({
   const trueRedPercent = getRedSample(board, undefined, true);
   const redPercentResult =
     publicOpinionHistory[turnNumber]['trueRedPercent'] || 0.5;
-
   const redPercent = phaseNumber === 4 ? redPercentResult : trueRedPercent;
 
-  return (
-    <div>
-      {/* Reported poll results */}
-      {phaseNumber === 3 &&
-        (players.red.pollHistory.length > turnNumber &&
-        players.blue.pollHistory.length > turnNumber ? (
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}
-          >
-            <PollResults
-              redPercent={
-                players[playerColor].pollHistory[turnNumber]['redPercent']
-              }
-              title={'Your Poll'}
-            />
-            <PollResults
-              redPercent={
-                players[opponentColor].pollHistory[turnNumber]['redPercent']
-              }
-              title={'Opponent Poll'}
-            />
-          </div>
-        ) : (
-          'Polls not reported properly'
-        ))}
+  // UI elements
+  const reportedPollResults =
+    players.red.pollHistory.length > turnNumber &&
+    players.blue.pollHistory.length > turnNumber ? (
+      <div>
+        <PollResults
+          redPercent={
+            players[playerColor].pollHistory[turnNumber]['redPercent']
+          }
+          title={'Your Poll'}
+        />
+        <PollResults
+          redPercent={
+            players[opponentColor].pollHistory[turnNumber]['redPercent']
+          }
+          title={'Opponent Poll'}
+        />
+      </div>
+    ) : (
+      'Polls not reported properly'
+    );
+  const truePollResults = (
+    <PollResults
+      redPercent={redPercent}
+      title={'True Poll Results'}
+      truePoll={true}
+    />
+  );
 
-      {/* True poll results */}
-      {(showTruePolling || phaseNumber === 4) && (
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* Phases 1/2: Only show true results if showTruePolling */}
+      {(phaseNumber === 1 || phaseNumber === 2) &&
+        showTruePolling &&
+        truePollResults}
+
+      {/* Phase 3: Show reported polls, only show true results if showTruePolling */}
+      {phaseNumber === 3 && (
         <>
-          <PollResults
-            redPercent={redPercent}
-            title={'Poll Results'}
-            truePoll={true}
-          />
+          {reportedPollResults}
+          {showTruePolling && truePollResults}
+        </>
+      )}
+
+      {/* Phase 4: Show true results and reported polls below */}
+      {phaseNumber === 4 && (
+        <>
+          {truePollResults}
+          {reportedPollResults}
         </>
       )}
     </div>

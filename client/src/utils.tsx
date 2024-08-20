@@ -7,9 +7,11 @@ import {
   GameState,
   PlayerAction,
   PlayerColor,
+  PlayerId,
   Poll,
   PollRegion,
 } from './types';
+import { NavigateFunction } from 'react-router-dom';
 
 // Generate a random number of building floors
 const maxFloorHeight = 3;
@@ -181,16 +183,41 @@ export const formatPoll = (redPercent: number) => {
 };
 
 // Turn public opinion percentage into color-coded final result
-export const formatPublicOpinion = (publicOpinion: number) => {
+export const formatPublicOpinion = (
+  publicOpinion: number,
+  prevPublicOpinion: number
+) => {
+  const winningColor = publicOpinion >= 0.5 ? 'Red' : 'Blue';
+  const percentChange = (publicOpinion - prevPublicOpinion) * 200;
+
+  let sign;
+  if (winningColor === 'Red') {
+    sign = percentChange >= 0 ? '+' : '-';
+  } else {
+    sign = percentChange <= 0 ? '+' : '-';
+  }
+
   return (
-    <h3
+    <div
       style={{
-        color: publicOpinion >= 0.5 ? 'red' : 'blue',
-        marginBottom: '10px',
+        width: '50%',
+        display: 'flex',
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        gap: '10px',
       }}
     >
-      {calculatePollResult(publicOpinion)}
-    </h3>
+      <h3
+        style={{
+          color: winningColor,
+        }}
+      >
+        {calculatePollResult(publicOpinion)}
+      </h3>
+      <h5
+        style={{ color: winningColor }}
+      >{`(${sign}${Math.abs(percentChange).toFixed(1)}% change)`}</h5>
+    </div>
   );
 };
 
@@ -495,10 +522,46 @@ export const newPlayerId = (): string => {
   return uuidv4();
 };
 
+// Get opponent's color
 export const opponentOf = (playerColor: PlayerColor): PlayerColor => {
   return playerColor === 'red' ? 'blue' : 'red';
 };
 
+// Return whether game is over
 export const gameOver = (gameState: GameState): boolean => {
   return gameState.turnNumber > maxTurns;
+};
+
+// Save game info to local storage
+export const saveGameInfo = (
+  gameId: GameId,
+  playerId: PlayerId,
+  playerColor: PlayerColor,
+  displayName: string
+) => {
+  localStorage.setItem('gameId', gameId);
+  localStorage.setItem('playerId', playerId);
+  localStorage.setItem('playerColor', playerColor);
+  localStorage.setItem('displayName', displayName);
+};
+
+// Leave game and remove game info from local storage
+export const tryToLeaveGame = async (
+  gameId: GameId,
+  playerId: PlayerId,
+  navigate: NavigateFunction,
+  leaveGame: (gameId: GameId, playerId: PlayerId) => Promise<PlayerId>
+) => {
+  try {
+    await leaveGame(gameId, playerId);
+
+    localStorage.removeItem('gameId');
+    localStorage.removeItem('playerId');
+    localStorage.removeItem('playerColor');
+    localStorage.removeItem('displayName');
+
+    navigate('/');
+  } catch (error) {
+    console.error('Error leaving the game:', error);
+  }
 };

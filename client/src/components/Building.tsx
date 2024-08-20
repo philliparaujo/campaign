@@ -23,9 +23,9 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   const { gameState, playerIdFromColor, setFloorInfluence, setCoins } =
     useGameState();
   const { board, players } = gameState;
+
   const height = floors.length;
 
-  const [playerId, setPlayerId] = useState<string | null>(null);
   const [gameId, setGameId] = useState<string | null>(null);
   const [pendingUpdate, setPendingUpdate] = useState(false);
 
@@ -33,7 +33,6 @@ const BuildingUI: React.FC<BuildingUIProps> = ({
   useEffect(() => {
     const playerId = playerIdFromColor(playerColor);
     if (playerId) {
-      setPlayerId(playerId);
       fetchPlayer(playerId)
         .then(player => {
           setGameId(player.gameId);

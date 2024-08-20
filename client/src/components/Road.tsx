@@ -44,8 +44,8 @@ const RoadUI: React.FC<RoadUIProps> = ({
   const color2: Color = { r: 208, g: 208, b: 208 }; // red = 50% votes
   const color3: Color = { r: 255, g: 135, b: 135 }; // red = 100% votes
 
+  // Calculate background color if showing road influence (debug option)
   let backgroundColor = `rgb(208, 208, 208)`;
-
   if (showRoadInfluence) {
     if (roadPercentInfluence <= 0.5) {
       backgroundColor = interpolateColor(
@@ -62,6 +62,7 @@ const RoadUI: React.FC<RoadUIProps> = ({
     }
   }
 
+  // Determine which adjacent roads to connect to
   const connectTop = isRoad(board[rowIndex - 1]?.[colIndex]);
   const connectRight = isRoad(board[rowIndex]?.[colIndex + 1]);
   const connectBottom = isRoad(board[rowIndex + 1]?.[colIndex]);

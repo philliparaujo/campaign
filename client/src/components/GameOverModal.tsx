@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useGameState } from '../GameState';
 import { useGlobalState } from '../GlobalState';
 import { GameId, PlayerId } from '../types';
-import { calculatePollResult } from '../utils';
+import { calculatePollResult, tryToLeaveGame } from '../utils';
 import Button from './Button';
 import Modal from './Modal';
 
@@ -19,26 +19,20 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
   gameId,
   playerId,
 }) => {
-  const winningColor = finalRedPercent > 0.5 ? 'red' : 'blue';
-  const winMessage = finalRedPercent > 0.5 ? 'Red wins!' : 'Blue wins!';
-
   const { leaveGame } = useGlobalState();
   const navigate = useNavigate();
 
-  const tryToLeaveGame = async () => {
-    try {
-      await leaveGame(gameId, playerId);
-
-      localStorage.removeItem('gameId');
-      localStorage.removeItem('playerId');
-      localStorage.removeItem('playerColor');
-      localStorage.removeItem('displayName');
-
-      navigate('/');
-    } catch (error) {
-      console.error('Error leaving the game:', error);
-    }
-  };
+  let winningColor, winMessage;
+  if (finalRedPercent === 0.5) {
+    winningColor = 'gray';
+    winMessage = "It's a draw!";
+  } else if (finalRedPercent > 0.5) {
+    winningColor = 'red';
+    winMessage = 'Red wins!';
+  } else {
+    winningColor = 'blue';
+    winMessage = 'Blue wins!';
+  }
 
   return (
     <Modal show={show}>
@@ -47,7 +41,11 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
         <h2 style={{ color: winningColor }}>{winMessage}</h2>
         <h4>{`Public opinion: ${calculatePollResult(finalRedPercent)}`}</h4>
 
-        <Button onClick={tryToLeaveGame}>Leave Game</Button>
+        <Button
+          onClick={() => tryToLeaveGame(gameId, playerId, navigate, leaveGame)}
+        >
+          Leave Game
+        </Button>
       </div>
     </Modal>
   );

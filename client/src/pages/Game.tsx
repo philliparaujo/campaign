@@ -2,7 +2,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BoardUI from '../components/Board';
 import Button from '../components/Button';
+import GameIdDisplay from '../components/GameIdDisplay';
+import GameOverModal from '../components/GameOverModal';
 import HUD from '../components/HUD';
+import NameDisplays from '../components/NameDisplays';
 import PhaseIndicator from '../components/PhaseIndicator';
 import PublicOpinion from '../components/PublicOpinion';
 import RulesModal from '../components/RulesModal';
@@ -19,10 +22,14 @@ import {
   PlayerId,
   PollRegion,
 } from '../types';
-import { gameOver, opponentOf } from '../utils';
-import GameOverModal from '../components/GameOverModal';
-import NameDisplays from '../components/NameDisplays';
-import GameIdDisplay from '../components/GameIdDisplay';
+import { gameOver, saveGameInfo, tryToLeaveGame } from '../utils';
+
+const defaultPollRegion: PollRegion = {
+  startRow: 0,
+  endRow: size - 1,
+  startCol: 0,
+  endCol: size - 1,
+};
 
 type GameProps = {
   gameId: GameId;
@@ -34,17 +41,10 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   const { leaveGame, updateGame, fetchGame, setupListener, fetchOpponentOf } =
     useGlobalState();
   const { gameState, setGameState, regenerateBoard } = useGameState();
-  const navigate = useNavigate();
-
   const { publicOpinionHistory, turnNumber, phaseNumber } = gameState;
   const { playerColor, displayName } = playerGame;
 
-  const defaultPollRegion: PollRegion = {
-    startRow: 0,
-    endRow: size - 1,
-    startCol: 0,
-    endCol: size - 1,
-  };
+  const navigate = useNavigate();
 
   const [pollInputs, setPollInputs] = useState<Record<PlayerColor, PollRegion>>(
     {
@@ -63,29 +63,6 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   const [showStats, setShowStats] = useState<boolean>(false);
 
   /* Event handlers */
-  const syncStateToGlobal = useCallback(async () => {
-    try {
-      await updateGame(gameId, gameState);
-    } catch (error) {
-      console.error('Error updating the game state:', error);
-    }
-  }, [gameId, gameState, updateGame]);
-
-  const tryToLeaveGame = async () => {
-    try {
-      await leaveGame(gameId, playerId);
-
-      localStorage.removeItem('gameId');
-      localStorage.removeItem('playerId');
-      localStorage.removeItem('playerColor');
-      localStorage.removeItem('displayName');
-
-      navigate('/');
-    } catch (error) {
-      console.error('Error leaving the game:', error);
-    }
-  };
-
   const handleRefresh = useCallback(async () => {
     try {
       const gameState = await fetchGame(gameId);
@@ -190,10 +167,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   // Keep game/player information stored locally
   useEffect(() => {
     if (playerGame) {
-      localStorage.setItem('gameId', gameId);
-      localStorage.setItem('playerId', playerId);
-      localStorage.setItem('playerColor', playerGame.playerColor);
-      localStorage.setItem('displayName', playerGame.displayName);
+      saveGameInfo(gameId, playerId, playerColor, displayName);
     }
   }, [gameId, playerId, playerGame]);
 
@@ -282,7 +256,13 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
             alignItems: 'center',
           }}
         >
-          <Button onClick={tryToLeaveGame}>Leave Game</Button>
+          <Button
+            onClick={() =>
+              tryToLeaveGame(gameId, playerId, navigate, leaveGame)
+            }
+          >
+            Leave Game
+          </Button>
         </div>
         <NameDisplays
           displayName={displayName}
@@ -332,17 +312,15 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
               <PhaseIndicator />
               <HUD
                 playerColor={playerColor}
+                gameId={gameId}
                 pollInputs={pollInputs}
                 setPollInputs={setPollInputs}
                 settingPollRegion={settingPollRegion}
                 setSettingPollRegion={setSettingPollRegion}
-                syncStateToGlobal={syncStateToGlobal}
               />
               <Scoreboard
                 playerColor={playerColor}
                 showTruePolling={showStats}
-                showRoadInfluence={showRoadInfluence}
-                setShowRoadInfluence={setShowRoadInfluence}
               />
             </div>
 

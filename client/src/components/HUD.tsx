@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { size, useGameState } from '../GameState';
 import {
   FactCheck,
+  GameId,
   PlayerAction,
   PlayerColor,
   Poll,
@@ -9,6 +10,14 @@ import {
 } from '../types';
 import { canEndPhase, formatPoll, getRedSample, opponentOf } from '../utils';
 import Button from './Button';
+import { useGlobalState } from '../GlobalState';
+
+const phaseDescriptions: Record<number, string> = {
+  1: 'Rent out building floors for advertising using your coins.',
+  2: 'Select a region of the city to poll.',
+  3: "Select how accurate your opponent's poll is.",
+  4: 'Unbiased polling has now been released.',
+};
 
 interface HUDProps {
   pollInputs: Record<PlayerColor, PollRegion>;
@@ -20,7 +29,7 @@ interface HUDProps {
     React.SetStateAction<PlayerColor | null>
   >;
   playerColor: PlayerColor;
-  syncStateToGlobal: () => Promise<void>;
+  gameId: GameId;
 }
 
 const HUD: React.FC<HUDProps> = ({
@@ -29,8 +38,9 @@ const HUD: React.FC<HUDProps> = ({
   settingPollRegion,
   setSettingPollRegion,
   playerColor,
-  syncStateToGlobal,
+  gameId,
 }) => {
+  const { updateGame } = useGlobalState();
   const {
     gameState,
     setPhaseAction,
@@ -62,6 +72,16 @@ const HUD: React.FC<HUDProps> = ({
     setNextPhaseTriggered(true);
   };
 
+  // Sample a population within your boundary and save your poll result
+  const handleConductPoll = () => {
+    const pollRegion = pollInputs[playerColor];
+    const redPercent = getRedSample(board, pollRegion);
+
+    const poll: Poll = { ...pollRegion, redPercent };
+    handlePhaseAction('done', poll);
+  };
+
+  // Update game state with action, then trigger global sync
   const handlePhaseAction = (
     action: PlayerAction,
     poll?: Poll,
@@ -77,39 +97,26 @@ const HUD: React.FC<HUDProps> = ({
     setPhaseActionTriggered(true);
   };
 
-  // Sample a population within your boundary and save your poll result
-  const handleConductPoll = () => {
-    const pollRegion = pollInputs[playerColor];
-    const redPercent = getRedSample(board, pollRegion);
+  const handleDone = () => handlePhaseAction('done');
 
-    const poll: Poll = { ...pollRegion, redPercent };
-    handlePhaseAction('done', poll);
-  };
-
-  // Trust, doubt, accuse handlers
+  // Different fact-checking handlers
   const handleTrust = () => handlePhaseAction('done', undefined, 'trust');
   const handleDoubt = () => handlePhaseAction('done', undefined, 'doubt');
   const handleAccuse = () => handlePhaseAction('done', undefined, 'accuse');
 
-  const handleDone = () => handlePhaseAction('done');
-
   // Effect to sync the state globally after any phase action
   useEffect(() => {
     if (phaseActionTriggered || nextPhaseTriggered) {
-      syncStateToGlobal().then(() => {
-        // Reset the phaseActionTriggered flag after syncing
-        setPhaseActionTriggered(false);
-        setNextPhaseTriggered(false);
-      });
+      updateGame(gameId, gameState)
+        .then(() => {
+          setPhaseActionTriggered(false);
+          setNextPhaseTriggered(false);
+        })
+        .catch(error => {
+          console.error('Error updating the game state:', error);
+        });
     }
-  }, [phaseActionTriggered, nextPhaseTriggered, syncStateToGlobal]);
-
-  const phaseDescriptions: Record<number, string> = {
-    1: 'Rent out building floors for advertising using your coins.',
-    2: 'Select a region of the city to poll.',
-    3: "Select how accurate your opponent's poll is.",
-    4: 'Unbiased polling has now been released.',
-  };
+  }, [phaseActionTriggered, nextPhaseTriggered]);
 
   return (
     <div style={{ width: '100%', marginBottom: '20px' }}>
@@ -151,8 +158,10 @@ const HUD: React.FC<HUDProps> = ({
         </div>
       </div>
 
+      {/* Phase description */}
       <h2 style={{ textAlign: 'center' }}>{phaseDescriptions[phaseNumber]}</h2>
 
+      {/* Done button */}
       {(phaseNumber === 1 || phaseNumber === 4) && (
         <div>
           <Button
@@ -183,6 +192,7 @@ const HUD: React.FC<HUDProps> = ({
               backgroundColor: playerColor === 'red' ? '#ffe5e5' : '#e5e5ff',
             }}
           >
+            {/* Set poll region and conduct poll */}
             {phaseNumber === 2 && (
               <>
                 <div
@@ -269,6 +279,7 @@ const HUD: React.FC<HUDProps> = ({
               </>
             )}
 
+            {/* Fact-check opponent's poll */}
             {phaseNumber === 3 && (
               <>
                 <h3 style={{ color: playerColor, textAlign: 'center' }}>

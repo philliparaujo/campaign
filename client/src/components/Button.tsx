@@ -9,6 +9,18 @@ interface ButtonProps {
   clicked?: boolean;
 }
 
+// Color mappings for different button states
+const colorMap: Record<
+  string,
+  { base: string; hover: string; disabled: string }
+> = {
+  blue: { base: '#0059b3', hover: '#0066cc', disabled: '#324150' },
+  red: { base: '#990000', hover: '#b30000', disabled: '#4c3232' },
+  orange: { base: '#e66300', hover: '#ff6f00', disabled: '#584332' },
+  green: { base: '#239023', hover: '#28a428', disabled: '#384a38' },
+  default: { base: '#595959', hover: '#666666', disabled: '#414141' },
+};
+
 const Button: React.FC<ButtonProps> = ({
   onClick,
   children,
@@ -17,7 +29,10 @@ const Button: React.FC<ButtonProps> = ({
   disabled,
   clicked,
 }) => {
+  // Lightens the button on hover
   const [isHovered, setIsHovered] = useState(false);
+
+  // Slightly shrink the button when clicking
   const [isActive, setIsActive] = useState(false);
 
   const handleMouseEnter = () => {
@@ -35,18 +50,6 @@ const Button: React.FC<ButtonProps> = ({
 
   const handleMouseUp = () => {
     setIsActive(false);
-  };
-
-  // Define color mappings for normal and hover states
-  const colorMap: Record<
-    string,
-    { base: string; hover: string; disabled: string }
-  > = {
-    blue: { base: '#0059b3', hover: '#0066cc', disabled: '#324150' },
-    red: { base: '#990000', hover: '#b30000', disabled: '#4c3232' },
-    orange: { base: '#e66300', hover: '#ff6f00', disabled: '#584332' },
-    green: { base: '#239023', hover: '#28a428', disabled: '#384a38' },
-    default: { base: '#595959', hover: '#666666', disabled: '#414141' },
   };
 
   const colors = color ? colorMap[color] : colorMap['default'];

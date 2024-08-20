@@ -26,6 +26,7 @@ const PollResults: React.FC<PollResultsProps> = ({
         padding: '10px',
       }}
     >
+      {/* Shows visual bars and final result */}
       <div
         style={{
           display: 'flex',
@@ -66,6 +67,7 @@ const PollResults: React.FC<PollResultsProps> = ({
         </div>
       </div>
 
+      {/* Shows true vote percentages */}
       {truePoll && (
         <div
           style={{
