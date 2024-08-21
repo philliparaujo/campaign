@@ -330,7 +330,7 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
         {rulesModal}
         {settingsModal}
         {gameOverModal}
-    
+
         {/* Top Bar */}
         <div
           style={{
@@ -373,9 +373,11 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
               </div>
               <div style={{ flexGrow: 1 }}>{nameDisplays}</div>
             </div>
-            <div style={{ textAlign: 'left', marginLeft: '10px' }}>{gameIdDisplay}</div>
+            <div style={{ textAlign: 'left', marginLeft: '10px' }}>
+              {gameIdDisplay}
+            </div>
           </div>
-    
+
           {/* Right Section: Turn and Phase Indicators */}
           <div
             style={{
@@ -390,9 +392,9 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
             {phaseIndicator}
           </div>
         </div>
-    
+
         <hr style={{ width: '100%' }} />
-    
+
         {/* Content Section */}
         <div
           style={{
@@ -424,7 +426,6 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
         </div>
       </div>
     );
-    
   } else if (orientation === 'landscape') {
     return (
       <div
