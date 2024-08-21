@@ -66,6 +66,8 @@
   cursor: not-allowed;
 }
 
-@media only screen and (max-width: 1023px) and (orientation: portrait) {
-  /* Adjustments for smaller screens if necessary */
+@media only screen and (max-width: 1023px) and (orientation: landscape) {
+  :root {
+    --cell-size: calc(min(8vw, 100px));
+  }
 }

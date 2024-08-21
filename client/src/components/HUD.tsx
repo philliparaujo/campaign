@@ -144,19 +144,11 @@ const HUD: React.FC<HUDProps> = ({
       </div>
 
       {/* Phase description */}
-      <h2 className="hud-phase-description">
-        {phaseDescriptions[phaseNumber]}
-      </h2>
+      <h2 className="hud-phase-description">{phaseDescriptions[phaseNumber]}</h2>
 
       {/* Done button */}
       {(phaseNumber === 1 || phaseNumber === 4) && (
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            flexDirection: 'column',
-          }}
-        >
+        <div style={{display: 'flex', alignItems: 'center', flexDirection: 'column'}}>
           <Button
             onClick={handleDone}
             disabled={gameState.players[playerColor].coins < 0}
@@ -230,6 +222,7 @@ const HUD: React.FC<HUDProps> = ({
                     onClick={() => handleConductPoll()}
                     color={playerColor}
                     clicked={players[playerColor].phaseAction === 'done'}
+                 
                   >
                     Conduct Poll
                   </Button>

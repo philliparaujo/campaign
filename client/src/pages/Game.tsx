@@ -23,7 +23,6 @@ import {
   PollRegion,
 } from '../types';
 import { gameOver, saveGameInfo, tryToLeaveGame } from '../utils';
-import './Game.css'; // Import the CSS file
 
 const defaultPollRegion: PollRegion = {
   startRow: 0,
@@ -37,6 +36,31 @@ type GameProps = {
   playerId: PlayerId;
   playerGame: PlayerGame;
 };
+
+function useScreen() {
+  const [screen, setScreen] = useState({
+    width: window.innerWidth,
+    height: window.innerHeight,
+    orientation:
+      window.innerWidth > window.innerHeight ? 'landscape' : 'portrait',
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setScreen({
+        width: window.innerWidth,
+        height: window.innerHeight,
+        orientation:
+          window.innerWidth > window.innerHeight ? 'landscape' : 'portrait',
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  return screen;
+}
 
 const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
   const { leaveGame, updateGame, fetchGame, setupListener, fetchOpponentOf } =
@@ -204,115 +228,393 @@ const Game: React.FC<GameProps> = ({ gameId, playerId, playerGame }) => {
     }
   }, [pendingUpdate, gameId, gameState, updateGame]);
 
-  return (
-    <div className="game-container">
-      {/* Modal will be shown when isModalOpen is true */}
-      <RulesModal show={openModal === 'rules'} onClose={handleCloseModal} />
-      <SettingsModal
-        show={openModal === 'settings'}
-        onClose={handleCloseModal}
-        buttons={
-          <>
-            <Button
-              onClick={() => {
-                regenerateBoard();
-                setPendingUpdate(true);
+  const rulesModal = (
+    <RulesModal show={openModal === 'rules'} onClose={handleCloseModal} />
+  );
+  const settingsModal = (
+    <SettingsModal
+      show={openModal === 'settings'}
+      onClose={handleCloseModal}
+      buttons={
+        <>
+          <Button
+            onClick={() => {
+              regenerateBoard();
+              setPendingUpdate(true);
+            }}
+          >
+            Regenerate board
+          </Button>
+          <Button onClick={() => setShowStats(!showStats)}>
+            {showStats ? 'Hide True Polling' : 'Show True Polling'}
+          </Button>
+          <Button onClick={() => setShowRoadInfluence(!showRoadInfluence)}>
+            {showRoadInfluence ? 'Hide Road Influence' : 'Show Road Influence'}
+          </Button>
+        </>
+      }
+    />
+  );
+  const leaveGameButton = (
+    <Button
+      onClick={() => tryToLeaveGame(gameId, playerId, navigate, leaveGame)}
+    >
+      Leave Game
+    </Button>
+  );
+  const settingsButton = (
+    <Button onClick={() => setOpenModal('settings')}>Settings</Button>
+  );
+
+  const gameIdDisplay = <GameIdDisplay gameId={gameId} />;
+  const nameDisplays = (
+    <NameDisplays
+      displayName={displayName}
+      opponentDisplayName={opponentDisplayName}
+      playerColor={playerColor}
+    />
+  );
+  const turnIndicator = <TurnIndicator />;
+  const phaseIndicator = <PhaseIndicator />;
+  const hud = (
+    <HUD
+      playerColor={playerColor}
+      gameId={gameId}
+      pollInputs={pollInputs}
+      setPollInputs={setPollInputs}
+      settingPollRegion={settingPollRegion}
+      setSettingPollRegion={setSettingPollRegion}
+    />
+  );
+  const scoreboard = (
+    <Scoreboard playerColor={playerColor} showTruePolling={showStats} />
+  );
+  const gameOverModal = (
+    <GameOverModal
+      show={gameOver(gameState)}
+      finalRedPercent={
+        publicOpinionHistory[turnNumber]?.redPublicOpinion[phaseNumber - 1]
+      }
+      gameId={gameId}
+      playerId={playerId}
+    />
+  );
+  const publicOpinion = <PublicOpinion />;
+  const boardUI = (
+    <BoardUI
+      playerColor={playerColor}
+      pollInputs={pollInputs}
+      setPollInputs={setPollInputs}
+      showRoadInfluence={showRoadInfluence}
+      settingPollRegion={settingPollRegion}
+      setSettingPollRegion={setSettingPollRegion}
+    />
+  );
+
+  const { width, orientation } = useScreen();
+
+  if (width >= 1024) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px',
+          boxSizing: 'border-box',
+          maxWidth: '1600px', // Constrain the maximum width of the overall container
+          margin: '0 auto', // Center the container on large screens
+        }}
+      >
+        {rulesModal}
+        {settingsModal}
+        {gameOverModal}
+    
+        {/* Top Bar */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            width: '100%',
+            maxWidth: '1200px', // Constrain the width of the top bar
+            marginBottom: '20px',
+          }}
+        >
+          {/* Left Section: Leave Game, Settings, Game ID, and Name Displays */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-start',
+              gap: '10px',
+              flexGrow: 1,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                gap: '30px',
               }}
             >
-              Regenerate board
-            </Button>
-            <Button onClick={() => setShowStats(!showStats)}>
-              {showStats ? 'Hide True Polling' : 'Show True Polling'}
-            </Button>
-            <Button onClick={() => setShowRoadInfluence(!showRoadInfluence)}>
-              {showRoadInfluence
-                ? 'Hide Road Influence'
-                : 'Show Road Influence'}
-            </Button>
-          </>
-        }
-      />
-
-      <div className="game-top-bar">
-        <div className="game-top-left-section">
-          <div className="game-leftmost-section">
-            <NameDisplays
-              displayName={displayName}
-              opponentDisplayName={opponentDisplayName}
-              playerColor={playerColor}
-            />
-            <div>
-              <div className="game-leftmost-buttons">
-                <Button
-                  onClick={() =>
-                    tryToLeaveGame(gameId, playerId, navigate, leaveGame)
-                  }
-                >
-                  Leave Game
-                </Button>
-                <Button onClick={() => setOpenModal('settings')}>
-                  Settings
-                </Button>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  maxWidth: '150px', // Constrain the width of the buttons
+                }}
+              >
+                {leaveGameButton}
+                {settingsButton}
               </div>
-              <GameIdDisplay gameId={gameId} />
+              <div style={{ flexGrow: 1 }}>{nameDisplays}</div>
+            </div>
+            <div style={{ textAlign: 'left', marginLeft: '10px' }}>{gameIdDisplay}</div>
+          </div>
+    
+          {/* Right Section: Turn and Phase Indicators */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'flex-end',
+              maxWidth: '200px', // Constrain the width of the indicators
+              visibility: gameOver(gameState) ? 'hidden' : 'visible',
+            }}
+          >
+            {turnIndicator}
+            {phaseIndicator}
+          </div>
+        </div>
+    
+        <hr style={{ width: '100%' }} />
+    
+        {/* Content Section */}
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            width: '100%',
+            gap: '40px',
+            maxWidth: '1200px', // Constrain the width of the content
+          }}
+        >
+          <div style={{ flexGrow: 1 }}>
+            <div>
+              {hud}
+              {scoreboard}
+            </div>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              flexGrow: 1,
+              maxWidth: '600px', // Constrain the width of the publicOpinion and boardUI
+            }}
+          >
+            {publicOpinion}
+            {boardUI}
+          </div>
+        </div>
+      </div>
+    );
+    
+  } else if (orientation === 'landscape') {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px',
+          boxSizing: 'border-box',
+        }}
+      >
+        {rulesModal}
+        {settingsModal}
+        {gameOverModal}
+
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            width: '100%',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              gap: '60px',
+              flexDirection: 'row',
+              marginBottom: '10px',
+              justifyContent: 'space-between',
+              width: '100%',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                gap: '30px',
+                flexGrow: 1, // Allows this section to take up as much space as possible
+              }}
+            >
+              <div style={{ flexGrow: 1, maxWidth: '150px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '5px',
+                  }}
+                >
+                  {leaveGameButton}
+                  {settingsButton}
+                </div>
+                {gameIdDisplay}
+              </div>
+              <div style={{ flexGrow: 1 }}>{nameDisplays}</div>
+              <div
+                style={{
+                  flexGrow: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'flex-end',
+                  visibility: gameOver(gameState) ? 'hidden' : 'initial',
+                }}
+              >
+                {turnIndicator}
+                {phaseIndicator}
+              </div>
             </div>
           </div>
         </div>
-        <TurnIndicator />
-      </div>
-
-      <hr className="game-divider" />
-      <div className="game-content">
-        {/* Right Side */}
-        <div className="game-right-side">
-          <div
-            className={gameOver(gameState) ? 'game-hidden' : 'game-visibility'}
-          >
-            <PhaseIndicator />
-            <HUD
-              playerColor={playerColor}
-              gameId={gameId}
-              pollInputs={pollInputs}
-              setPollInputs={setPollInputs}
-              settingPollRegion={settingPollRegion}
-              setSettingPollRegion={setSettingPollRegion}
-            />
-            <Scoreboard playerColor={playerColor} showTruePolling={showStats} />
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            width: '100%',
+            gap: '40px',
+          }}
+        >
+          <div style={{ flexGrow: 1 }}>
+            <div>
+              {hud}
+              {scoreboard}
+            </div>
           </div>
-
-          <GameOverModal
-            show={gameOver(gameState)}
-            finalRedPercent={
-              publicOpinionHistory[turnNumber]?.redPublicOpinion[
-                phaseNumber - 1
-              ]
-            }
-            gameId={gameId}
-            playerId={playerId}
-          />
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              flexGrow: 1,
+            }}
+          >
+            {publicOpinion}
+            {boardUI}
+          </div>
         </div>
+      </div>
+    );
+  } else {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '40px',
+          boxSizing: 'border-box',
+        }}
+      >
+        {rulesModal}
+        {settingsModal}
+        {gameOverModal}
 
-        {/* Left Side */}
         <div
           style={{
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'center',
+            justifyContent: 'space-between',
+            width: '100%',
+            marginBottom: '20px',
           }}
         >
-          <PublicOpinion />
-          <BoardUI
-            playerColor={playerColor}
-            pollInputs={pollInputs}
-            setPollInputs={setPollInputs}
-            showRoadInfluence={showRoadInfluence}
-            settingPollRegion={settingPollRegion}
-            setSettingPollRegion={setSettingPollRegion}
-          />
+          <div
+            style={{
+              display: 'flex',
+              gap: '60px',
+              flexDirection: 'row',
+              marginBottom: '10px',
+              justifyContent: 'space-around',
+              width: '100%',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                gap: '10px',
+              }}
+            >
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '5px',
+                  }}
+                >
+                  {leaveGameButton}
+                  {settingsButton}
+                </div>
+                {gameIdDisplay}
+              </div>
+              {nameDisplays}
+            </div>
+          </div>
+          {turnIndicator}
+        </div>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%',
+            gap: '20px',
+          }}
+        >
+          <div>
+            <div style={{ display: gameOver(gameState) ? 'none' : 'initial' }}>
+              {phaseIndicator}
+              {hud}
+              {scoreboard}
+            </div>
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            {publicOpinion}
+            {boardUI}
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 };
 
 export default Game;

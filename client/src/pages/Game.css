@@ -23,6 +23,7 @@
   flex-direction: row;
   margin-bottom: 10px;
   justify-content: space-around;
+  width: 100%;
 }
 
 .game-leftmost-section {
@@ -60,8 +61,41 @@
   visibility: hidden;
 }
 
+/* Media Queries */
 @media only screen and (max-width: 1023px) and (orientation: portrait) {
   .game-top-bar {
     margin-bottom: 0;
+  }
+
+  .game-leftmost-section {
+    flex-direction: row-reverse;
+  }
+}
+
+@media only screen and (max-width: 1023px) and (orientation: landscape) {
+  .game-top-bar {
+    flex-direction: row;
+    justify-content: space-between; /* Ensures items are spaced out evenly */
+    align-items: center;
+    gap: 20vw;
+    margin-bottom: 0;
+  }
+
+  .game-top-left-section {
+    flex: 1; /* Allows the left section to grow and fill space */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px; /* Add some space between items */
+  }
+
+  .game-leftmost-section {
+    flex-direction: row;
+    justify-content: space-between; /* Evenly space out items within this section */
+    flex: 1;
+  }
+
+  .game-content {
+    flex-direction: row;
   }
 }

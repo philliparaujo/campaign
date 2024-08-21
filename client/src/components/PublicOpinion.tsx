@@ -23,11 +23,13 @@ const PublicOpinion: React.FC<PublicOpinionProps> = () => {
       {/* Public opinion header and result */}
       <div className="public-opinion-header">
         <h2>Public Opinion:</h2>
-        {formatPublicOpinion(
-          redPublicOpinion,
-          prevRedPublicOpinion,
-          phaseNumber
-        )}
+        <div className="public-opinion-values">
+          {formatPublicOpinion(
+            redPublicOpinion,
+            prevRedPublicOpinion,
+            phaseNumber
+          )}
+        </div>
       </div>
 
       {/* Shows visual bars for public opinion */}
