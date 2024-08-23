@@ -1,5 +1,5 @@
-import Modal from './Modal';
 import './JoinGameModal.css';
+import Modal from './Modal';
 
 interface JoinGameModalProps {
   show: boolean;

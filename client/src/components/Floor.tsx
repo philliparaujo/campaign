@@ -1,6 +1,6 @@
 import React from 'react';
-import { Influence } from '../types';
 import { useGameState } from '../GameState';
+import { Influence } from 'shared/types';
 import './Board.css';
 
 interface FloorUIProps {

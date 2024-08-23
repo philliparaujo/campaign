@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { GameStateProvider } from '../GameState';
 import { useGlobalState } from '../GlobalState';
-import { GameId, PlayerGame, PlayerId } from '../types';
+import { GameId, PlayerGame, PlayerId } from 'shared//types';
 import Game from './Game';
 
 function GameWrapper() {

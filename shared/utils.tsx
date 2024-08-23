@@ -1,12 +1,15 @@
+import { NavigateFunction } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
-import { maxRoadsAllowed, maxTurns, size } from "./GameState";
+import { maxRoadsAllowed, maxTurns, size, startingCoins } from "./GameSettings";
 import {
   Board,
+  FactCheck,
   Floor,
   GameId,
   GameState,
-  PlayerAction,
   PlayerColor,
+  PlayerId,
+  PlayerInfo,
   Poll,
   PollRegion,
 } from "./types";
@@ -23,7 +26,7 @@ const isSquareRoad = (
   board: Board,
   size: number,
   row: number,
-  col: number,
+  col: number
 ): boolean => {
   return (
     row < size - 1 &&
@@ -52,7 +55,7 @@ export const initializeBoard = (size: number): Board => {
         .fill(null)
         .map(() => ({
           type: "road",
-        })),
+        }))
     );
 
   let roadCount = size * size;
@@ -147,7 +150,7 @@ export const initializeBoard = (size: number): Board => {
 export const calculatePublicOpinion = (
   redPolls: Poll[],
   bluePolls: Poll[],
-  currentTurn: number,
+  currentTurn: number
 ): number => {
   const previousTurn = Math.max(currentTurn - 1, 0);
 
@@ -166,6 +169,63 @@ export const calculatePollResult = (redPercent: number) => {
   return `${colorWinner} +${percentResult.toFixed(1)}%`;
 };
 
+// Turns polling percentage into color-coded final result
+export const formatPoll = (redPercent: number): React.JSX.Element => {
+  return (
+    <p
+      style={{
+        color: redPercent >= 0.5 ? "red" : "blue",
+        marginBottom: "10px",
+      }}
+    >
+      {calculatePollResult(redPercent)}
+    </p>
+  );
+};
+
+// Turn public opinion percentage into color-coded final result
+export const formatPublicOpinion = (
+  publicOpinion: number,
+  prevPublicOpinion: number,
+  phaseNumber: number
+) => {
+  const winningColor = publicOpinion >= 0.5 ? "Red" : "Blue";
+  const percentChange = (publicOpinion - prevPublicOpinion) * 200;
+
+  let sign;
+  if (winningColor === "Red") {
+    sign = percentChange >= 0 ? "+" : "-";
+  } else {
+    sign = percentChange <= 0 ? "+" : "-";
+  }
+
+  return (
+    <div
+      style={{
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "flex-end",
+        gap: "10px",
+        textAlign: "right",
+        alignSelf: "right",
+      }}
+    >
+      <h3
+        style={{
+          color: winningColor,
+        }}
+      >
+        {calculatePollResult(publicOpinion)}
+      </h3>
+      {phaseNumber >= 3 && (
+        <h5 style={{ color: winningColor }}>{`(${sign}${Math.abs(
+          percentChange
+        ).toFixed(1)}% change)`}</h5>
+      )}
+    </div>
+  );
+};
+
 // Helper function to calculate the influence for one cell in one direction
 const calculateDirectionalInfluence = (
   board: Board,
@@ -173,7 +233,7 @@ const calculateDirectionalInfluence = (
   startCol: number,
   rowDelta: number,
   colDelta: number,
-  influenceType: PlayerColor,
+  influenceType: PlayerColor
 ): number => {
   let influence = 0;
   let distance = 1;
@@ -220,7 +280,7 @@ export const calculateRoadInfluence = (
   influenceType: PlayerColor,
   board: Board,
   row: number,
-  col: number,
+  col: number
 ): number => {
   const cell = board[row][col];
   if (cell.type !== "road") return 0;
@@ -239,7 +299,7 @@ export const calculateRoadInfluence = (
       col,
       rowDelta,
       colDelta,
-      influenceType,
+      influenceType
     );
   }
 
@@ -257,7 +317,7 @@ export const calculateRoadInfluence = (
       col,
       rowDelta,
       colDelta,
-      influenceType,
+      influenceType
     );
   }
 
@@ -271,7 +331,7 @@ export const calculateRoadInfluence = (
 // Helper function to calculate the total influence for all cells
 export const calculateTotalInfluence = (
   influenceType: PlayerColor,
-  board: Board,
+  board: Board
 ): number => {
   let totalInfluence = 0;
   const size = board.length;
@@ -287,7 +347,7 @@ export const calculateTotalInfluence = (
 
 export const calculatePercentInfluence = (
   redInfluence: number,
-  blueInfluence: number,
+  blueInfluence: number
 ): number => {
   const totalInfluence = redInfluence + blueInfluence;
   if (totalInfluence <= 0) {
@@ -310,7 +370,7 @@ const createPercentArray = (board: Board): (number | null)[][] => {
         const blueInfluence = calculateRoadInfluence("blue", board, row, col);
         const percentInfluence = calculatePercentInfluence(
           redInfluence,
-          blueInfluence,
+          blueInfluence
         );
 
         if (percentInfluence > 0) {
@@ -345,7 +405,7 @@ export const getRedSample = (
     startCol: 0,
     endCol: size - 1,
   },
-  trueSample: boolean = false,
+  trueSample: boolean = false
 ): number => {
   const { startRow, endRow, startCol, endCol } = pollRegion;
 
@@ -374,44 +434,38 @@ export const canEndPhase = (gameState: GameState): boolean => {
 
   const coinCheck = players.red.coins >= 0 && players.blue.coins >= 0;
 
-  switch (phaseNumber) {
-    case 1:
-      return (
-        coinCheck &&
-        gameState.players.red.phaseAction === "done" &&
-        gameState.players.blue.phaseAction === "done"
-      );
-    case 2:
-      return (
-        coinCheck &&
-        players.red.phaseAction === "conductPoll" &&
-        players.blue.phaseAction === "conductPoll"
-      );
-    case 3:
-      const factCheckOptions: PlayerAction[] = ["trust", "doubt", "accuse"];
-      return (
-        coinCheck &&
-        factCheckOptions.includes(players.red.phaseAction) &&
-        factCheckOptions.includes(players.blue.phaseAction)
-      );
-    case 4:
-      return (
-        coinCheck &&
-        gameState.players.red.phaseAction === "done" &&
-        gameState.players.blue.phaseAction === "done"
-      );
-    default:
-      return false;
+  return (
+    coinCheck &&
+    gameState.players.red.phaseAction === "done" &&
+    gameState.players.blue.phaseAction === "done"
+  );
+};
+
+/* Handling fact checking */
+const doubtPercent = 0.025;
+const doubtPenalty = 0.025;
+const accusePercent = 0.05;
+const accusePenalty = 0.05;
+
+export const accusationSucceeded = (
+  factCheck: FactCheck,
+  truePercent: number,
+  pollPercent: number
+): boolean => {
+  let succeeded = true;
+  if (factCheck === "doubt") {
+    succeeded = Math.abs(pollPercent - truePercent) >= doubtPercent;
+  } else if (factCheck === "accuse") {
+    succeeded = Math.abs(pollPercent - truePercent) >= accusePercent;
   }
+  return succeeded;
 };
 
 /* If poll within 5% of true value, lose 5% public opinion;
    otherwise, gain 5% public opinion. */
-const doubtPercent = 0.025;
-const doubtPenalty = 0.025;
 export const handleDoubtPoll = (
   playerColor: PlayerColor,
-  gameState: GameState,
+  gameState: GameState
 ): number => {
   const { board, turnNumber, players } = gameState;
 
@@ -422,20 +476,18 @@ export const handleDoubtPoll = (
       : players.red.pollHistory[turnNumber];
   let pollPercent = poll["redPercent"];
 
-  if (Math.abs(pollPercent - truePercent) < doubtPercent) {
-    return playerColor === "red" ? -doubtPenalty : doubtPenalty;
-  } else {
+  if (accusationSucceeded("doubt", truePercent, pollPercent)) {
     return playerColor === "red" ? doubtPenalty : -doubtPenalty;
+  } else {
+    return playerColor === "red" ? -doubtPenalty : doubtPenalty;
   }
 };
 
 /* If poll within 10% of true value, lose 10% public opinion;
    otherwise, their poll gets thrown out (or gain 10% public opinion). */
-const accusePercent = 0.05;
-const accusePenalty = 0.05;
 export const handleAccusePoll = (
   playerColor: PlayerColor,
-  gameState: GameState,
+  gameState: GameState
 ): number => {
   const { board, turnNumber, players } = gameState;
 
@@ -446,16 +498,16 @@ export const handleAccusePoll = (
       : players.red.pollHistory[turnNumber];
   let pollPercent = poll["redPercent"];
 
-  if (Math.abs(pollPercent - truePercent) < accusePercent) {
-    return playerColor === "red" ? -accusePenalty : accusePenalty;
-  } else {
+  if (accusationSucceeded("accuse", truePercent, pollPercent)) {
     return playerColor === "red" ? accusePenalty : -accusePenalty;
+  } else {
+    return playerColor === "red" ? -accusePenalty : accusePenalty;
   }
 };
 
 // Generate unique 4 length game ID
 export const newGameId = async (
-  gameExists: (gameId: GameId) => Promise<boolean>,
+  gameExists: (gameId: GameId) => Promise<boolean>
 ): Promise<GameId> => {
   const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const idLength = 4;
@@ -463,7 +515,7 @@ export const newGameId = async (
     let result = "";
     for (let i = 0; i < idLength; i++) {
       result += characters.charAt(
-        Math.floor(Math.random() * characters.length),
+        Math.floor(Math.random() * characters.length)
       );
     }
     return result;
@@ -491,10 +543,78 @@ export const newPlayerId = (): string => {
   return uuidv4();
 };
 
+// Get opponent's color
 export const opponentOf = (playerColor: PlayerColor): PlayerColor => {
   return playerColor === "red" ? "blue" : "red";
 };
 
+// Return whether game is over
 export const gameOver = (gameState: GameState): boolean => {
   return gameState.turnNumber > maxTurns;
 };
+
+// Save game info to local storage
+export const saveGameInfo = (
+  gameId: GameId,
+  playerId: PlayerId,
+  playerColor: PlayerColor,
+  displayName: string
+) => {
+  localStorage.setItem("gameId", gameId);
+  localStorage.setItem("playerId", playerId);
+  localStorage.setItem("playerColor", playerColor);
+  localStorage.setItem("displayName", displayName);
+};
+
+// Leave game and remove game info from local storage
+export const tryToLeaveGame = async (
+  gameId: GameId,
+  playerId: PlayerId,
+  navigate: NavigateFunction,
+  leaveGame: (gameId: GameId, playerId: PlayerId) => Promise<PlayerId>
+) => {
+  try {
+    await leaveGame(gameId, playerId);
+
+    localStorage.removeItem("gameId");
+    localStorage.removeItem("playerId");
+    localStorage.removeItem("playerColor");
+    localStorage.removeItem("displayName");
+
+    navigate("/");
+  } catch (error) {
+    console.error("Error leaving the game:", error);
+  }
+};
+
+// A starting player state
+const initialPlayer: PlayerInfo = {
+  id: "",
+  coins: startingCoins,
+  factCheck: "",
+  phaseAction: "",
+  pollHistory: [
+    {
+      startRow: 0,
+      endRow: size - 1,
+      startCol: 0,
+      endCol: size - 1,
+      redPercent: 0.5,
+    },
+  ],
+};
+
+// Return a starting game state
+export const createNewGameState = (): GameState => ({
+  board: initializeBoard(size),
+  turnNumber: 1,
+  phaseNumber: 1,
+  publicOpinionHistory: [
+    { redPublicOpinion: [0.5, 0.5, 0.5, 0.5], trueRedPercent: 0.5 },
+    { redPublicOpinion: [0.5, 0.5, 0.5, 0.5], trueRedPercent: null },
+  ],
+  players: {
+    red: { ...initialPlayer },
+    blue: { ...initialPlayer },
+  },
+});

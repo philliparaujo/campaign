@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useGameState } from '../GameState';
+import { Floor, PlayerColor } from 'shared/types';
 import { useGlobalState } from '../GlobalState';
-import { Floor, PlayerColor } from '../types';
 import FloorUI from './Floor';
 
 interface BuildingUIProps {

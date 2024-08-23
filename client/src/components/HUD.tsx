@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useState } from 'react';
-import { size, useGameState } from '../GameState';
+import React, { useEffect, useState } from 'react';
+import { useGameState } from '../GameState';
 import {
   FactCheck,
   GameId,
@@ -7,11 +7,17 @@ import {
   PlayerColor,
   Poll,
   PollRegion,
-} from '../types';
-import { canEndPhase, formatPoll, getRedSample, opponentOf } from '../utils';
-import Button from './Button';
+} from 'shared/types';
+import {
+  canEndPhase,
+  formatPoll,
+  getRedSample,
+  opponentOf,
+} from 'shared/utils';
 import { useGlobalState } from '../GlobalState';
+import Button from './Button';
 import './HUD.css';
+import { size } from 'shared/GameSettings';
 
 const phaseDescriptions: Record<number, string> = {
   1: 'Rent out building floors for advertising using your coins.',

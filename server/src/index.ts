@@ -2,12 +2,11 @@ import dotenv from "dotenv";
 import express from "express";
 import http from "http";
 import mongoose, { Error } from "mongoose";
+import { PlayerColor } from "shared/types";
+import { createNewGameState, opponentOf } from "shared/utils";
 import { Server as SocketIOServer } from "socket.io";
 import ActiveGameModel from "./models/ActiveGame";
 import PlayerGameModel from "./models/PlayerGame";
-import { createNewGameState } from "./shared/GameState";
-import { PlayerColor } from "./shared/types";
-import { opponentOf } from "./shared/utils";
 
 dotenv.config();
 

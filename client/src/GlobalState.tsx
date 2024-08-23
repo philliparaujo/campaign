@@ -5,6 +5,7 @@ import {
   useEffect,
   useState,
 } from 'react';
+import { io } from 'socket.io-client';
 import {
   ActiveGames,
   GameId,
@@ -12,8 +13,7 @@ import {
   PlayerColor,
   PlayerGames,
   PlayerId,
-} from './types';
-import { io } from 'socket.io-client';
+} from 'shared/types';
 
 type GlobalStateContextType = {
   playerGames: PlayerGames;

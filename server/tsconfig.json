@@ -3,6 +3,7 @@
     "target": "ES6", // or "ES2020" or another version depending on your needs
     "module": "commonjs", // Node.js uses CommonJS module system
     "strict": true,
+    "jsx": "react-jsx",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,

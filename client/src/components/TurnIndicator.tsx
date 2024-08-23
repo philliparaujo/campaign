@@ -1,6 +1,7 @@
 import React from 'react';
-import { maxTurns, useGameState } from '../GameState';
+import { useGameState } from '../GameState';
 import './TurnIndicator.css'; // Import the CSS file
+import { maxTurns } from 'shared/GameSettings';
 
 interface TurnIndicatorProps {}
 

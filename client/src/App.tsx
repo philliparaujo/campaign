@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import { GlobalStateProvider } from './GlobalState';
+import { GlobalStateProvider } from 'GlobalState';
 import GameWrapper from './pages/GameWrapper';
 import HomeScreen from './pages/HomeScreen';
 

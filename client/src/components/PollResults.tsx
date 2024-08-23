@@ -1,4 +1,4 @@
-import { calculatePollResult } from '../utils';
+import { calculatePollResult } from 'shared/utils';
 
 interface PollResultsProps {
   redPercent: number;

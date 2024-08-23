@@ -1,5 +1,5 @@
-import Modal from './Modal';
 import './CreateGameModal.css';
+import Modal from './Modal';
 
 interface CreateGameModalProps {
   show: boolean;
