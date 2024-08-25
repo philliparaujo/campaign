@@ -7,17 +7,17 @@ import {
   PlayerColor,
   Poll,
   PollRegion,
-} from 'shared/types';
+} from 'shared/src/types';
 import {
   canEndPhase,
   formatPoll,
   getRedSample,
   opponentOf,
-} from 'shared/utils';
+} from 'shared/src/utils';
 import { useGlobalState } from '../GlobalState';
 import Button from './Button';
 import './HUD.css';
-import { size } from 'shared/GameSettings';
+import { size } from 'shared/src/GameSettings';
 
 const phaseDescriptions: Record<number, string> = {
   1: 'Rent out building floors for advertising using your coins.',

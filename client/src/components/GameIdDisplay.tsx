@@ -1,5 +1,5 @@
 import React from 'react';
-import { GameId } from 'shared/types';
+import { GameId } from 'shared/src/types';
 
 interface GameIdDisplayProps {
   gameId: GameId;

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
-import { GameId, PlayerId } from 'shared/types';
-import { calculatePollResult, tryToLeaveGame } from 'shared/utils';
+import { GameId, PlayerId } from 'shared/src/types';
+import { calculatePollResult, tryToLeaveGame } from 'shared/src/utils';
 import { useGlobalState } from '../GlobalState';
 import Button from './Button';
 import Modal from './Modal';

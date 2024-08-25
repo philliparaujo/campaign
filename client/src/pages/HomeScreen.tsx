@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Switch from 'react-switch';
-import { GameId, PlayerColor, PlayerId } from 'shared//types';
-import { socket, useGlobalState } from '../GlobalState';
-import { newGameId, newPlayerId } from 'shared/utils';
+import { GameId, PlayerColor, PlayerId } from 'shared/src/types';
+import { newGameId, newPlayerId } from 'shared/src/utils';
 import Button from '../components/Button';
 import CreateGameModal from '../components/CreateGameModal';
 import JoinGameModal from '../components/JoinGameModal';
 import RulesModal from '../components/RulesModal';
 import SettingsModal from '../components/SettingsModal';
+import { socket, useGlobalState } from '../GlobalState';
 import './HomeScreen.css';
 
 function HomeScreen() {

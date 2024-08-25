@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useGameState } from '../GameState';
-import { Floor, PlayerColor } from 'shared/types';
+import { Floor, PlayerColor } from 'shared/src/types';
 import { useGlobalState } from '../GlobalState';
 import FloorUI from './Floor';
 

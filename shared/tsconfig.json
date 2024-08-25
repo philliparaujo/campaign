@@ -1,22 +1,21 @@
 {
-    "compilerOptions": {
-      "target": "ESNext",
-      "module": "ESNext",
-      "jsx": "react-jsx",
-      "strict": true,
-      "esModuleInterop": true,
-      "skipLibCheck": true,
-      "forceConsistentCasingInFileNames": true,
-      "moduleResolution": "node",
-      "resolveJsonModule": true,
-      "isolatedModules": true,
-      "noEmit": true,
-      "baseUrl": "./src", // This should point to your source files.
-      "paths": {
-        "shared/*": ["./*"] // This resolves shared imports within the shared package itself.
-      }
-    },
-    "include": ["./*"], // This includes all .ts and .tsx files in the src directory.
-    "exclude": ["node_modules", "dist"]
-  }
-  
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "jsx": "react-jsx",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "baseUrl": "./src", // This should point to your source files.
+    "paths": {
+      "shared/*": ["./src*"] // This resolves shared imports within the shared package itself.
+    }
+  },
+  "include": ["./*", "src/utils.tsx"], // This includes all .ts and .tsx files in the src directory.
+  "exclude": ["node_modules", "dist"]
+}

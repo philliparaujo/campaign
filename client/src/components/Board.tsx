@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useGameState } from '../GameState';
-import { Cell, PlayerColor, PollRegion } from 'shared/types';
+import { Cell, PlayerColor, PollRegion } from 'shared/src/types';
 import './Board.css';
 import BuildingUI from './Building';
 import RoadUI from './Road';
-import { size } from 'shared/GameSettings';
+import { size } from 'shared/src/GameSettings';
 
 interface BoardUIProps {
   pollInputs: Record<PlayerColor, PollRegion>;

@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { startingCoins } from "shared/GameSettings";
+import { startingCoins } from "shared/src/GameSettings";
 
 // Define schemas for nested structures
 const playerSchema = new Schema({

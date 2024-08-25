@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
+import { GameId, PlayerGame, PlayerId } from 'shared/src/types';
 import { GameStateProvider } from '../GameState';
 import { useGlobalState } from '../GlobalState';
-import { GameId, PlayerGame, PlayerId } from 'shared//types';
 import Game from './Game';
 
 function GameWrapper() {

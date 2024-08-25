@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGameState } from '../GameState';
-import { FactCheck, PlayerAction, PlayerColor } from 'shared/types';
-import { accusationSucceeded, opponentOf } from 'shared/utils';
+import { FactCheck, PlayerAction, PlayerColor } from 'shared/src/types';
+import { accusationSucceeded, opponentOf } from 'shared/src/utils';
 import './NameDisplays.css';
 
 interface NameDisplaysProps {

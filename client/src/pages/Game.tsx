@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useGameState } from '../GameState';
-import { socket, useGlobalState } from '../GlobalState';
+import { size } from 'shared/src/GameSettings';
 import {
   GameId,
   GameState,
@@ -9,8 +8,8 @@ import {
   PlayerGame,
   PlayerId,
   PollRegion,
-} from 'shared/types';
-import { gameOver, saveGameInfo, tryToLeaveGame } from 'shared/utils';
+} from 'shared/src/types';
+import { gameOver, saveGameInfo, tryToLeaveGame } from 'shared/src/utils';
 import BoardUI from '../components/Board';
 import Button from '../components/Button';
 import GameIdDisplay from '../components/GameIdDisplay';
@@ -23,7 +22,8 @@ import RulesModal from '../components/RulesModal';
 import Scoreboard from '../components/Scoreboard';
 import SettingsModal from '../components/SettingsModal';
 import TurnIndicator from '../components/TurnIndicator';
-import { size } from 'shared/GameSettings';
+import { useGameState } from '../GameState';
+import { socket, useGlobalState } from '../GlobalState';
 
 const defaultPollRegion: PollRegion = {
   startRow: 0,

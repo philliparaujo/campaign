@@ -1,6 +1,6 @@
 import React from 'react';
 import { useGameState } from '../GameState';
-import { formatPublicOpinion } from 'shared/utils';
+import { formatPublicOpinion } from 'shared/src/utils';
 import './PublicOpinion.css';
 
 interface PublicOpinionProps {}

@@ -5,7 +5,7 @@ import {
   useEffect,
   useState,
 } from 'react';
-import { size, startingCoins } from 'shared/GameSettings';
+import { size, startingCoins } from 'shared/src/GameSettings';
 import { useGlobalState } from './GlobalState';
 import {
   Board,
@@ -21,7 +21,7 @@ import {
   PlayerId,
   PlayerInfo,
   Poll,
-} from 'shared/types';
+} from 'shared/src/types';
 import {
   calculatePublicOpinion,
   createNewGameState,
@@ -29,7 +29,7 @@ import {
   handleAccusePoll,
   handleDoubtPoll,
   initializeBoard,
-} from 'shared/utils';
+} from 'shared/src/utils';
 
 type GameStateContextType = {
   gameState: GameState;

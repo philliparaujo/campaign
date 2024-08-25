@@ -1,7 +1,7 @@
 import React from 'react';
 import { useGameState } from '../GameState';
-import { PlayerColor } from 'shared/types';
-import { getRedSample, opponentOf } from 'shared/utils';
+import { PlayerColor } from 'shared/src/types';
+import { getRedSample, opponentOf } from 'shared/src/utils';
 import PollResults from './PollResults';
 
 interface ScoreboardProps {

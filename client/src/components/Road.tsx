@@ -1,10 +1,10 @@
 import React from 'react';
 import { useGameState } from '../GameState';
-import { Cell } from 'shared/types';
+import { Cell } from 'shared/src/types';
 import {
   calculatePercentInfluence,
   calculateRoadInfluence,
-} from 'shared/utils';
+} from 'shared/src/utils';
 
 interface RoadUIProps {
   rowIndex: number;
