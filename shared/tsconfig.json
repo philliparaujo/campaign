@@ -11,11 +11,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "baseUrl": "./src", // This should point to your source files.
+    "baseUrl": "./src",  // Set the baseUrl to src
     "paths": {
-      "shared/*": ["./src*"] // This resolves shared imports within the shared package itself.
+    "shared/*": ["*"]  // Map shared/* to src/*
     }
   },
-  "include": ["./*", "src/utils.tsx"], // This includes all .ts and .tsx files in the src directory.
+  "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }

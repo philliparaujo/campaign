@@ -33,6 +33,7 @@ const BoardUI: React.FC<BoardUIProps> = ({
   const [isDragging, setIsDragging] = useState<boolean>(false);
   const myPollInputs = pollInputs[playerColor];
 
+  // Sets CSS variable based on game constant
   useEffect(() => {
     document.documentElement.style.setProperty('--board-size', `${size}`);
   }, []);
