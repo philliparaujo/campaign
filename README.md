@@ -33,6 +33,9 @@ To see the project running locally, follow these steps.
 2. Open a second terminal and navigate to the `client` directory to start the front-end with `npm run dev`.
 3. Open your browser and navigate to http://localhost:3000 to view the app.
 
+### Production Build
+To build the project for production (so that changes can be shared on the demo link), follow these steps.
+
 ## Project Structure
 ### Client
 - **Assets:** Contains images and static files used by the client (e.g., the homepage background).
