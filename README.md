@@ -1,4 +1,4 @@
-# CAMPAIGNo
+# CAMPAIGN
 Campaign is a turn-based, two-player strategy game centered around winning a city election. Players strategically place advertisements around the city to gather support and secure victory.
 
 ## Demo
@@ -35,6 +35,10 @@ To see the project running locally, follow these steps.
 
 ### Production Build
 To build the project for production (so that changes can be shared on the demo link), follow these steps.
+
+1. If any changes were made on the front-end, navigate to the `client` directory. `git add .`, `git commit -m <commit-message>`, `git push`. These changes should be pushed to the `release/webapp` branch.
+2. If any changes were made on the server, navigate to the `server` directory. `git add .`, `git commit -m <commit-message>`, `git push`. These changes should be pushed to the `release/server` branch.
+3. Wait up to one minute for changes to be seen on the demo page. Confirm that the latest build times match your commits.
 
 ## Project Structure
 ### Client
